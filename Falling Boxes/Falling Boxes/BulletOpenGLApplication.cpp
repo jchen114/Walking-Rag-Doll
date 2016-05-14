@@ -2,27 +2,56 @@
 #include "BulletOpenGLApplication.h"
 #include <iostream>
 
-#define CAMERA_STEP_SIZE 5.0f
-
 BulletOpenGLApplication::BulletOpenGLApplication()
 {
 	std::cout << "Constructing BulletOpenGLApplication and building camera" << std::endl;
 	// Create Camera manager
 	m_cameraManager = new CameraManager(
-		btVector3(10.0f, 5.0f, 0.0f),	// Position
 		btVector3(0.0f, 0.0f, 0.0f),	// Target
-		15.0f,							// Distance
+		30.0f,							// Distance
 		20.0f,							// Pitch
 		0.0f,							// Yaw
 		btVector3(0.0f, 1.0f, 0.0f),	// Up Vector
 		1.0f,							// near plane
 		1000.0f);						// far plane
+}
 
+BulletOpenGLApplication::BulletOpenGLApplication(ProjectionType mode) {
+	std::cout << "Constructing BulletOpenGLApplication and building camera" << std::endl;
+	// Create Camera manager
+	m_cameraManager = new CameraManager(
+		btVector3(0.0f, 0.0f, 0.0f),	// Target
+		30.0f,							// Distance
+		0.0f,							// Pitch
+		0.0f,							// Yaw
+		btVector3(0.0f, 1.0f, 0.0f),	// Up Vector
+		1.0f,							// near plane
+		1000.0f);						// far plane
+	switch (mode)
+	{
+	case PERSPECTIVE:
+		
+		break;
+	case ORTHOGRAPHIC:
+		m_cameraManager->SetProjectionType(ORTHOGRAPHIC);
+		break;
+	default:
+		break;
+	}
+	
 }
 
 BulletOpenGLApplication::~BulletOpenGLApplication() {
 	// Shutdown physics system
 	ShutdownPhysics();
+}
+
+void BulletOpenGLApplication::SetScreenHeight(int screenHeight) {
+	m_screenHeight = screenHeight;
+}
+
+void BulletOpenGLApplication::SetScreenWidth(int screenWidth) {
+	m_screenWidth = screenWidth;
 }
 
 void BulletOpenGLApplication::Initialize() {
@@ -58,22 +87,63 @@ void BulletOpenGLApplication::Initialize() {
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
+	// Disable Culling
+	glDisable(GL_CULL_FACE);
+
 	// set the backbuffer clearing color to a lightish blue
 	glClearColor(0.6, 0.65, 0.85, 0);
 
 	// initialize the physics system
 	InitializePhysics();
+
+	// create the debug drawer
+	m_pDebugDrawer = new DebugDrawer();
+	// set the initial debug level to 0
+	m_pDebugDrawer->setDebugMode(0);
+	// add the debug drawer to the world
+	m_pWorld->setDebugDrawer(m_pDebugDrawer);
+
 }
 
 void BulletOpenGLApplication::Keyboard(unsigned char key, int x, int y) {
 	// This function is called by FreeGLUT whenever
 	// generic keys are pressed down.
-	switch (key) {
-		// 'z' zooms in
-	case 'z': m_cameraManager->ZoomCamera(+CAMERA_STEP_SIZE); break;
-		// 'x' zoom out
-	case 'x': m_cameraManager->ZoomCamera(-CAMERA_STEP_SIZE); break;
+	// Common to all projection types
+	switch (key)
+	{
+	case 'v':
+		// toggle wireframe debug drawing
+		m_pDebugDrawer->ToggleDebugFlag(btIDebugDraw::DBG_DrawWireframe);
+		break;
+	case 'b':
+		// toggle AABB debug drawing
+		m_pDebugDrawer->ToggleDebugFlag(btIDebugDraw::DBG_DrawAabb);
+		break;
+	case 'z': m_cameraManager->ZoomCamera(+CAMERA_STEP_SIZE); break;			// 'z' zooms in
+	case 'x': m_cameraManager->ZoomCamera(-CAMERA_STEP_SIZE); break;			// 'x' zoom out
+	case 'w': m_cameraManager->TranslateCamera(UP, CAMERA_STEP_SIZE); break;
+	case 'a': m_cameraManager->TranslateCamera(LEFT, CAMERA_STEP_SIZE); break;
+	case 's': m_cameraManager->TranslateCamera(DOWN, -CAMERA_STEP_SIZE); break;
+	case 'd': m_cameraManager->TranslateCamera(RIGHT, -CAMERA_STEP_SIZE); break;
+
+	default:
+		break;
 	}
+	// Switch for certain projection types
+	switch (m_cameraManager->GetProjectionType())
+	{
+	case PERSPECTIVE:
+		switch (key) {
+		//
+		}
+		break;
+	case ORTHOGRAPHIC:
+		//
+		break;
+	default:
+		break;
+	}
+	
 }
 
 void BulletOpenGLApplication::KeyboardUp(unsigned char key, int x, int y) {}
@@ -81,6 +151,8 @@ void BulletOpenGLApplication::KeyboardUp(unsigned char key, int x, int y) {}
 void BulletOpenGLApplication::Special(int key, int x, int y) {
 	// This function is called by FreeGLUT whenever special keys
 	// are pressed down, like the arrow keys, or Insert, Delete etc.
+	printf("Received Special Key\n");
+
 	switch (key) {
 		// the arrow keys rotate the camera up/down/left/right
 	case GLUT_KEY_LEFT:
@@ -88,25 +160,61 @@ void BulletOpenGLApplication::Special(int key, int x, int y) {
 	case GLUT_KEY_RIGHT:
 		m_cameraManager->RotateCamera(YAW, -CAMERA_STEP_SIZE); break;
 	case GLUT_KEY_UP:
-		m_cameraManager->RotateCamera(ROLL, +CAMERA_STEP_SIZE); break;
+		m_cameraManager->RotateCamera(PITCH, +CAMERA_STEP_SIZE); break;
 	case GLUT_KEY_DOWN:
-		m_cameraManager->RotateCamera(ROLL, -CAMERA_STEP_SIZE); break;
+		m_cameraManager->RotateCamera(PITCH, -CAMERA_STEP_SIZE); break;
 	}
+
+	switch (m_cameraManager->GetProjectionType())
+	{
+	case PERSPECTIVE:
+		//
+		break;
+	case ORTHOGRAPHIC:
+		//
+		break;
+	default:
+		break;
+	}
+	
 }
 
 void BulletOpenGLApplication::SpecialUp(int key, int x, int y) {}
 
 void BulletOpenGLApplication::Reshape(int w, int h) {
+	printf("BulletOpenGLApplication Reshape called\n");
 	// this function is called once during application intialization
 	// and again every time we resize the window
 
-	// grab the screen width/height
-	m_cameraManager->setScreenWidth(w);
-	m_cameraManager->setScreenHeight(h);
 	// set the viewport
 	glViewport(0, 0, w, h);
+
+	m_screenWidth = w;
+	m_screenHeight = h;
+
+	printf("screen width = %f, screen height = %f\n", m_screenWidth, m_screenHeight);
+
+	// grab the screen width/height
+	m_cameraManager->SetScreenWidth(w);
+	m_cameraManager->SetScreenHeight(h);
+
 	// update the camera
 	m_cameraManager->UpdateCamera();
+	//m_cameraManager->PrintCameraLocation();
+
+	switch (m_cameraManager->GetProjectionType())	
+	{
+	case PERSPECTIVE:
+		
+		break;
+	case ORTHOGRAPHIC:
+		// 
+		break;
+	default:
+		break;
+	}
+
+	
 }
 
 void BulletOpenGLApplication::Idle() {
@@ -124,8 +232,18 @@ void BulletOpenGLApplication::Idle() {
 	// update the scene (convert ms to s)
 	UpdateScene(dt / 1000.0f);
 
-	// update the camera
 	m_cameraManager->UpdateCamera();
+
+	switch (m_cameraManager->GetProjectionType())
+	{
+	case PERSPECTIVE:
+		//
+		break;
+	case ORTHOGRAPHIC:
+		break;
+	default:
+		break;
+	}
 
 	// render the scene
 	RenderScene();
@@ -173,13 +291,64 @@ void BulletOpenGLApplication::DrawBox(const btVector3 &halfSize) {
 			7, 2, 3,
 			7, 6, 2 };
 
+	DrawWithTriangles(vertices, indices, 36);
+}
+
+void BulletOpenGLApplication::DrawPlane(const btVector3 &halfSize) {
+	
+
+	float halfWidth = halfSize.x();
+	float halfHeight = halfSize.y();
+	float halfDepth = halfSize.z(); // No depth
+
+	// Create Vector
+	btVector3 vertices[4] = {
+		btVector3(-halfWidth, -halfHeight, 0.0f),
+		btVector3(-halfWidth, halfHeight, 0.0f),
+		btVector3(halfWidth, -halfHeight, 0.0f),
+		btVector3(halfWidth, halfHeight, 0.0f),
+	};
+
+	if (m_cameraManager->GetProjectionType() == ORTHOGRAPHIC)
+	{
+		float pixels_to_meters = GetPixelsToMeters(0);
+		// Build Vectors for normalization
+		btVector3 m2Pvec(1 / pixels_to_meters, 1 / pixels_to_meters, 0.0f);
+		btVector3 normalizeVec(1 / (m_screenWidth / 2), 1 / (m_screenHeight / 2), 0.0f);
+
+		btVector3 multVec = m2Pvec * normalizeVec;
+
+		// Normalize vertices between -1 and 1
+		for (int index = 0; index < 4; index++) {
+
+			btVector3 *vec = &vertices[index];
+			*vec = *vec * multVec;
+
+			printf("(x,y) = (%f,%f)\n", vec->getX(), vec->getY());
+
+		}
+	}
+
+	// create the indexes for each triangle, using the 
+	// vertices above. Make it static so we don't waste 
+	// processing time recreating it over and over again
+	static int indices[6] = {
+		0, 1, 2,
+		3, 2, 1
+	};
+
+	DrawWithTriangles(vertices, indices, 6);
+}
+
+void BulletOpenGLApplication::DrawWithTriangles(const btVector3 *vertices, const int *indices, int numberOfIndices) {
+
 	// start processing vertices as triangles
 	glBegin(GL_TRIANGLES);
 
 	// increment the loop by 3 each time since we create a 
 	// triangle with 3 vertices at a time.
 
-	for (int i = 0; i < 36; i += 3) {
+	for (int i = 0; i < numberOfIndices; i+=3) {
 		// get the three vertices for the triangle based
 		// on the index values set above
 		// use const references so we don't copy the object
@@ -203,10 +372,9 @@ void BulletOpenGLApplication::DrawBox(const btVector3 &halfSize) {
 		glVertex3f(vert2.x(), vert2.y(), vert2.z());
 		glVertex3f(vert3.x(), vert3.y(), vert3.z());
 	}
-
-	// stop processing vertices
 	glEnd();
 }
+
 
 void BulletOpenGLApplication::RenderScene() {
 
@@ -214,6 +382,7 @@ void BulletOpenGLApplication::RenderScene() {
 	btScalar transform[16];
 
 	// iterate through all of the objects in our world
+	//printf("number of objects = %d\n", m_objects.size());
 	for (GameObjects::iterator i = m_objects.begin(); i != m_objects.end(); ++i) {
 		// get the object from the iterator
 		GameObject* pObj = *i;
@@ -224,6 +393,12 @@ void BulletOpenGLApplication::RenderScene() {
 		// get data from the object and draw it
 		DrawShape(transform, pObj->GetShape(), pObj->GetColor());
 	}
+
+	// after rendering all game objects, perform debug rendering
+	// Bullet will figure out what needs to be drawn then call to
+	// our DebugDrawer class to do the rendering for us
+	m_pWorld->debugDrawWorld();
+
 }
 
 void BulletOpenGLApplication::UpdateScene(float dt) {
@@ -256,6 +431,12 @@ void BulletOpenGLApplication::DrawShape(btScalar *transform, const btCollisionSh
 		// draw the box
 		DrawBox(halfSize);
 	}
+	case BOX_2D_SHAPE_PROXYTYPE: {
+		// assume the shape is a 2d box (plane) and typecast it
+		const btBox2dShape *plane = static_cast<const btBox2dShape*> (pShape);
+		btVector3 halfSize = plane->getHalfExtentsWithMargin();
+		DrawPlane(halfSize);
+	}
 	default:
 		// unsupported type
 		break;
@@ -264,6 +445,13 @@ void BulletOpenGLApplication::DrawShape(btScalar *transform, const btCollisionSh
 	glPopMatrix();
 
 }
+
+float BulletOpenGLApplication::GetPixelsToMeters(float distanceToCamera) {
+
+	return 0.00162*distanceToCamera + 0.0261;
+
+}
+
 
 GameObject* BulletOpenGLApplication::CreateGameObject(
 	btCollisionShape *pShape, 
@@ -275,7 +463,7 @@ GameObject* BulletOpenGLApplication::CreateGameObject(
 	GameObject* pObject = new GameObject(pShape, mass, color, initialPosition, initialRotation);
 	// push it to the back of the list
 	m_objects.push_back(pObject);
-
+	printf("Created Object and pushed to world\n");
 	// check if the world object is valid
 	if (m_pWorld) {
 		// add the object's rigid body to the world

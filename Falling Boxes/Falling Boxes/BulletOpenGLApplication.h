@@ -7,6 +7,13 @@
 
 #include "BulletDynamics\Dynamics\btDynamicsWorld.h"
 
+// Includes for 2D Boxes and collision between 2D Boxes
+#include "BulletCollision\CollisionShapes\btBox2dShape.h"
+#include "BulletCollision\CollisionDispatch\btBox2dBox2dCollisionAlgorithm.h"
+
+// Our custom debug renderer
+#include "DebugDrawer.h"
+
 // Includes a custom motion state object
 #include "OpenGLMotionState.h"
 
@@ -15,12 +22,16 @@
 #include "GameObject.h"
 #include <vector>
 
+#define CAMERA_STEP_SIZE 0.3f
+
 typedef std::vector<GameObject*> GameObjects; // GameObjects is a data type for storing game objects
 
 class BulletOpenGLApplication
 {
 public:
 	BulletOpenGLApplication();
+	BulletOpenGLApplication(ProjectionType);
+
 	~BulletOpenGLApplication();
 
 	void Initialize();
@@ -49,7 +60,12 @@ public:
 
 	// Drawing Functions
 	void DrawBox(const btVector3 &halfSize);
+	void DrawPlane(const btVector3 &halfSize);
 	void DrawShape(btScalar *transform, const btCollisionShape *pShape, const btVector3 &color);
+	void DrawWithTriangles(const btVector3 * vertices, const int *indices, int numberOfIndices);
+
+	void SetScreenWidth(int screenWidth);
+	void SetScreenHeight(int screenHeight);
 
 	// Object Functions
 	GameObject *CreateGameObject(
@@ -77,6 +93,15 @@ protected:
 
 	// Camera Manager
 	CameraManager *m_cameraManager;
+
+	// Debugging
+	// debug renderer
+	DebugDrawer* m_pDebugDrawer;
+
+	float m_screenWidth;
+	float m_screenHeight;
+
+	float GetPixelsToMeters(float distanceToCamera);
 
 };
 

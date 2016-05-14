@@ -6,6 +6,10 @@ BasicTest::BasicTest()
 {
 }
 
+BasicTest::BasicTest(ProjectionType projectionType) : BulletOpenGLApplication(projectionType) 
+{
+}
+
 
 BasicTest::~BasicTest()
 {

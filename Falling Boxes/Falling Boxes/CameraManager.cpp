@@ -6,7 +6,6 @@
 
 
 CameraManager::CameraManager(
-	const btVector3 &position, 
 	const btVector3 &target, 
 	float distance, 
 	float pitch, 
@@ -17,7 +16,6 @@ CameraManager::CameraManager(
 {
 	m_screenWidth = 0;
 	m_screenHeight = 0;
-	m_cameraPosition = position;
 	m_cameraTarget = target;
 	m_cameraDistance = distance;
 	m_cameraPitch = pitch;
@@ -25,13 +23,41 @@ CameraManager::CameraManager(
 	m_upVector = upVector;
 	m_nearPlane = nearPlane;
 	m_farPlane = farPlane;
+
+	m_cameraPosX = 0;
+	m_cameraPosY = 0;
+
+	m_projectionType = PERSPECTIVE;
+	
 }
 
-void CameraManager::setScreenWidth(int width) {
+void CameraManager::SetProjectionType(ProjectionType type) {
+
+	m_projectionType = type;
+
+	switch (m_projectionType)
+	{
+	case ORTHOGRAPHIC:
+		SetupOrthographicCamera();
+		break;
+	case PERSPECTIVE:
+		SetupPerspectiveCamera();
+		break;
+	default:
+		break;
+	}
+
+}
+
+ProjectionType CameraManager::GetProjectionType() {
+	return m_projectionType;
+}
+
+void CameraManager::SetScreenWidth(int width) {
 	m_screenWidth = width;
 }
 
-void CameraManager::setScreenHeight(int height) {
+void CameraManager::SetScreenHeight(int height) {
 	m_screenHeight = height;
 }
 
@@ -40,6 +66,59 @@ void CameraManager::UpdateCamera() {
 	// exit in erroneous situations
 	if (m_screenWidth == 0 && m_screenHeight == 0)
 		return;
+
+	switch (m_projectionType)
+	{
+	case ORTHOGRAPHIC:
+		//SetupModelView();
+		SetupOrthographicModelView();
+		break;
+	case PERSPECTIVE:
+		SetupPerspectiveCamera();
+		break;
+	default:
+		break;
+	}
+
+}
+
+void CameraManager::SetupOrthographicCamera() {
+	printf("Setting up orthographic camera\n");
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	//float aspectRatio = m_screenWidth / (float)m_screenHeight;
+
+	// create a viewing frustum based on the aspect ratio and the
+	// boundaries of the camera
+	//glOrtho(-1, 1, -1, 1, 1, 100);
+	gluOrtho2D(-1, 1, -1, 1);
+	//TEST_MODEL_VIEW_ORTHO();
+	//SetupModelView();
+}
+
+void CameraManager::SetupOrthographicModelView() {
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	// Translation
+	gluLookAt(m_cameraPosX, m_cameraPosY, 0.0, m_cameraPosX, m_cameraPosY, -1.0f, 0.0, 1.0, 0.0);
+	
+	////printf("Drawing triangle\n");
+	//GLfloat white[] = { 1.0f, 1.0f, 1.0f };
+	//glBegin(GL_TRIANGLES);
+
+	//glVertex3d(0, 0, -0.5);
+	//glVertex3d(0.4, 0, -0.5);
+	//glVertex3d(0.2, 0.2, -0.5);
+
+	//glEnd();
+
+}
+
+
+void CameraManager::SetupPerspectiveCamera() {
 
 	// select the projection matrix
 	glMatrixMode(GL_PROJECTION);
@@ -51,6 +130,10 @@ void CameraManager::UpdateCamera() {
 	// boundaries of the camera
 	glFrustum(-aspectRatio * m_nearPlane, aspectRatio * m_nearPlane, -m_nearPlane, m_nearPlane, m_nearPlane, m_farPlane);
 	// the projection matrix is now set
+	SetupPerspectiveModelView();
+}
+
+void CameraManager::SetupPerspectiveModelView() {
 
 	// select the view matrix
 	glMatrixMode(GL_MODELVIEW);
@@ -69,7 +152,12 @@ void CameraManager::UpdateCamera() {
 	// set the camera's position to 0,0,0, then move the 'z' 
 	// position to the current value of m_cameraDistance.
 	btVector3 cameraPosition(0, 0, 0);
-	cameraPosition[2] = -m_cameraDistance;
+	//cameraPosition[2] = -m_cameraDistance;
+	cameraPosition[2] = m_cameraDistance;
+
+	// Translation
+	m_cameraTarget[0] = m_cameraPosX;
+	m_cameraTarget[1] = m_cameraPosY;
 
 	// create a Bullet Vector3 to represent the camera 
 	// position and scale it up if its value is too small.
@@ -101,23 +189,25 @@ void CameraManager::UpdateCamera() {
 
 	// create a view matrix based on the camera's position and where it's
 	// looking
-	gluLookAt(m_cameraPosition[0], m_cameraPosition[1], m_cameraPosition[2], m_cameraTarget[0], m_cameraTarget[1], m_cameraTarget[2], m_upVector.getX(), m_upVector.getY(), m_upVector.getZ());
+	//printf("Camera Position = %f, %f, %f\n", cameraPosition[0], cameraPosition[1], cameraPosition[2]);
 	// the view matrix is now set
+	gluLookAt(m_cameraPosition[0], m_cameraPosition[1], m_cameraPosition[2], m_cameraTarget[0], m_cameraTarget[1], m_cameraTarget[2], m_upVector.getX(), m_upVector.getY(), m_upVector.getZ());
 
 }
+
 
 void CameraManager::RotateCamera(RotationType type, float value) {
 	// change the value (it is passed by reference, so we
 	// can edit it here)
 
-	float angle = 0.0f;
+	float *angle = nullptr;
 
 	switch (type) {
 	case YAW:
-		angle = m_cameraYaw;
+		angle = &m_cameraYaw;
 		break;
 	case PITCH:
-		angle = m_cameraPitch;
+		angle = &m_cameraPitch;
 		break;
 	case ROLL:
 		break;
@@ -125,22 +215,61 @@ void CameraManager::RotateCamera(RotationType type, float value) {
 		break;
 	}
 
-	angle -= value;
+	*angle -= value;
 	// keep the value within bounds
-	if (angle < 0) angle += 360;
-	if (angle >= 360) angle -= 360;
+	if (*angle < 0) *angle += 360;
+	if (*angle >= 360) *angle -= 360;
 	// update the camera since we changed the angular value
 	UpdateCamera();
+	PrintCameraLocation();
 }
 
 void CameraManager::ZoomCamera(float distance) {
 	// change the distance value
 	m_cameraDistance -= distance;
 	// prevent it from zooming in too far
-	if (m_cameraDistance < 0.1f) m_cameraDistance = 0.1f;
+	//if (m_cameraDistance < 0.1f) m_cameraDistance = 0.1f;
 	// update the camera since we changed the zoom distance
 	UpdateCamera();
+	PrintCameraLocation();
 }
+
+void CameraManager::TranslateCamera(TranslateDirection direction, float value) {
+
+	float *positionValue = nullptr;
+
+	switch (direction)
+	{
+	case UP:
+		positionValue = &m_cameraPosY;
+		break;
+	case DOWN:
+		positionValue = &m_cameraPosY;
+		break;
+	case LEFT:
+		positionValue = &m_cameraPosX;
+		break;
+	case RIGHT:
+		positionValue = &m_cameraPosX;
+		break;
+	default:
+		break;
+	}
+
+	*positionValue += value;
+	UpdateCamera();
+	PrintCameraLocation();
+}
+
+void CameraManager::PrintCameraLocation() {
+	printf("Camera Position = %f, %f, %f\n", m_cameraPosition[0], m_cameraPosition[1], m_cameraPosition[2]);
+	printf("Camera Target = %f, %f, %f \n", m_cameraTarget[0], m_cameraTarget[1], m_cameraTarget[2]);
+}
+
+btVector3 CameraManager::GetCameraLocation() {
+	return m_cameraPosition;
+}
+
 
 CameraManager::~CameraManager()
 {

@@ -4,12 +4,14 @@
 #include "stdafx.h"
 #include "BasicTest.h" // For testing
 #include "FreeGLUTCallbacks.h"
+#include "FallingBoxesApplication.h"
 
 
 
 int main(int argc, char **argv)
 {
-	BasicTest test;
 
-	return glutmain(argc, argv, 1024, 768, "Basic test", &test);
+	FallingBoxesApplication fallingBoxes(ORTHOGRAPHIC);
+	//FallingBoxesApplication fallingBoxes(PERSPECTIVE);
+	return glutmain(argc, argv, 1024, 768, "Falling Boxes", &fallingBoxes);
 }

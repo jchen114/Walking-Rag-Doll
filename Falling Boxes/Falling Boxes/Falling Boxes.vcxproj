@@ -93,6 +93,8 @@
     <ClInclude Include="BasicTest.h" />
     <ClInclude Include="BulletOpenGLApplication.h" />
     <ClInclude Include="CameraManager.h" />
+    <ClInclude Include="DebugDrawer.h" />
+    <ClInclude Include="FallingBoxesApplication.h" />
     <ClInclude Include="FreeGLUTCallbacks.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="OpenGLMotionState.h" />
@@ -103,7 +105,9 @@
     <ClCompile Include="BasicTest.cpp" />
     <ClCompile Include="BulletOpenGLApplication.cpp" />
     <ClCompile Include="CameraManager.cpp" />
+    <ClCompile Include="DebugDrawer.cpp" />
     <ClCompile Include="Falling Boxes.cpp" />
+    <ClCompile Include="FallingBoxesApplication.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
