@@ -78,6 +78,8 @@ public:
 
 protected:
 
+	enum Dimension{HEIGHT, WIDTH};
+
 	// core Bullet Components
 	btBroadphaseInterface *m_pBroadphase;
 	btCollisionConfiguration *m_pCollisionConfiguration;
@@ -102,6 +104,8 @@ protected:
 	float m_screenHeight;
 
 	float GetPixelsToMeters(float distanceToCamera);
+
+	float Normalize(float meters, float dist2Camera, Dimension dimension);
 
 };
 

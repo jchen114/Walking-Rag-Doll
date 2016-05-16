@@ -37,8 +37,10 @@ void CameraManager::SetProjectionType(ProjectionType type) {
 
 	switch (m_projectionType)
 	{
-	case ORTHOGRAPHIC:
+	case ORTHOGRAPHIC: {
 		SetupOrthographicCamera();
+		m_cameraPosition = btVector3(0, 0, 0);
+	}
 		break;
 	case PERSPECTIVE:
 		SetupPerspectiveCamera();
@@ -71,7 +73,8 @@ void CameraManager::UpdateCamera() {
 	{
 	case ORTHOGRAPHIC:
 		//SetupModelView();
-		SetupOrthographicModelView();
+		//SetupOrthographicModelView();
+		SetupOrthographicCamera();
 		break;
 	case PERSPECTIVE:
 		SetupPerspectiveCamera();
@@ -83,7 +86,7 @@ void CameraManager::UpdateCamera() {
 }
 
 void CameraManager::SetupOrthographicCamera() {
-	printf("Setting up orthographic camera\n");
+	//printf("Setting up orthographic camera\n");
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -91,10 +94,10 @@ void CameraManager::SetupOrthographicCamera() {
 
 	// create a viewing frustum based on the aspect ratio and the
 	// boundaries of the camera
-	//glOrtho(-1, 1, -1, 1, 1, 100);
+	//glOrtho(0, 1, -1, 1, 1, 100);
 	gluOrtho2D(-1, 1, -1, 1);
 	//TEST_MODEL_VIEW_ORTHO();
-	//SetupModelView();
+	SetupOrthographicModelView();
 }
 
 void CameraManager::SetupOrthographicModelView() {
@@ -105,16 +108,6 @@ void CameraManager::SetupOrthographicModelView() {
 	// Translation
 	gluLookAt(m_cameraPosX, m_cameraPosY, 0.0, m_cameraPosX, m_cameraPosY, -1.0f, 0.0, 1.0, 0.0);
 	
-	////printf("Drawing triangle\n");
-	//GLfloat white[] = { 1.0f, 1.0f, 1.0f };
-	//glBegin(GL_TRIANGLES);
-
-	//glVertex3d(0, 0, -0.5);
-	//glVertex3d(0.4, 0, -0.5);
-	//glVertex3d(0.2, 0.2, -0.5);
-
-	//glEnd();
-
 }
 
 
@@ -240,23 +233,31 @@ void CameraManager::TranslateCamera(TranslateDirection direction, float value) {
 
 	switch (direction)
 	{
-	case UP:
+	case UP: {
 		positionValue = &m_cameraPosY;
+		*positionValue += value;
+	}
 		break;
-	case DOWN:
+	case DOWN: {
 		positionValue = &m_cameraPosY;
+		*positionValue += value;
+	}
 		break;
-	case LEFT:
+	case LEFT: {
 		positionValue = &m_cameraPosX;
+		*positionValue -= value;
+	}
 		break;
-	case RIGHT:
+	case RIGHT: {
 		positionValue = &m_cameraPosX;
+		*positionValue -= value;
+	}
 		break;
 	default:
 		break;
 	}
 
-	*positionValue += value;
+	
 	UpdateCamera();
 	PrintCameraLocation();
 }

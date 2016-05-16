@@ -13,5 +13,6 @@ int main(int argc, char **argv)
 
 	FallingBoxesApplication fallingBoxes(ORTHOGRAPHIC);
 	//FallingBoxesApplication fallingBoxes(PERSPECTIVE);
-	return glutmain(argc, argv, 1024, 768, "Falling Boxes", &fallingBoxes);
+	//return glutmain(argc, argv, 1024, 768, "Falling Boxes", &fallingBoxes);
+	return glutmain(argc, argv, 1000, 1000, "Falling Boxes", &fallingBoxes);
 }

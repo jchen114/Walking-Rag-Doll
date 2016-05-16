@@ -311,20 +311,13 @@ void BulletOpenGLApplication::DrawPlane(const btVector3 &halfSize) {
 
 	if (m_cameraManager->GetProjectionType() == ORTHOGRAPHIC)
 	{
-		float pixels_to_meters = GetPixelsToMeters(0);
-		// Build Vectors for normalization
-		btVector3 m2Pvec(1 / pixels_to_meters, 1 / pixels_to_meters, 0.0f);
-		btVector3 normalizeVec(1 / (m_screenWidth / 2), 1 / (m_screenHeight / 2), 0.0f);
-
-		btVector3 multVec = m2Pvec * normalizeVec;
-
 		// Normalize vertices between -1 and 1
 		for (int index = 0; index < 4; index++) {
 
 			btVector3 *vec = &vertices[index];
-			*vec = *vec * multVec;
-
-			printf("(x,y) = (%f,%f)\n", vec->getX(), vec->getY());
+			vec->setX(Normalize(vec->getX(), 0, HEIGHT));
+			vec->setY(Normalize(vec->getY(), 0, WIDTH));
+			//printf("(x,y) = (%f,%f)\n", vec->getX(), vec->getY());
 
 		}
 	}
@@ -413,6 +406,19 @@ void BulletOpenGLApplication::UpdateScene(float dt) {
 
 void BulletOpenGLApplication::DrawShape(btScalar *transform, const btCollisionShape *pShape, const btVector3 &color) {
 
+
+	if (m_cameraManager->GetProjectionType() == ORTHOGRAPHIC)
+	{
+		// normalize translations
+		// ASSUMPTION: Scene and camera located on z-plane at 0
+		btScalar *x_trans = &transform[12];
+		btScalar *y_trans = &transform[13];
+		//printf("Translate (x,y) = (%f,%f)\n", *x_trans, *y_trans);
+		*x_trans = Normalize(*x_trans, 0, HEIGHT);
+		*y_trans = Normalize(*y_trans, 0, WIDTH);
+		//printf("Normalized (x,y) = (%f,%f)\n", *x_trans, *y_trans);
+	}
+
 	glColor3f(color.x(), color.y(), color.z());
 
 	// push the matrix stack
@@ -447,11 +453,10 @@ void BulletOpenGLApplication::DrawShape(btScalar *transform, const btCollisionSh
 }
 
 float BulletOpenGLApplication::GetPixelsToMeters(float distanceToCamera) {
-
+	// ASSUMPTION: Found this empirically;
 	return 0.00162*distanceToCamera + 0.0261;
 
 }
-
 
 GameObject* BulletOpenGLApplication::CreateGameObject(
 	btCollisionShape *pShape, 
@@ -472,5 +477,31 @@ GameObject* BulletOpenGLApplication::CreateGameObject(
 	}
 
 	return pObject;
+
+}
+
+float BulletOpenGLApplication::Normalize(float meters, float dist2Camera, Dimension dimension) {
+
+	float p2m = GetPixelsToMeters(dist2Camera);
+	float m2p = 1 / p2m;
+
+	float pix = meters * m2p;
+
+	switch (dimension)
+	{
+	case BulletOpenGLApplication::HEIGHT:
+		return pix / (m_screenHeight / 2);
+		break;
+	case BulletOpenGLApplication::WIDTH: {
+		
+		float width_proportion = pix / (m_screenWidth / 2);
+		float aspectRatio = m_screenWidth / m_screenHeight;
+		return width_proportion * aspectRatio;
+		//return pix / (m_screenWidth / 2);
+	}
+		break;
+	default:
+		break;
+	}
 
 }

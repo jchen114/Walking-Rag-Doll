@@ -56,7 +56,7 @@ void FallingBoxesApplication::Mouse(int button, int state, int x, int y) {
 			float x_meters = x_position * GetPixelsToMeters(object_cam_distance);
 			float y_meters = y_position * GetPixelsToMeters(object_cam_distance);
 			printf("x meters, y meters = (%f, %f)\n", x_meters, y_meters);
-			btVector3 halfSize(2, 2, 0);
+			btVector3 halfSize(1, 1, 0);
 			btVector3 position(x_meters, y_meters, Z_PLANE);
 			//printf("(x,y) = (%f,%f)\n", x_meters, y_meters);
 			//btVector3 position(0, 20, 10.0f);
@@ -90,15 +90,15 @@ void FallingBoxesApplication::ShutdownPhysics() {
 void FallingBoxesApplication::Create2DBoxes() {
 	printf("Create some boxes \n");
 	// Create a ground box
-	btVector3 halfSize(2, 25, 0);
+	btVector3 halfSize(1, 10, 0);
 	btVector3 position(0, -5, Z_PLANE);
 	CreateBox(halfSize, 0, btVector3(0.1f, 0.3f, 0.8f), position);
 
 	// Crate a dynamic box
-	btVector3 halfSize1(2, 2, 0);
-	btVector3 position1(5, 20, Z_PLANE);
+	btVector3 halfSize1(1, 1, 0);
+	btVector3 position1(0, 10, Z_PLANE);
 	btVector3 color1(((double)rand() / RAND_MAX), ((double)rand() / RAND_MAX), ((double)rand() / RAND_MAX));
-	//CreateBox(halfSize1, 5, color1, position1);
+	CreateBox(halfSize1, 5, color1, position1);
 }
 
 void FallingBoxesApplication::CreateBox(const btVector3 &halfSize, float mass, const btVector3 &color, const btVector3 &position) {
