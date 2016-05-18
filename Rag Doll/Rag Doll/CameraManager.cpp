@@ -14,8 +14,6 @@ CameraManager::CameraManager(
 	float nearPlane, 
 	float farPlane)
 {
-	m_screenWidth = 0;
-	m_screenHeight = 0;
 	m_cameraTarget = target;
 	m_cameraDistance = distance;
 	m_cameraPitch = pitch;
@@ -26,50 +24,16 @@ CameraManager::CameraManager(
 
 	m_cameraPosX = 0;
 	m_cameraPosY = 0;
-
-	m_projectionType = PERSPECTIVE;
 	
-}
-
-void CameraManager::SetProjectionType(ProjectionType type) {
-
-	m_projectionType = type;
-
-	switch (m_projectionType)
-	{
-	case ORTHOGRAPHIC: {
-		SetupOrthographicCamera();
-		m_cameraPosition = btVector3(0, 0, 0);
-	}
-		break;
-	case PERSPECTIVE:
-		SetupPerspectiveCamera();
-		break;
-	default:
-		break;
-	}
-
-}
-
-ProjectionType CameraManager::GetProjectionType() {
-	return m_projectionType;
-}
-
-void CameraManager::SetScreenWidth(int width) {
-	m_screenWidth = width;
-}
-
-void CameraManager::SetScreenHeight(int height) {
-	m_screenHeight = height;
 }
 
 void CameraManager::UpdateCamera() {
 
 	// exit in erroneous situations
-	if (m_screenWidth == 0 && m_screenHeight == 0)
+	if (Constants::GetInstance().GetScreenWidth() == 0 && Constants::GetInstance().GetScreenHeight() == 0)
 		return;
 
-	switch (m_projectionType)
+	switch (Constants::GetInstance().GetProjectionMode())
 	{
 	case ORTHOGRAPHIC:
 		//SetupModelView();
@@ -118,7 +82,7 @@ void CameraManager::SetupPerspectiveCamera() {
 	// set it to the matrix-equivalent of 1
 	glLoadIdentity();
 	// determine the aspect ratio of the screen
-	float aspectRatio = m_screenWidth / (float)m_screenHeight;
+	float aspectRatio = Constants::GetInstance().GetScreenWidth() / (float)Constants::GetInstance().GetScreenHeight();
 	// create a viewing frustum based on the aspect ratio and the
 	// boundaries of the camera
 	glFrustum(-aspectRatio * m_nearPlane, aspectRatio * m_nearPlane, -m_nearPlane, m_nearPlane, m_nearPlane, m_farPlane);
@@ -188,6 +152,7 @@ void CameraManager::SetupPerspectiveModelView() {
 
 }
 
+/* CAMERA MOVEMENT METHODS */
 
 void CameraManager::RotateCamera(RotationType type, float value) {
 	// change the value (it is passed by reference, so we

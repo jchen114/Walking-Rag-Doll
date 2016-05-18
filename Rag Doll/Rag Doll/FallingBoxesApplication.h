@@ -5,7 +5,7 @@ class FallingBoxesApplication :
 {
 public:
 	FallingBoxesApplication();
-	FallingBoxesApplication(ProjectionType projectionType);
+	FallingBoxesApplication(ProjectionMode mode);
 	~FallingBoxesApplication();
 
 	virtual void InitializePhysics() override;

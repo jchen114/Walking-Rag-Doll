@@ -2,10 +2,13 @@
 #define _DEBUG_DRAWER_H
 
 #include "LinearMath/btIDebugDraw.h"
+#include "Constants.h"
 
 class DebugDrawer : public btIDebugDraw {
 
 public:
+
+
 	// debug mode functions
 	virtual void setDebugMode(int debugMode) override { m_debugMode = debugMode; }
 	virtual int getDebugMode() const override { return m_debugMode; }
@@ -22,6 +25,7 @@ public:
 
 protected:
 	int m_debugMode;
+	bool orthographic = false;
 
 };
 #endif

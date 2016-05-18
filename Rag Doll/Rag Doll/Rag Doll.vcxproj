@@ -14,7 +14,7 @@
     <ProjectGuid>{51499089-7A44-4C42-B1FB-42CA9D933BED}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>FallingBoxes</RootNamespace>
-    <ProjectName>Falling_Boxes</ProjectName>
+    <ProjectName>Rag Doll</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -93,11 +93,13 @@
     <ClInclude Include="BasicTest.h" />
     <ClInclude Include="BulletOpenGLApplication.h" />
     <ClInclude Include="CameraManager.h" />
+    <ClInclude Include="Constants.h" />
     <ClInclude Include="DebugDrawer.h" />
     <ClInclude Include="FallingBoxesApplication.h" />
     <ClInclude Include="FreeGLUTCallbacks.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="OpenGLMotionState.h" />
+    <ClInclude Include="RagDollApplication.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -105,10 +107,12 @@
     <ClCompile Include="BasicTest.cpp" />
     <ClCompile Include="BulletOpenGLApplication.cpp" />
     <ClCompile Include="CameraManager.cpp" />
+    <ClCompile Include="Constants.cpp" />
     <ClCompile Include="DebugDrawer.cpp" />
-    <ClCompile Include="Falling Boxes.cpp" />
+    <ClCompile Include="RagDoll.cpp" />
     <ClCompile Include="FallingBoxesApplication.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="RagDollApplication.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
