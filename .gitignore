@@ -140,7 +140,6 @@ publish/
 # Publish Web Output
 *.[Pp]ublish.xml
 *.azurePubxml
-# TODO: Comment the next line if you want to checkin your web deploy settings
 # but database connection strings (with potential passwords) will be unencrypted
 *.pubxml
 *.publishproj
@@ -175,6 +174,12 @@ AppPackages/
 BundleArtifacts/
 Package.StoreAssociation.xml
 _pkginfo.txt
+# Microsoft Azure ApplicationInsights config file
+ApplicationInsights.config
+
+# Windows Store app package directory
+AppPackages/
+BundleArtifacts/
 
 # Visual Studio cache files
 # files ending in .cache can be ignored
@@ -242,6 +247,7 @@ _Pvt_Extensions
 
 # Paket dependency manager
 .paket/paket.exe
+<<<<<<< HEAD
 paket-files/
 
 # FAKE - F# Make
@@ -250,3 +256,4 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+
