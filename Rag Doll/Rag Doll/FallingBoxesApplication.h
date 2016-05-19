@@ -1,5 +1,6 @@
 #pragma once
 #include "BulletOpenGLApplication.h"
+
 class FallingBoxesApplication :
 	public BulletOpenGLApplication
 {

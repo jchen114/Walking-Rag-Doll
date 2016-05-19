@@ -5,6 +5,7 @@
 #include <gl\GL.h>
 #include <freeglut\freeglut.h>
 
+
 #include "BulletDynamics\Dynamics\btDynamicsWorld.h"
 
 // Includes for 2D Boxes and collision between 2D Boxes
@@ -38,6 +39,8 @@ public:
 	~BulletOpenGLApplication();
 
 	void Initialize();
+
+	int m_main_window_id = 0;
 
 	// FreeGLUT callbacks //
 	virtual void Keyboard(unsigned char key, int x, int y);
@@ -81,6 +84,8 @@ public:
 		const btVector3 &axis2,
 		btScalar lowLimit,
 		btScalar highLimit);
+
+	void ApplyTorque(GameObject *object, const btVector3 &torque);
 
 	GameObject *CreateGameObject(
 		btCollisionShape *pShape, 

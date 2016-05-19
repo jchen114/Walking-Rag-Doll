@@ -1,12 +1,32 @@
 #include "stdafx.h"
 #include "RagDollApplication.h"
+#include "WalkingController.h"
 
+#pragma region INITIALIZATION
+
+static RagDollApplication *m_app;
+
+enum ControlIDs { 
+	TORSO_KP, TORSO_KD, 
+	UPPER_R_LEG_KP, UPPER_R_LEG_KD, 
+	UPPER_L_LEG_KP, UPPER_L_LEG_KD, 
+	LOWER_R_LEG_KP, LOWER_R_LEG_KD, 
+	LOWER_L_LEG_KP, LOWER_L_LEG_KD, 
+	R_FOOT_KP, R_FOOT_KD, 
+	L_FOOT_KP, L_FOOT_KD };
+
+#define KP_LOWER 0.0
+#define KP_HIGHER 5.0
+#define KD_LOWER 0.0
+#define KD_HIGHER 5.0
 
 RagDollApplication::RagDollApplication()
 {
 }
 
-RagDollApplication::RagDollApplication(ProjectionMode mode) :BulletOpenGLApplication(mode){}
+RagDollApplication::RagDollApplication(ProjectionMode mode) :BulletOpenGLApplication(mode){
+	m_app = this;
+}
 
 
 RagDollApplication::~RagDollApplication()
@@ -38,7 +58,78 @@ void RagDollApplication::InitializePhysics() {
 
 	CreateRagDoll(btVector3(0, 3, 0.5));
 
+	// Create Controller
+	m_WalkingController = new WalkingController(this);
+
+	// Create GUI
+	CreateRagDollGUI();
 }
+
+void RagDollApplication::CreateRagDollGUI() {
+
+	printf("Create Glui Window \n");
+
+	// Setup
+	GLUI_Master.set_glutIdleFunc(RagDollIdle);
+	m_glui_window = GLUI_Master.create_glui("Rag Doll Controls");
+	m_glui_window->set_main_gfx_window(m_main_window_id);
+
+	// Controls
+	// Gains Panel
+	GLUI_Panel *gains_panel = m_glui_window->add_panel("Gains");
+	m_glui_window->add_statictext_to_panel(gains_panel, "Torso");
+	GLUI_Spinner *torso_kp_spinner =  m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, TORSO_KP);
+	GLUI_Spinner *torso_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, TORSO_KP);
+
+	torso_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
+	torso_kd_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
+
+	m_glui_window->add_separator_to_panel(gains_panel);
+
+	m_glui_window->add_statictext_to_panel(gains_panel, "Upper Left Leg");
+	GLUI_Spinner *ul_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, UPPER_L_LEG_KP);
+	GLUI_Spinner *ul_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, UPPER_L_LEG_KD);
+
+	m_glui_window->add_separator_to_panel(gains_panel);
+
+	m_glui_window->add_statictext_to_panel(gains_panel, "Upper Right Leg");
+	GLUI_Spinner *ur_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, UPPER_R_LEG_KP);
+	GLUI_Spinner *ur_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, UPPER_R_LEG_KD);
+
+	m_glui_window->add_separator_to_panel(gains_panel);
+
+	m_glui_window->add_statictext_to_panel(gains_panel, "Lower Left Leg");
+	GLUI_Spinner *ll_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, LOWER_L_LEG_KP);
+	GLUI_Spinner *ll_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, LOWER_L_LEG_KD);
+
+	m_glui_window->add_separator_to_panel(gains_panel);
+
+	m_glui_window->add_statictext_to_panel(gains_panel, "Lower Right Leg");
+	GLUI_Spinner *lr_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, LOWER_R_LEG_KP);
+	GLUI_Spinner *lr_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, LOWER_R_LEG_KD);
+
+	m_glui_window->add_separator_to_panel(gains_panel);
+
+	m_glui_window->add_statictext_to_panel(gains_panel, "Left Foot");
+	GLUI_Spinner *lf_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, L_FOOT_KP);
+	GLUI_Spinner *lf_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, L_FOOT_KD);
+
+	m_glui_window->add_separator_to_panel(gains_panel);
+
+	m_glui_window->add_statictext_to_panel(gains_panel, "Right foot");
+	GLUI_Spinner *uf_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, UPPER_R_LEG_KP);
+	GLUI_Spinner *uf_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, UPPER_R_LEG_KD);
+
+
+}
+
+void RagDollApplication::ShutdownPhysics() {
+
+}
+
+#pragma endregion INITIALIZATION
+
+#pragma region RAG_DOLL
 
 void RagDollApplication::CreateRagDoll(const btVector3 &position) {
 
@@ -74,47 +165,79 @@ void RagDollApplication::CreateRagDoll(const btVector3 &position) {
 	halfSize = btVector3(upper_leg_height / 2, upper_leg_width / 2, 0.0f);
 	btVector3 pos1 = position;
 	pos1.setZ(pos1.getZ() - 0.25);
-	GameObject *leftUpperLeg = Create2DBox(halfSize, upper_leg_mass, GetRandomColor(), pos1);
+	m_upperLeftLeg = Create2DBox(halfSize, upper_leg_mass, GetRandomColor(), pos1);
 	btVector3 pos2 = position;
 	pos2.setZ(pos2.getZ() + 0.25);
-	GameObject *rightUpperLeg = Create2DBox(halfSize, upper_leg_mass, GetRandomColor(), pos2);
+	m_upperRightLeg = Create2DBox(halfSize, upper_leg_mass, GetRandomColor(), pos2);
 
 	// Create lower legs
 	halfSize = btVector3(lower_leg_height / 2, lower_leg_width / 2, 0.0f);
 	btVector3 pos3 = position;
 	pos3.setZ(pos3.getZ() - 0.27);
-	GameObject *leftLowerLeg = Create2DBox(halfSize, lower_leg_mass, GetRandomColor(), pos3);
+	m_lowerLeftLeg = Create2DBox(halfSize, lower_leg_mass, GetRandomColor(), pos3);
 	btVector3 pos4 = position;
 	pos4.setZ(pos4.getZ() + 0.27);
-	GameObject *rightLowerLeg = Create2DBox(halfSize, lower_leg_mass, GetRandomColor(), pos4);
+	m_lowerRightLeg = Create2DBox(halfSize, lower_leg_mass, GetRandomColor(), pos4);
 
 	// Create feet
 	halfSize = btVector3(foot_height / 2, foot_width / 2, 0.0f);
 	btVector3 pos5 = position;
 	pos5.setZ(pos5.getZ() - 0.28);
-	GameObject *leftFoot = Create2DBox(halfSize, feet_mass, GetRandomColor(), pos5);
+	m_leftFoot = Create2DBox(halfSize, feet_mass, GetRandomColor(), pos5);
 	halfSize = btVector3(foot_height / 2, foot_width / 2, 0.0f);
 	btVector3 pos6 = position;
 	pos6.setZ(pos6.getZ() + 0.28);
-	GameObject *rightFoot = Create2DBox(halfSize, feet_mass, GetRandomColor(), pos6);
+	m_rightFoot = Create2DBox(halfSize, feet_mass, GetRandomColor(), pos6);
 
 	// Connect torso to upper legs
-	AddHingeConstraint(torso, leftUpperLeg, btVector3(-1, 0, 0), btVector3(1, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(-30.0f), Constants::GetInstance().DegreesToRadians(-30.0f));
-	AddHingeConstraint(torso, rightUpperLeg, btVector3(-1, 0, 0), btVector3(1, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(30.0f), Constants::GetInstance().DegreesToRadians(30.0f));
+	AddHingeConstraint(torso, m_upperLeftLeg, btVector3(-torso_height / 2, 0, 0), btVector3(upper_leg_height / 2, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(-90.0f), Constants::GetInstance().DegreesToRadians(30.0f));
+	AddHingeConstraint(torso, m_upperRightLeg, btVector3(-torso_height / 2, 0, 0), btVector3(upper_leg_height / 2, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(-90.0f), Constants::GetInstance().DegreesToRadians(30.0f));
 
 	// Connect upper legs to lower legs
-	AddHingeConstraint(leftUpperLeg, leftLowerLeg, btVector3(-1.5, 0, 0), btVector3(1, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(0.0f), Constants::GetInstance().DegreesToRadians(0.0f));
-	AddHingeConstraint(rightUpperLeg, rightLowerLeg, btVector3(-1.5, 0, 0), btVector3(1, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(0.0f), Constants::GetInstance().DegreesToRadians(0.0f));
+	AddHingeConstraint(m_upperLeftLeg, m_lowerLeftLeg, btVector3(-upper_leg_height / 2, 0, 0), btVector3(lower_leg_height / 2, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(0.0f), Constants::GetInstance().DegreesToRadians(90.0f));
+	AddHingeConstraint(m_upperRightLeg, m_lowerRightLeg, btVector3(-upper_leg_height / 2, 0, 0), btVector3(lower_leg_height / 2, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(0.0f), Constants::GetInstance().DegreesToRadians(90.0f));
 
 	// Connect feet to lower legs
-	AddHingeConstraint(leftLowerLeg, leftFoot, btVector3(-lower_leg_height / 2, 0, 0), btVector3(0, foot_width / 2, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(20.0f), Constants::GetInstance().DegreesToRadians(20.0f));
-	AddHingeConstraint(rightLowerLeg, rightFoot, btVector3(-lower_leg_height / 2, 0, 0), btVector3(0, foot_width / 2, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(20.0f), Constants::GetInstance().DegreesToRadians(20.0f));
+	AddHingeConstraint(m_lowerLeftLeg, m_leftFoot, btVector3(-lower_leg_height / 2, 0, 0), btVector3(0, foot_width / 2, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(0.0f), Constants::GetInstance().DegreesToRadians(90.0f));
+	AddHingeConstraint(m_lowerRightLeg, m_rightFoot, btVector3(-lower_leg_height / 2, 0, 0), btVector3(0, foot_width / 2, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(0.0f), Constants::GetInstance().DegreesToRadians(90.0f));
 }
 
-
-void RagDollApplication::ShutdownPhysics() {
-
+void RagDollApplication::ApplyTorqueOnTorso(float torqueForce) {
+	ApplyTorqueOnGameBody(m_torso, torqueForce);
 }
+
+void RagDollApplication::ApplyTorqueOnUpperRightLeg(float torqueForce) {
+	ApplyTorqueOnGameBody(m_upperRightLeg, torqueForce);
+}
+
+void RagDollApplication::ApplyTorqueOnUpperLeftLeg(float torqueForce) {
+	ApplyTorqueOnGameBody(m_upperLeftLeg, torqueForce);
+}
+
+void RagDollApplication::ApplyTorqueOnLowerRightLeg(float torqueForce) {
+	ApplyTorqueOnGameBody(m_lowerRightLeg, torqueForce);
+}
+
+void RagDollApplication::ApplyTorqueOnLowerLeftLeg(float torqueForce) {
+	ApplyTorqueOnGameBody(m_lowerLeftLeg, torqueForce);
+}
+
+void RagDollApplication::ApplyTorqueOnRightFoot(float torqueForce) {
+	ApplyTorqueOnGameBody(m_rightFoot, torqueForce);
+}
+
+void RagDollApplication::ApplyTorqueOnLeftFoot(float torqueForce) {
+	ApplyTorqueOnGameBody(m_leftFoot, torqueForce);
+}
+
+void RagDollApplication::ApplyTorqueOnGameBody(GameObject *body, float torqueForce) {
+	// make btVector3
+	// apply torque to body
+}
+
+#pragma endregion RAG_DOLL
+
+#pragma region DRAWING
 
 GameObject *RagDollApplication::Create2DBox(const btVector3 &halfSize, float mass, const btVector3 &color, const btVector3 &position) {
 
@@ -131,3 +254,22 @@ GameObject *RagDollApplication::Create3DBox(const btVector3 &halfSize, float mas
 btVector3 RagDollApplication::GetRandomColor() {
 	return btVector3(((double)rand() / RAND_MAX), ((double)rand() / RAND_MAX), ((double)rand() / RAND_MAX));
 }
+
+#pragma endregion DRAWING
+
+#pragma region GLUI_CALLBACKS
+
+static void RagDollIdle() {
+
+	//m_app->Idle();
+
+	//if (glutGetWindow() != m_app->m_main_window_id) {
+	//	glutSetWindow(m_app->m_main_window_id);
+	//}
+
+	//glutPostRedisplay();
+	m_app->Idle();
+
+}
+
+#pragma endregion GLUI_CALLBACKS

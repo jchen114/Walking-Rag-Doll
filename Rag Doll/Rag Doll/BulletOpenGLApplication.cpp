@@ -2,6 +2,8 @@
 #include "BulletOpenGLApplication.h"
 #include <iostream>
 
+#pragma region INITIALIZATION
+
 BulletOpenGLApplication::BulletOpenGLApplication()
 {
 	std::cout << "Constructing BulletOpenGLApplication and building camera" << std::endl;
@@ -85,6 +87,12 @@ void BulletOpenGLApplication::SetScreenHeight(int height) {
 	Constants::GetInstance().SetScreenHeight(height);
 }
 
+#pragma endregion INITIALIZATION
+
+#pragma region GLUT_CALLBACKS
+
+#pragma region KEYBOARD
+
 void BulletOpenGLApplication::Keyboard(unsigned char key, int x, int y) {
 	// This function is called by FreeGLUT whenever
 	// generic keys are pressed down.
@@ -139,6 +147,8 @@ void BulletOpenGLApplication::Special(int key, int x, int y) {
 
 void BulletOpenGLApplication::SpecialUp(int key, int x, int y) {}
 
+#pragma endregion KEYBOARD
+
 void BulletOpenGLApplication::Reshape(int w, int h) {
 	printf("BulletOpenGLApplication Reshape called\n");
 	// this function is called once during application intialization
@@ -153,10 +163,14 @@ void BulletOpenGLApplication::Reshape(int w, int h) {
 	// update the camera
 	m_cameraManager->UpdateCamera();
 	//m_cameraManager->PrintCameraLocation();
-	
+
 }
 
 void BulletOpenGLApplication::Idle() {
+
+	glutSetWindow(m_main_window_id);
+	glutPostRedisplay();
+
 	// this function is called frequently, whenever FreeGlut
 	// isn't busy processing its own events. It should be used
 	// to perform any updating and rendering tasks
@@ -184,6 +198,10 @@ void BulletOpenGLApplication::Mouse(int button, int state, int x, int y) {}
 void BulletOpenGLApplication::PassiveMotion(int x, int y) {}
 void BulletOpenGLApplication::Motion(int x, int y) {}
 void BulletOpenGLApplication::Display() {}
+
+#pragma endregion GLUT_CALLBACKS
+
+#pragma region DRAWING
 
 void BulletOpenGLApplication::DrawBox(const btVector3 &halfSize) {
 	float halfWidth = halfSize.x();
@@ -297,42 +315,6 @@ void BulletOpenGLApplication::DrawWithTriangles(const btVector3 *vertices, const
 	glEnd();
 }
 
-
-void BulletOpenGLApplication::RenderScene() {
-
-	// create an array of 16 floats (representing a 4x4 matrix)
-	btScalar transform[16];
-
-	// iterate through all of the objects in our world
-	//printf("number of objects = %d\n", m_objects.size());
-	for (GameObjects::iterator i = m_objects.begin(); i != m_objects.end(); ++i) {
-		// get the object from the iterator
-		GameObject* pObj = *i;
-
-		// read the transform
-		pObj->GetTransform(transform);
-
-		// get data from the object and draw it
-		DrawShape(transform, pObj->GetShape(), pObj->GetColor());
-	}
-
-	// after rendering all game objects, perform debug rendering
-	// Bullet will figure out what needs to be drawn then call to
-	// our DebugDrawer class to do the rendering for us
-	m_pWorld->debugDrawWorld();
-
-}
-
-void BulletOpenGLApplication::UpdateScene(float dt) {
-	// check if the world object exists
-	if (m_pWorld) {
-		// step the simulation through time. This is called
-		// every update and the amount of elasped time was 
-		// determined back in ::Idle() by our clock object.
-		m_pWorld->stepSimulation(dt);
-	}
-}
-
 void BulletOpenGLApplication::DrawShape(btScalar *transform, const btCollisionShape *pShape, const btVector3 &color) {
 
 
@@ -381,6 +363,48 @@ void BulletOpenGLApplication::DrawShape(btScalar *transform, const btCollisionSh
 
 }
 
+#pragma endregion DRAWING
+
+#pragma region SCENE
+
+void BulletOpenGLApplication::RenderScene() {
+
+	// create an array of 16 floats (representing a 4x4 matrix)
+	btScalar transform[16];
+
+	// iterate through all of the objects in our world
+	//printf("number of objects = %d\n", m_objects.size());
+	for (GameObjects::iterator i = m_objects.begin(); i != m_objects.end(); ++i) {
+		// get the object from the iterator
+		GameObject* pObj = *i;
+
+		// read the transform
+		pObj->GetTransform(transform);
+
+		// get data from the object and draw it
+		DrawShape(transform, pObj->GetShape(), pObj->GetColor());
+	}
+
+	// after rendering all game objects, perform debug rendering
+	// Bullet will figure out what needs to be drawn then call to
+	// our DebugDrawer class to do the rendering for us
+	m_pWorld->debugDrawWorld();
+
+}
+
+void BulletOpenGLApplication::UpdateScene(float dt) {
+	// check if the world object exists
+	if (m_pWorld) {
+		// step the simulation through time. This is called
+		// every update and the amount of elasped time was 
+		// determined back in ::Idle() by our clock object.
+		m_pWorld->stepSimulation(dt);
+	}
+}
+
+#pragma endregion SCENE
+
+#pragma region INTERACTION
 
 GameObject* BulletOpenGLApplication::CreateGameObject(
 	btCollisionShape *pShape, 
@@ -439,3 +463,9 @@ void BulletOpenGLApplication::AddHingeConstraint(
 		m_pWorld->addConstraint(hc, true);
 	}
 }
+
+void BulletOpenGLApplication::ApplyTorque(GameObject *object, const btVector3 &torque) {
+
+}
+
+#pragma endregion INTERACTION
