@@ -55,7 +55,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\jchen114\Documents\Bullet\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\Dependencies\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -121,14 +121,14 @@
     <ClCompile Include="WalkingController.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Build\src\BulletCollision\BulletCollision.vcxproj">
-      <Project>{779fe9ee-cdde-45ca-9795-4d498eabda18}</Project>
+    <ProjectReference Include="..\..\Dependencies\Bullet-Build-VS2013\src\BulletCollision\BulletCollision.vcxproj">
+      <Project>{b417a183-1bfb-3792-968d-96fe4d628ba1}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\Build\src\BulletDynamics\BulletDynamics.vcxproj">
-      <Project>{fd0a2f75-635b-4ef0-857c-4bcce0c2ce25}</Project>
+    <ProjectReference Include="..\..\Dependencies\Bullet-Build-VS2013\src\BulletDynamics\BulletDynamics.vcxproj">
+      <Project>{7e277390-598f-39aa-903f-0ef55c90228f}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\Build\src\LinearMath\LinearMath.vcxproj">
-      <Project>{45af0da3-c070-4558-9ae3-8eabdc70a181}</Project>
+    <ProjectReference Include="..\..\Dependencies\Bullet-Build-VS2013\src\LinearMath\LinearMath.vcxproj">
+      <Project>{b57913ff-1601-39f1-a0c4-34ebf4e442c6}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

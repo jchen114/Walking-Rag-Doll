@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\src\gtest-all.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\gtest-death-test.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\gtest-message.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\gtest-param-test.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\gtest-printers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\gtest-spi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\gtest-test-part.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\gtest-typed-test.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\gtest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\gtest_pred_impl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\gtest_prod.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\internal\gtest-death-test-internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\internal\gtest-filepath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\internal\gtest-internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\internal\gtest-linked_ptr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\internal\gtest-param-util-generated.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\internal\gtest-param-util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\internal\gtest-port.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\internal\gtest-string.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\internal\gtest-tuple.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\include\gtest\internal\gtest-type-util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\src\gtest-internal-inl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\gtest-1.7.0\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4D3C5261-D30D-3D35-8E69-FC955371067C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{25CEE32D-78D8-3EC1-9D3D-603ED0AFBEC8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

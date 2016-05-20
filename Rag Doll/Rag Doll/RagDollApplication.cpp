@@ -71,7 +71,7 @@ void RagDollApplication::CreateRagDollGUI() {
 
 	// Setup
 	GLUI_Master.set_glutIdleFunc(RagDollIdle);
-	m_glui_window = GLUI_Master.create_glui("Rag Doll Controls");
+	m_glui_window = GLUI_Master.create_glui("Rag Doll Controls", 0, 1);
 	m_glui_window->set_main_gfx_window(m_main_window_id);
 
 	// Controls
@@ -119,6 +119,19 @@ void RagDollApplication::CreateRagDollGUI() {
 	m_glui_window->add_statictext_to_panel(gains_panel, "Right foot");
 	GLUI_Spinner *uf_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, UPPER_R_LEG_KP);
 	GLUI_Spinner *uf_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, UPPER_R_LEG_KD);
+
+	// Horizontal separation
+	m_glui_window->add_column(true);
+
+	// States
+	GLUI_Panel *states_panel = m_glui_window->add_panel("States");
+	GLUI_RadioGroup *states_radio_group = m_glui_window->add_radiogroup_to_panel(states_panel, NULL, -1);
+
+	m_glui_window->add_radiobutton_to_group(states_radio_group, "State 1");
+	m_glui_window->add_radiobutton_to_group(states_radio_group, "State 2");
+	m_glui_window->add_radiobutton_to_group(states_radio_group, "State 3");
+	m_glui_window->add_radiobutton_to_group(states_radio_group, "State 4");
+
 
 
 }

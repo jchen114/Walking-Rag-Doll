@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\collision\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\BulletCollision\NarrowPhaseCollision\btVoronoiSimplexSolver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\BulletCollision\CollisionShapes\btSphereShape.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\BulletCollision\CollisionShapes\btMultiSphereShape.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\BulletCollision\CollisionShapes\btPolyhedralConvexShape.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\BulletCollision\CollisionShapes\btConvexShape.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\BulletCollision\CollisionShapes\btConvexInternalShape.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\BulletCollision\CollisionShapes\btCollisionShape.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\BulletCollision\CollisionShapes\btConvexPolyhedron.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\BulletCollision\NarrowPhaseCollision\btVoronoiSimplexSolver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\test\collision\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4D3C5261-D30D-3D35-8E69-FC955371067C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{25CEE32D-78D8-3EC1-9D3D-603ED0AFBEC8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
