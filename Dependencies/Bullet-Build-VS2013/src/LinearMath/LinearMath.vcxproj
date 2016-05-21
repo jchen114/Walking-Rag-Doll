@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -56,28 +56,28 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-    <PropertyGroup>
-      <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\Bullet-Build-VS2013\lib\Debug\</OutDir>
-      <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">LinearMath.dir\Debug\</IntDir>
-      <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">LinearMath_Debug</TargetName>
-      <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.lib</TargetExt>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\Bullet-Build-VS2013\lib\Release\</OutDir>
-      <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">LinearMath.dir\Release\</IntDir>
-      <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">LinearMath</TargetName>
-      <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.lib</TargetExt>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\Bullet-Build-VS2013\lib\MinSizeRel\</OutDir>
-      <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">LinearMath.dir\MinSizeRel\</IntDir>
-      <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">LinearMath_MinsizeRel</TargetName>
-      <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">.lib</TargetExt>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\Bullet-Build-VS2013\lib\RelWithDebInfo\</OutDir>
-      <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">LinearMath.dir\RelWithDebInfo\</IntDir>
-      <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">LinearMath_RelWithDebugInfo</TargetName>
-      <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">.lib</TargetExt>
-    </PropertyGroup>
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\lib\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">LinearMath.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">LinearMath_Debug</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\lib\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">LinearMath.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">LinearMath</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">$(ProjectDir)..\..\lib\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">LinearMath.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">LinearMath_MinsizeRel</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">$(ProjectDir)..\..\lib\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">LinearMath.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">LinearMath_RelWithDebugInfo</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">.lib</TargetExt>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Debug/</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -112,7 +112,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
@@ -126,7 +126,8 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;NDEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <DebugInformationFormat></DebugInformationFormat>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;NDEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -146,7 +147,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>MinSizeRel/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
@@ -160,7 +161,8 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;NDEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;CMAKE_INTDIR="MinSizeRel";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <DebugInformationFormat></DebugInformationFormat>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;NDEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -180,7 +182,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>RelWithDebInfo/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -295,14 +297,14 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\LinearMath\btTransform.h" />
     <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\LinearMath\btTransformUtil.h" />
     <ClInclude Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\LinearMath\btVector3.h" />
-    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\LinearMath\btAlignedAllocator.cpp"  />
-    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\LinearMath\btConvexHull.cpp"  />
-    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\LinearMath\btConvexHullComputer.cpp"  />
-    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\LinearMath\btGeometryUtil.cpp"  />
-    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\LinearMath\btPolarDecomposition.cpp"  />
-    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\LinearMath\btQuickprof.cpp"  />
-    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\LinearMath\btSerializer.cpp"  />
-    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\LinearMath\btVector3.cpp"  />
+    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\LinearMath\btAlignedAllocator.cpp" />
+    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\LinearMath\btConvexHull.cpp" />
+    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\LinearMath\btConvexHullComputer.cpp" />
+    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\LinearMath\btGeometryUtil.cpp" />
+    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\LinearMath\btPolarDecomposition.cpp" />
+    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\LinearMath\btQuickprof.cpp" />
+    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\LinearMath\btSerializer.cpp" />
+    <ClCompile Include="C:\Users\Hooligan\Documents\Walking-Rag-Doll\Dependencies\bullet3-2.83.7\src\LinearMath\btVector3.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="C:/Users/Hooligan/Documents/Walking-Rag-Doll/Dependencies/Bullet-Build-VS2013/ZERO_CHECK.vcxproj">

@@ -35,6 +35,17 @@ GameObject::GameObject(	btCollisionShape *pShape,
 }
 
 
+void GameObject::Reposition(const btVector3 &position, const btQuaternion &orientation) {
+
+	btTransform initialTransform;
+	initialTransform.setOrigin(position);
+	initialTransform.setRotation(orientation);
+
+	m_pBody->setWorldTransform(initialTransform);
+	m_pMotionState->setWorldTransform(initialTransform);
+
+}
+
 GameObject::~GameObject()
 {
 	delete m_pBody;

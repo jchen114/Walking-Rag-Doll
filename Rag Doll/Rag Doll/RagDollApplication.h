@@ -23,6 +23,8 @@ public:
 
 	btVector3 GetRandomColor();
 
+	void Reset();
+
 	void ApplyTorqueOnTorso(float torqueForce);
 	void ApplyTorqueOnUpperRightLeg(float torqueForce);
 	void ApplyTorqueOnUpperLeftLeg(float torqueForce);
@@ -30,7 +32,6 @@ public:
 	void ApplyTorqueOnLowerLeftLeg(float torqueForce);
 	void ApplyTorqueOnRightFoot(float torqueForce);
 	void ApplyTorqueOnLeftFoot(float torqueForce);
-
 
 private:
 
@@ -48,6 +49,13 @@ private:
 	GameObject *m_rightFoot;
 	GameObject *m_leftFoot;
 
+	btHingeConstraint *m_torso_urLeg;
+	btHingeConstraint *m_torso_ulLeg;
+	btHingeConstraint *m_urLeg_lrLeg;
+	btHingeConstraint *m_ulLeg_llLeg;
+	btHingeConstraint *m_lrLeg_rFoot;
+	btHingeConstraint *m_llLeg_lFoot;
+
 	void ApplyTorqueOnGameBody(GameObject *body, float torqueForce);
 	void CreateRagDollGUI();
 
@@ -57,3 +65,4 @@ private:
 };
 
 static void RagDollIdle();
+static void ResetButtonPressed(int id);

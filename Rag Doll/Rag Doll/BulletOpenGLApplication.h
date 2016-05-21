@@ -75,7 +75,7 @@ public:
 
 	// Object Functions
 
-	void AddHingeConstraint(
+	btHingeConstraint *AddHingeConstraint(
 		GameObject *obj1, 
 		GameObject *obj2, 
 		const btVector3 &pivot1, 

@@ -121,14 +121,14 @@
     <ClCompile Include="WalkingController.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Dependencies\Bullet-Build-VS2013\src\BulletCollision\BulletCollision.vcxproj">
-      <Project>{b417a183-1bfb-3792-968d-96fe4d628ba1}</Project>
+    <ProjectReference Include="..\..\Dependencies\bullet-vs2013-office-build\src\BulletCollision\BulletCollision.vcxproj">
+      <Project>{1a17feef-12e5-4f61-897f-ab6c4eb859b1}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\Dependencies\Bullet-Build-VS2013\src\BulletDynamics\BulletDynamics.vcxproj">
-      <Project>{7e277390-598f-39aa-903f-0ef55c90228f}</Project>
+    <ProjectReference Include="..\..\Dependencies\bullet-vs2013-office-build\src\BulletDynamics\BulletDynamics.vcxproj">
+      <Project>{4cf1640f-26df-4d4e-b52a-b23f318b4276}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\Dependencies\Bullet-Build-VS2013\src\LinearMath\LinearMath.vcxproj">
-      <Project>{b57913ff-1601-39f1-a0c4-34ebf4e442c6}</Project>
+    <ProjectReference Include="..\..\Dependencies\bullet-vs2013-office-build\src\LinearMath\LinearMath.vcxproj">
+      <Project>{9b39bf57-9ce5-40cd-bb30-4a47c265decd}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

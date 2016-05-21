@@ -4,6 +4,7 @@
 #include "btBulletDynamicsCommon.h"
 
 #include "OpenGLMotionState.h"
+#include <vector>
 
 class GameObject
 {
@@ -15,6 +16,29 @@ public:
 		const btVector3 &initialPosition = btVector3(0, 0, 0),
 		const btQuaternion &initialRotation = btQuaternion(0, 0, 1, 1));
 	~GameObject();
+
+	static void ClearForces(std::vector<GameObject *> objects) {
+		for (std::vector<GameObject *>::iterator it = objects.begin(); it != objects.end(); ++it) {
+			(*it)->GetRigidBody()->clearForces();
+		}
+	}
+
+	static void ClearVelocities(std::vector<GameObject *>objects) {
+		btVector3 zeroVec(0, 0, 0);
+		for (std::vector<GameObject *>::iterator it = objects.begin(); it != objects.end(); ++it) {
+			(*it)->GetRigidBody()->setLinearVelocity(zeroVec);
+			(*it)->GetRigidBody()->setAngularVelocity(zeroVec);
+		}
+	}
+
+	static void DisableObjects(std::vector<GameObject *> objects) {
+		for (std::vector<GameObject *>::iterator it = objects.begin(); it != objects.end(); ++it) {
+			(*it)->GetRigidBody()->setActivationState(DISABLE_SIMULATION);
+		}
+	}
+
+	void Reposition(const btVector3 &position, const btQuaternion &orientation = btQuaternion(0, 0, 1, 1));
+
 
 	// accessors
 	btCollisionShape *GetShape() { return m_pShape; }
@@ -36,4 +60,5 @@ protected:
 	btVector3 m_color;
 };
 #endif
+
 

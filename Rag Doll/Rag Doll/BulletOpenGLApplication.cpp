@@ -442,7 +442,7 @@ GameObject* BulletOpenGLApplication::CreateGameObject(
 	return pObject;
 }
 
-void BulletOpenGLApplication::AddHingeConstraint(
+btHingeConstraint *BulletOpenGLApplication::AddHingeConstraint(
 	GameObject *obj1, 
 	GameObject *obj2, 
 	const btVector3 &pivot1, 
@@ -462,6 +462,8 @@ void BulletOpenGLApplication::AddHingeConstraint(
 	if (m_pWorld) {
 		m_pWorld->addConstraint(hc, true);
 	}
+
+	return hc;
 }
 
 void BulletOpenGLApplication::ApplyTorque(GameObject *object, const btVector3 &torque) {
