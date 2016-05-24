@@ -1,8 +1,11 @@
 #pragma once
 #include "BulletOpenGLApplication.h"
 #include <glui\glui.h>
+#include <vector>
 
 class WalkingController;
+class State;
+class Gains;
 
 class RagDollApplication :
 	public BulletOpenGLApplication
@@ -24,6 +27,20 @@ public:
 	btVector3 GetRandomColor();
 
 	void Reset();
+	void SaveStates();
+	void SaveGains();
+	void Start();
+	void Pause();
+	void CloseGLUIWindow(int id);
+	void ChangeState(int id);
+	void ChangeTorsoAngle();
+	void ChangeUpperLeftLegAngle();
+	void ChangeUpperRightLegAngle();
+	void ChangeLowerLeftLegAngle();
+	void ChangeLowerRightLegAngle();
+	void ChangeLeftFootAngle();
+	void ChangeRightFootAngle();
+
 
 	void ApplyTorqueOnTorso(float torqueForce);
 	void ApplyTorqueOnUpperRightLeg(float torqueForce);
@@ -35,10 +52,15 @@ public:
 
 private:
 
+	void DisplayState(int state);
+	void DisplayGains();
+
 	WalkingController *m_WalkingController;
 
 	// GLUI
 	GLUI *m_glui_window;
+	int m_currentState = 0;
+	int m_previousState = 0;
 
 	// Rag Doll model
 	GameObject *m_torso;
@@ -56,13 +78,61 @@ private:
 	btHingeConstraint *m_lrLeg_rFoot;
 	btHingeConstraint *m_llLeg_lFoot;
 
+	// States
+	std::vector<State *> m_states;
+	std::vector<Gains *> m_gains;
+
 	void ApplyTorqueOnGameBody(GameObject *body, float torqueForce);
 	void CreateRagDollGUI();
+	void SetupGUIConfiguration(std::vector<State *>states, std::vector<Gains *> gains);
 
-	// GLUI CALLBACKS
-	void CloseGLUIWindow(int id);
+	// GLUI Members
+
+	GLUI_Spinner *m_torso_kp_spinner;
+	GLUI_Spinner *m_torso_kd_spinner;
+
+	GLUI_Spinner *m_ull_kp_spinner;
+	GLUI_Spinner *m_ull_kd_spinner;
+
+	GLUI_Spinner *m_url_kp_spinner;
+	GLUI_Spinner *m_url_kd_spinner;
+
+	GLUI_Spinner *m_lll_kp_spinner;
+	GLUI_Spinner *m_lll_kd_spinner;
+
+	GLUI_Spinner *m_lrl_kp_spinner;
+	GLUI_Spinner *m_lrl_kd_spinner;
+
+	GLUI_Spinner *m_lf_kp_spinner;
+	GLUI_Spinner *m_lf_kd_spinner;
+
+	GLUI_Spinner *m_rf_kp_spinner;
+	GLUI_Spinner *m_rf_kd_spinner;
+
+	GLUI_RadioGroup *m_StatesRadioGroup;
+	GLUI_Spinner *m_torso_state_spinner;
+	GLUI_Spinner *m_ull_state_spinner;
+	GLUI_Spinner *m_url_state_spinner;
+	GLUI_Spinner *m_lll_state_spinner;
+	GLUI_Spinner *m_lrl_state_spinner;
+	GLUI_Spinner *m_lf_state_spinner;
+	GLUI_Spinner *m_rf_state_spinner;
 
 };
 
+/* GLUI CALLBACKS */
 static void RagDollIdle();
+static void SaveGainsButtonPressed(int id);
+static void SaveStatesButtonPressed(int id);
 static void ResetButtonPressed(int id);
+static void PauseButtonPressed(int id);
+static void StartButtonPressed(int id);
+static void StateChanged(int id);
+
+static void TorsoAngleChanged(int id);
+static void UpperLeftLegAngleChanged(int id);
+static void UpperRightLegAngleChanged(int id);
+static void LowerLeftLegAngleChanged(int id);
+static void LowerRightLegAngleChanged(int id);
+static void LeftFootAngleChanged(int id);
+static void RightFootAngleChanged(int id);

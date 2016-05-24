@@ -1,17 +1,30 @@
 #pragma once
+#include <vector>
 
 class RagDollApplication;
+class State;
+class Gains;
+
+enum CurrentRagDollState { STATE_0 = 100, STATE_1, STATE_2, STATE_3, STATE_4 };
+
+enum CurrentControllerState {WALKING = 105, PAUSE, RESET};
 
 class WalkingController
 {
-	class State;
-
+	
 public:
 	WalkingController();
 	WalkingController(RagDollApplication *app);
+	
 	~WalkingController();
 
-	void StartWalking();
+	std::vector<State *> ReadStateFile();
+	std::vector<Gains *> ReadGainsFile();
+	
+	void SaveStates();
+	void SaveGains();
+
+	void Walk();
 	void PauseWalking();
 	void Reset();
 
@@ -31,31 +44,20 @@ public:
 
 private:
 
+
 	RagDollApplication *m_app;
+	CurrentControllerState m_currentState = RESET;
+	CurrentRagDollState m_ragDollState = ;
 
 	// Set these in the GUI
-	float m_kp_torso_hip;
-	float m_kd_torso_hip;
+	Gains *m_torso_gains;
+	Gains *m_ull_gains;
+	Gains *m_url_gains;
+	Gains *m_lll_gains;
+	Gains *m_lrl_gains;
+	Gains *m_lf_gains;
+	Gains *m_rf_gains;
 
-	float m_kp_upper_left_leg_hip;
-	float m_kd_upper_left_leg_hip;
-
-	float m_kp_upper_right_leg_hip;
-	float m_kd_upper_right_leg_hip;
-
-	float m_kp_lower_left_leg_upper;
-	float m_kd_lower_left_leg_upper;
-
-	float m_kp_lower_right_leg_upper;
-	float m_kd_lower_right_leg_upper;
-
-	float m_kp_left_foot;
-	float m_kd_left_foot;
-
-	float m_kp_right_foot;
-	float m_kd_right_foot;
-
-	State *m_state0;
 	State *m_state1;
 	State *m_state2;
 	State *m_state3;
@@ -71,28 +73,5 @@ private:
 
 	float calculateTorque(float kp, float kd, float targetPosition, float currentPosition, float velocity);
 
-};
-
-class State {
-
-public:
-
-	State(float torso, float upperLeftLeg, float upperRightLeg, float lowerLeftLeg, float lowerRightLeg, float leftFoot, float rightFoot) {
-		m_torsoAngle = torso;
-		m_upperLeftLegAngle = upperLeftLeg;
-		m_upperRightLegAngle = upperRightLeg;
-		m_lowerLeftLegAngle = lowerLeftLeg;
-		m_lowerRightLegAngle = lowerRightLeg;
-		m_leftFootAngle = leftFoot;
-		m_rightFootAngle = rightFoot;
-	}
-
-	float m_torsoAngle;
-	float m_upperRightLegAngle;
-	float m_upperLeftLegAngle;
-	float m_lowerRightLegAngle;
-	float m_lowerLeftLegAngle;
-	float m_rightFootAngle;
-	float m_leftFootAngle;
 
 };

@@ -25,6 +25,8 @@ CameraManager::CameraManager(
 	m_cameraPosX = 0;
 	m_cameraPosY = 0;
 	
+	SetupOrthographicCamera();
+
 }
 
 void CameraManager::UpdateCamera() {
@@ -37,8 +39,8 @@ void CameraManager::UpdateCamera() {
 	{
 	case ORTHOGRAPHIC:
 		//SetupModelView();
-		//SetupOrthographicModelView();
-		SetupOrthographicCamera();
+		SetupOrthographicModelView();
+		//SetupOrthographicCamera();
 		break;
 	case PERSPECTIVE:
 		SetupPerspectiveCamera();
@@ -59,7 +61,7 @@ void CameraManager::SetupOrthographicCamera() {
 	// create a viewing frustum based on the aspect ratio and the
 	// boundaries of the camera
 	//glOrtho(0, 1, -1, 1, 1, 100);
-	gluOrtho2D(-1, 1, -1, 1);
+	gluOrtho2D(-5, 5, -5, 5);
 	//TEST_MODEL_VIEW_ORTHO();
 	SetupOrthographicModelView();
 }

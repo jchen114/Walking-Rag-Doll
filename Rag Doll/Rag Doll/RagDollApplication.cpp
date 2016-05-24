@@ -2,6 +2,10 @@
 #include "RagDollApplication.h"
 #include "WalkingController.h"
 
+#include "State.h"	
+#include "Gains.h"	
+
+
 #pragma region INITIALIZATION
 
 static RagDollApplication *m_app;
@@ -17,18 +21,20 @@ enum ControlIDs {
 
 enum StateIDs {
 	TORSO_ANGLE = 13,
-	STANCE_HIP_ANGLE,
-	SWING_HIP_ANGLE,
-	SWING_KNEE_ANGLE,
-	STANCE_KNEE_ANGLE,
-	STANCE_FOOT_ANGLE,
-	SWING_FOOT_ANGLE
+	ULL_ANGLE,
+	URL_ANGLE,
+	LLL_ANGLE,
+	LRL_ANGLE,
+	LF_ANGLE,
+	RF_ANGLE
 };
 
 enum Button_IDs {
 	RESET = 20,
 	PAUSE,
-	START
+	START,
+	SAVESTATES,
+	SAVEGAINS
 };
 
 #define KP_LOWER 0.0
@@ -53,7 +59,7 @@ enum Button_IDs {
 #define FOOT_LOW_CONSTRAINT			0.0f
 #define FOOT_HIGH_CONSTRAINT		90.0f
 
-#define ORIGINAL_TORSO_POSITION btVector3(0, -0.2, 0.5)
+#define ORIGINAL_TORSO_POSITION btVector3(0, -(0.2 + TORSO_HEIGHT/2), 0.5)
 
 RagDollApplication::RagDollApplication()
 {
@@ -91,13 +97,24 @@ void RagDollApplication::InitializePhysics() {
 	btVector3 position(0.0f, -10.0f, 0.0f);
 	Create3DBox(ground, mass, GetRandomColor(), position);
 
-	CreateRagDoll(ORIGINAL_POSITION);
+	CreateRagDoll(ORIGINAL_TORSO_POSITION);
 
 	// Create Controller
 	m_WalkingController = new WalkingController(this);
 
+	// Read from a file for last state configuration
+	m_states = m_WalkingController->ReadStateFile();
+
+	// Read from a file for last gains configuration
+	m_gains = m_WalkingController->ReadGainsFile();
+
 	// Create GUI
 	CreateRagDollGUI();
+
+	// Setup GUI with configurations
+	SetupGUIConfiguration(m_states, m_gains);
+
+	Reset();
 }
 
 void RagDollApplication::CreateRagDollGUI() {
@@ -110,85 +127,179 @@ void RagDollApplication::CreateRagDollGUI() {
 	m_glui_window->set_main_gfx_window(m_main_window_id);
 
 	// Controls
-	// Gains Panel
+	/*===================================== GAINS =========================================*/
 	GLUI_Panel *gains_panel = m_glui_window->add_panel("Gains");
 	m_glui_window->add_statictext_to_panel(gains_panel, "Torso");
-	GLUI_Spinner *torso_kp_spinner =  m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, TORSO_KP);
-	GLUI_Spinner *torso_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, TORSO_KD);
+	m_torso_kp_spinner =  m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_gains.at(0)->m_kp, TORSO_KP);
+	m_torso_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(0)->m_kd, TORSO_KD);
 
-	torso_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
-	torso_kd_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
+	m_torso_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
+	m_torso_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
 
 	m_glui_window->add_separator_to_panel(gains_panel);
 
 	m_glui_window->add_statictext_to_panel(gains_panel, "Upper Left Leg");
-	GLUI_Spinner *ul_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, UPPER_L_LEG_KP);
-	GLUI_Spinner *ul_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, UPPER_L_LEG_KD);
+	m_ull_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_gains.at(1)->m_kp, UPPER_L_LEG_KP);
+	m_ull_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(1)->m_kp, UPPER_L_LEG_KD);
+
+	m_ull_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
+	m_ull_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
 
 	m_glui_window->add_separator_to_panel(gains_panel);
 
 	m_glui_window->add_statictext_to_panel(gains_panel, "Upper Right Leg");
-	GLUI_Spinner *ur_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, UPPER_R_LEG_KP);
-	GLUI_Spinner *ur_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, UPPER_R_LEG_KD);
+	m_url_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_gains.at(2)->m_kp, UPPER_R_LEG_KP);
+	m_url_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(2)->m_kp, UPPER_R_LEG_KD);
+
+	m_url_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
+	m_url_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
 
 	m_glui_window->add_separator_to_panel(gains_panel);
 
 	m_glui_window->add_statictext_to_panel(gains_panel, "Lower Left Leg");
-	GLUI_Spinner *ll_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, LOWER_L_LEG_KP);
-	GLUI_Spinner *ll_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, LOWER_L_LEG_KD);
+	m_lll_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_gains.at(3)->m_kp, LOWER_L_LEG_KP);
+	m_lll_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(3)->m_kp, LOWER_L_LEG_KD);
+
+	m_lll_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
+	m_lll_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
 
 	m_glui_window->add_separator_to_panel(gains_panel);
 
 	m_glui_window->add_statictext_to_panel(gains_panel, "Lower Right Leg");
-	GLUI_Spinner *lr_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, LOWER_R_LEG_KP);
-	GLUI_Spinner *lr_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, LOWER_R_LEG_KD);
+	m_lrl_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_gains.at(4)->m_kp, LOWER_R_LEG_KP);
+	m_lrl_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(4)->m_kp, LOWER_R_LEG_KD);
+
+	m_lrl_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
+	m_lrl_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
 
 	m_glui_window->add_separator_to_panel(gains_panel);
 
 	m_glui_window->add_statictext_to_panel(gains_panel, "Left Foot");
-	GLUI_Spinner *lf_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, L_FOOT_KP);
-	GLUI_Spinner *lf_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, L_FOOT_KD);
+	m_lf_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_gains.at(5)->m_kp, L_FOOT_KP);
+	m_lf_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(5)->m_kp, L_FOOT_KD);
+
+	m_lf_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
+	m_lf_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
 
 	m_glui_window->add_separator_to_panel(gains_panel);
 
 	m_glui_window->add_statictext_to_panel(gains_panel, "Right foot");
-	GLUI_Spinner *uf_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, UPPER_R_LEG_KP);
-	GLUI_Spinner *uf_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, UPPER_R_LEG_KD);
+	m_rf_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_gains.at(6)->m_kp, R_FOOT_KP);
+	m_rf_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(6)->m_kp, R_FOOT_KD);
+
+	m_rf_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
+	m_rf_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
+
+	m_glui_window->add_button_to_panel(gains_panel, "Save Gains", SAVEGAINS, (GLUI_Update_CB)SaveGainsButtonPressed);
 
 	// Horizontal separation
 	m_glui_window->add_column(true);
 
-	// States
+	/*===================================== STATES =========================================*/
 	GLUI_Panel *states_panel = m_glui_window->add_panel("States");
-	GLUI_RadioGroup *states_radio_group = m_glui_window->add_radiogroup_to_panel(states_panel, NULL, -1);
+	m_StatesRadioGroup = m_glui_window->add_radiogroup_to_panel(states_panel, &m_currentState, -1, (GLUI_Update_CB)StateChanged);
 
-	m_glui_window->add_radiobutton_to_group(states_radio_group, "State 1");
-	m_glui_window->add_radiobutton_to_group(states_radio_group, "State 2");
-	m_glui_window->add_radiobutton_to_group(states_radio_group, "State 3");
-	m_glui_window->add_radiobutton_to_group(states_radio_group, "State 4");
+	m_glui_window->add_radiobutton_to_group(m_StatesRadioGroup, "State 1");
+	m_glui_window->add_radiobutton_to_group(m_StatesRadioGroup, "State 2");
+	m_glui_window->add_radiobutton_to_group(m_StatesRadioGroup, "State 3");
+	m_glui_window->add_radiobutton_to_group(m_StatesRadioGroup, "State 4");
 
 	m_glui_window->add_separator_to_panel(states_panel);
 
 	m_glui_window->add_statictext_to_panel(states_panel, "Desired State Angles");
 
-	GLUI_Spinner *torso_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Torso Angle", GLUI_SPINNER_FLOAT, NULL, TORSO_ANGLE);
-	GLUI_Spinner *stance_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Stance Hip Angle", GLUI_SPINNER_FLOAT, NULL, STANCE_HIP_ANGLE);
-	GLUI_Spinner *swing_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Swing Hip Angle", GLUI_SPINNER_FLOAT, NULL, SWING_HIP_ANGLE);
-	GLUI_Spinner *stance_knee_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Stance Knee Angle", GLUI_SPINNER_FLOAT, NULL, STANCE_KNEE_ANGLE);
-	GLUI_Spinner *swing_knee_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Swing Knee Angle", GLUI_SPINNER_FLOAT, NULL, SWING_KNEE_ANGLE);
-	GLUI_Spinner *stance_foot_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Stance Foot Angle", GLUI_SPINNER_FLOAT, NULL, STANCE_FOOT_ANGLE);
-	GLUI_Spinner *swing_foot_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Swing Foot Angle", GLUI_SPINNER_FLOAT, NULL, SWING_FOOT_ANGLE);
+	m_torso_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Torso Angle", GLUI_SPINNER_FLOAT, NULL, TORSO_ANGLE);
+	m_ull_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Upper left leg Angle", GLUI_SPINNER_FLOAT, NULL, ULL_ANGLE);
+	m_url_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Upper right leg Angle", GLUI_SPINNER_FLOAT, NULL, URL_ANGLE);
+	m_lll_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Lower left leg Angle", GLUI_SPINNER_FLOAT, NULL, LLL_ANGLE);
+	m_lrl_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Lower right leg Angle", GLUI_SPINNER_FLOAT, NULL, LRL_ANGLE);
+	m_lf_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Left foot Angle", GLUI_SPINNER_FLOAT, NULL, LF_ANGLE);
+	m_rf_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Right foot Angle", GLUI_SPINNER_FLOAT, NULL, RF_ANGLE);
+
+	m_glui_window->add_button_to_panel(states_panel, "Save States", SAVESTATES, (GLUI_Update_CB)SaveStatesButtonPressed);
+
+	/*===================================== CONTROLS =========================================*/
 
 	GLUI_Panel *control_panel = m_glui_window->add_panel("Controls");
 	m_glui_window->add_button_to_panel(control_panel, "Reset", RESET, (GLUI_Update_CB)ResetButtonPressed);
 	m_glui_window->add_separator_to_panel(control_panel);
-	m_glui_window->add_button_to_panel(control_panel, "Pause", PAUSE);
+	m_glui_window->add_button_to_panel(control_panel, "Pause", PAUSE, (GLUI_Update_CB)PauseButtonPressed);
 	m_glui_window->add_separator_to_panel(control_panel);
-	m_glui_window->add_button_to_panel(control_panel, "Start", START);
+	m_glui_window->add_button_to_panel(control_panel, "Start", START, (GLUI_Update_CB)StartButtonPressed);
+
+}
+
+void RagDollApplication::SetupGUIConfiguration(std::vector<State *>states, std::vector<Gains *> gains) {
+
+	// Assume Currently Selected State is 0
+	DisplayState(0);
+	DisplayGains();
 
 }
 
 void RagDollApplication::ShutdownPhysics() {
+
+}
+
+void RagDollApplication::DisplayState(int state) {
+
+	State *selected_state = m_states.at(state);
+	m_torso_state_spinner->set_float_val(selected_state->m_torsoAngle);
+	m_ull_state_spinner->set_float_val(selected_state->m_upperLeftLegAngle);
+	m_url_state_spinner->set_float_val(selected_state->m_upperRightLegAngle);
+	m_lll_state_spinner->set_float_val(selected_state->m_lowerLeftLegAngle);
+	m_lrl_state_spinner->set_float_val(selected_state->m_lowerRightLegAngle);
+	m_lf_state_spinner->set_float_val(selected_state->m_leftFootAngle);
+	m_rf_state_spinner->set_float_val(selected_state->m_rightFootAngle);
+
+}
+
+void RagDollApplication::DisplayGains() {
+
+	for (std::vector<Gains *>::iterator it = m_gains.begin(); it != m_gains.end(); it++) {
+
+		switch ((*it)->GetAssociatedBody()) {
+		case TORSO: {
+			m_torso_kp_spinner->set_float_val((*it)->m_kp);
+			m_torso_kd_spinner->set_float_val((*it)->m_kd);
+		}
+			break;
+		case UPPER_LEFT_LEG: {
+			m_ull_kp_spinner->set_float_val((*it)->m_kp);
+			m_ull_kd_spinner->set_float_val((*it)->m_kp);
+		}
+			break;
+		case UPPER_RIGHT_LEG: {
+			m_url_kp_spinner->set_float_val((*it)->m_kp);
+			m_url_kd_spinner->set_float_val((*it)->m_kd);
+		}
+			break;
+		case LOWER_LEFT_LEG: {
+			m_lll_kp_spinner->set_float_val((*it)->m_kp);
+			m_lll_kd_spinner->set_float_val((*it)->m_kd);
+
+		}
+			break;
+		case LOWER_RIGHT_LEG: {
+			m_lrl_kp_spinner->set_float_val((*it)->m_kp);
+			m_lrl_kd_spinner->set_float_val((*it)->m_kd);
+		}
+			break;
+		case LEFT_FOOT: {
+			m_lf_kp_spinner->set_float_val((*it)->m_kp);
+			m_lf_kd_spinner->set_float_val((*it)->m_kd);
+		}
+			break;
+		case RIGHT_FOOT: {
+			m_rf_kp_spinner->set_float_val((*it)->m_kp);
+			m_rf_kd_spinner->set_float_val((*it)->m_kd);
+		}
+			break;
+		default:
+			break;
+		}
+
+	}
 
 }
 
@@ -267,12 +378,28 @@ void RagDollApplication::CreateRagDoll(const btVector3 &position) {
 	m_lrLeg_rFoot = AddHingeConstraint(m_lowerRightLeg, m_rightFoot, btVector3(-lower_leg_height / 2, 0, 0), btVector3(0, (foot_width - lower_leg_width) / 2, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(FOOT_LOW_CONSTRAINT), Constants::GetInstance().DegreesToRadians(FOOT_HIGH_CONSTRAINT));
 }
 
+void RagDollApplication::SaveStates() {
+	ChangeState(-1);
+	// Save States into file
+	m_WalkingController->SaveStates();
+}
+
+void RagDollApplication::SaveGains(){
+	// Save gains into file
+	m_WalkingController->SaveGains();
+}
+
 void RagDollApplication::Reset() {
+
+	printf("Reset button pressed \n");
+
+	m_WalkingController->Reset();
 
 	std::vector<GameObject *> bodies{ m_torso, m_upperRightLeg, m_upperLeftLeg, m_lowerRightLeg, m_lowerLeftLeg, m_rightFoot, m_leftFoot };
 
 	// Clear forces
-	GameObject::ClearForces(bodies);
+	//GameObject::ClearForces(bodies);
+
 	GameObject::ClearVelocities(bodies);
 
 	// Set rigid angle limits
@@ -280,14 +407,77 @@ void RagDollApplication::Reset() {
 	m_torso_urLeg->setLimit(0.0f, 0.0f);
 	m_ulLeg_llLeg->setLimit(0.0f, 0.0f);
 	m_urLeg_lrLeg->setLimit(0.0f, 0.0f);
-	m_llLeg_lFoot->setLimit(90.0f, 90.0f);
-	m_lrLeg_rFoot->setLimit(90.0f, 90.0f);
+	m_llLeg_lFoot->setLimit(0.0f, 0.0f);
+	m_lrLeg_rFoot->setLimit(0.0f, 0.0f);
+
 
 	m_torso->Reposition(ORIGINAL_TORSO_POSITION);
-	m_upperLeftLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, TORSO_HEIGHT / 2 + UL_HEIGHT / 2, -0.25));
+	m_upperLeftLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(TORSO_HEIGHT / 2 + UL_HEIGHT / 2), -0.25));
+	m_upperRightLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(TORSO_HEIGHT / 2 + UL_HEIGHT / 2), 0.25));
+	m_lowerLeftLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(TORSO_HEIGHT / 2 + UL_HEIGHT + LL_HEIGHT/2), -0.27));
+	m_lowerRightLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(TORSO_HEIGHT / 2 + UL_HEIGHT + LL_HEIGHT/2), 0.27));
+	m_leftFoot->Reposition(ORIGINAL_TORSO_POSITION + btVector3((F_WIDTH - LL_WIDTH) / 2, -(TORSO_HEIGHT / 2 + UL_HEIGHT + LL_HEIGHT + F_HEIGHT / 2), -0.28), btQuaternion(btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(90.0f)));
+	m_rightFoot->Reposition(ORIGINAL_TORSO_POSITION + btVector3((F_WIDTH - LL_WIDTH) / 2, -(TORSO_HEIGHT / 2 + UL_HEIGHT + LL_HEIGHT + F_HEIGHT / 2), 0.28), btQuaternion(btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(90.0f)));
 
 	GameObject::DisableObjects(bodies);
 	
+}
+
+void RagDollApplication::Start() {
+
+}
+
+void RagDollApplication::Pause() {
+
+	printf("Pause button pressed \n");
+
+	std::vector<GameObject *> bodies{ m_torso, m_upperRightLeg, m_upperLeftLeg, m_lowerRightLeg, m_lowerLeftLeg, m_rightFoot, m_leftFoot };
+	GameObject::DisableObjects(bodies);
+}
+
+void RagDollApplication::ChangeState(int id) {
+	printf("previous state = %d\n", m_previousState);
+	
+	// Update previous state
+	m_states.at(m_previousState)->m_torsoAngle = m_torso_state_spinner->get_float_val();
+	m_states.at(m_previousState)->m_upperLeftLegAngle = m_ull_state_spinner->get_float_val();
+	m_states.at(m_previousState)->m_upperRightLegAngle = m_url_state_spinner->get_float_val();
+	m_states.at(m_previousState)->m_lowerLeftLegAngle = m_lll_state_spinner->get_float_val();
+	m_states.at(m_previousState)->m_lowerRightLegAngle = m_lrl_state_spinner->get_float_val();
+	m_states.at(m_previousState)->m_leftFootAngle = m_lf_state_spinner->get_float_val();
+	m_states.at(m_previousState)->m_rightFootAngle = m_rf_state_spinner->get_float_val();
+	// Change previous to current state
+	DisplayState(m_currentState);
+	m_previousState = m_currentState;
+	printf("next state = %d \n", m_currentState);
+}
+
+void RagDollApplication::ChangeTorsoAngle() {
+
+}
+
+void RagDollApplication::ChangeUpperLeftLegAngle() {
+
+}
+
+void RagDollApplication::ChangeUpperRightLegAngle() {
+
+}
+
+void RagDollApplication::ChangeLowerLeftLegAngle() {
+
+}
+
+void RagDollApplication::ChangeLowerRightLegAngle() {
+
+}
+
+void RagDollApplication::ChangeLeftFootAngle() {
+
+}
+
+void RagDollApplication::ChangeRightFootAngle() {
+
 }
 
 void RagDollApplication::ApplyTorqueOnTorso(float torqueForce) {
@@ -351,8 +541,58 @@ static void RagDollIdle() {
 	m_app->Idle();
 }
 
+static void SaveGainsButtonPressed(int id) {
+	m_app->SaveGains();
+}
+
+static void SaveStatesButtonPressed(int id) {
+	m_app->SaveStates();
+}
+
 static void ResetButtonPressed(int id) {
 	m_app->Reset();
+}
+
+static void StartButtonPressed(int id) {
+	m_app->Start();
+}
+
+static void PauseButtonPressed(int id) {
+	m_app->Pause();
+}
+
+static void StateChanged(int id)	 {
+	m_app->ChangeState(id);
+}
+
+// State Callbacks
+
+static void TorsoAngleChanged(int id) {
+	m_app->ChangeTorsoAngle();
+}
+
+static void UpperLeftLegAngleChanged(int id) {
+	m_app->ChangeUpperLeftLegAngle();
+}
+
+static void UpperRightLegAngleChanged(int id) {
+	m_app->ChangeUpperRightLegAngle();
+}
+
+static void LowerLeftAngleChanged(int id) {
+	m_app->ChangeLowerLeftLegAngle();
+}
+
+static void LowerRightAngleChanged(int id) {
+	m_app->ChangeLowerRightLegAngle();
+}
+
+static void LeftFootAngleChanged(int id) {
+	m_app->ChangeLeftFootAngle();
+}
+
+static void RightFootAngleChanged(int id) {
+	m_app->ChangeRightFootAngle();
 }
 
 #pragma endregion GLUI_CALLBACKS
