@@ -41,13 +41,13 @@ public:
 	void SetLeftFootGains(float kp, float kd);
 	void SetRightFootGains(float kp, float kd);
 
+	CurrentControllerState m_currentState = RESET;
+	CurrentRagDollState m_ragDollState = STATE_0;
 
 private:
 
-
 	RagDollApplication *m_app;
-	CurrentControllerState m_currentState = RESET;
-	CurrentRagDollState m_ragDollState = ;
+	
 
 	// Set these in the GUI
 	Gains *m_torso_gains;
@@ -58,6 +58,7 @@ private:
 	Gains *m_lf_gains;
 	Gains *m_rf_gains;
 
+	State *m_state0;
 	State *m_state1;
 	State *m_state2;
 	State *m_state3;

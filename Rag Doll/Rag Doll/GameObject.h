@@ -37,6 +37,12 @@ public:
 		}
 	}
 
+	static void EnableObjects(std::vector<GameObject *> objects) {
+		for (std::vector<GameObject *>::iterator it = objects.begin(); it != objects.end(); ++it) {
+			(*it)->GetRigidBody()->setActivationState(ACTIVE_TAG);
+		}
+	}
+
 	void Reposition(const btVector3 &position, const btQuaternion &orientation = btQuaternion(0, 0, 1, 1));
 
 

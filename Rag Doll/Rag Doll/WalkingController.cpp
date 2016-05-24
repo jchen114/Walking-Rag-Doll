@@ -23,9 +23,9 @@ WalkingController::WalkingController()
 
 WalkingController::WalkingController(RagDollApplication *app) {
 	m_app = app;
-	m_currentState = STATE_0;
+	m_ragDollState = STATE_0;
+	m_currentState = RESET;	
 }
-
 
 std::vector<State *> WalkingController::ReadStateFile() {
 
@@ -46,12 +46,15 @@ std::vector<State *> WalkingController::ReadStateFile() {
 					float torso, ull, url, lll, lrl, lf, rf;
 					char c;
 					//printf("States: \n");
-					int state = 1;
+					int state = 0;
 					while ((infile >> torso >> c >> ull >> c >> url >> c >> lll >> c >> lrl >> c >> lf >> c >> rf) && (c == ',')) {
 						//printf("%f, %f, %f, %f, %f, %f, %f \n", torso, ull, url, lll, lrl, lf, rf);
 						// Set GLUI to read parameters
 						switch (state)
 						{
+						case 0:
+							m_state0 = new State(torso, ull, url, lll, lrl, lf, rf);
+							break;
 						case 1:
 							m_state1 = new State(torso, ull, url, lll, lrl, lf, rf);
 							break;
@@ -78,13 +81,14 @@ std::vector<State *> WalkingController::ReadStateFile() {
 	else {
 		/* could not open directory */
 		// Initialize state to be zeros
+		m_state0 = new State(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 		m_state1 = new State(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 		m_state2 = new State(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 		m_state3 = new State(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 		m_state4 = new State(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 	}
 
-	std::vector<State *> states = {m_state1, m_state2, m_state3, m_state4};
+	std::vector<State *> states = {m_state0, m_state1, m_state2, m_state3, m_state4};
 	return states;
 
 }
@@ -202,6 +206,8 @@ WalkingController::~WalkingController()
 
 void WalkingController::Walk() {
 
+	m_currentState = WALKING;
+
 	switch (m_currentState)
 	{
 	case STATE_0:
@@ -218,10 +224,15 @@ void WalkingController::Walk() {
 
 }
 
-void WalkingController::PauseWalking(){}
+void WalkingController::PauseWalking(){
+
+	m_currentState = PAUSE;
+
+}
 
 void WalkingController::Reset(){
-	m_currentState = STATE_0;
+	m_ragDollState = STATE_0;
+	m_currentState = RESET;
 }
 
 #pragma endregion WALKER_INTERACTION

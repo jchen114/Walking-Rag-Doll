@@ -346,14 +346,22 @@ void BulletOpenGLApplication::DrawShape(btScalar *transform, const btCollisionSh
 		// get halfSize of the box
 		btVector3 halfSize = box->getHalfExtentsWithMargin();
 		// draw the box
-		DrawBox(halfSize);
+		// Don't think I should do this.. but whatever.
+		if (Constants::GetInstance().GetProjectionMode() == ORTHOGRAPHIC) {
+			DrawPlane(halfSize);
+		}
+		else {
+			DrawBox(halfSize);
+		}
 	}
+		break;
 	case BOX_2D_SHAPE_PROXYTYPE: {
 		// assume the shape is a 2d box (plane) and typecast it
 		const btBox2dShape *plane = static_cast<const btBox2dShape*> (pShape);
 		btVector3 halfSize = plane->getHalfExtentsWithMargin();
 		DrawPlane(halfSize);
 	}
+		break;
 	default:
 		// unsupported type
 		break;

@@ -18,8 +18,10 @@ public:
 
 	virtual void InitializePhysics() override;
 	virtual void ShutdownPhysics() override;
+	virtual void Idle() override;
 
 	void CreateRagDoll(const btVector3 &position);
+	void AddHinges();
 
 	GameObject *Create2DBox(const btVector3 &halfSize, float mass, const btVector3 &color, const btVector3 &position);
 	GameObject *Create3DBox(const btVector3 &halfSize, float mass, const btVector3 &color, const btVector3 &position);
@@ -54,6 +56,10 @@ private:
 
 	void DisplayState(int state);
 	void DisplayGains();
+	void DisableStateSpinner();
+	void DisableAllSpinners();
+
+	void UpdateRagDoll();
 
 	WalkingController *m_WalkingController;
 
