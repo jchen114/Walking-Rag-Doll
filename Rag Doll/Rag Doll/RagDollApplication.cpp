@@ -39,6 +39,8 @@ enum Button_IDs {
 
 #pragma region DEFINITIONS 
 
+#define PI 3.14159265
+
 // MASS
 #define torso_mass 70
 #define upper_leg_mass 5
@@ -64,24 +66,17 @@ enum Button_IDs {
 #define KD_LOWER 0.0f
 #define KD_HIGHER 5.0f
 
-#define TORSO_HEIGHT	2.5
-#define TORSO_WIDTH		1
-#define UL_HEIGHT		3.0
-#define UL_WIDTH		0.7
-#define LL_HEIGHT		3.0		
-#define LL_WIDTH		0.7
-#define F_HEIGHT		0.3
-#define F_WIDTH			1.2
-
 // Constraint limits
-#define UPPER_LEG_LOW_CONSTRAINT	-90.0f
-#define UPPER_LEG_HIGH_CONSTRAINT	30.0f
+#define TORSO_LOW_CONSTRAINT		0.0f
+#define TORSO_HIGH_CONSTRAINT		180.0f
+#define UPPER_LEG_LOW_CONSTRAINT	30.0f
+#define UPPER_LEG_HIGH_CONSTRAINT	180.0f
 #define LOWER_LEG_LOW_CONSTRAINT	0.0f
 #define LOWER_LEG_HIGH_CONSTRAINT	90.0f
 #define FOOT_LOW_CONSTRAINT			0.0f
 #define FOOT_HIGH_CONSTRAINT		90.0f
 
-#define ORIGINAL_TORSO_POSITION btVector3(0, -(0.2 + TORSO_HEIGHT/2), 0.5)
+#define ORIGINAL_TORSO_POSITION btVector3(0, -9 + foot_height + lower_leg_height + upper_leg_height + torso_height/2, 0.5)
 
 #pragma endregion DEFINITIONS
 
@@ -252,13 +247,21 @@ void RagDollApplication::CreateRagDollGUI() {
 
 	m_glui_window->add_statictext_to_panel(states_panel, "Desired State Angles");
 
-	m_torso_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Torso Angle", GLUI_SPINNER_FLOAT, NULL, TORSO_ANGLE);
-	m_ull_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Upper left leg Angle", GLUI_SPINNER_FLOAT, NULL, ULL_ANGLE);
-	m_url_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Upper right leg Angle", GLUI_SPINNER_FLOAT, NULL, URL_ANGLE);
-	m_lll_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Lower left leg Angle", GLUI_SPINNER_FLOAT, NULL, LLL_ANGLE);
-	m_lrl_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Lower right leg Angle", GLUI_SPINNER_FLOAT, NULL, LRL_ANGLE);
-	m_lf_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Left foot Angle", GLUI_SPINNER_FLOAT, NULL, LF_ANGLE);
-	m_rf_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Right foot Angle", GLUI_SPINNER_FLOAT, NULL, RF_ANGLE);
+	m_torso_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Torso Angle", GLUI_SPINNER_FLOAT, NULL, TORSO_ANGLE, (GLUI_Update_CB)TorsoAngleChanged);
+	m_ull_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Upper left leg Angle", GLUI_SPINNER_FLOAT, NULL, ULL_ANGLE, (GLUI_Update_CB)UpperLeftLegAngleChanged);
+	m_url_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Upper right leg Angle", GLUI_SPINNER_FLOAT, NULL, URL_ANGLE, (GLUI_Update_CB)UpperRightLegAngleChanged);
+	m_lll_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Lower left leg Angle", GLUI_SPINNER_FLOAT, NULL, LLL_ANGLE, (GLUI_Update_CB)LowerLeftLegAngleChanged);
+	m_lrl_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Lower right leg Angle", GLUI_SPINNER_FLOAT, NULL, LRL_ANGLE, (GLUI_Update_CB)LowerRightLegAngleChanged);
+	m_lf_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Left foot Angle", GLUI_SPINNER_FLOAT, NULL, LF_ANGLE, (GLUI_Update_CB)LeftFootAngleChanged);
+	m_rf_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Right foot Angle", GLUI_SPINNER_FLOAT, NULL, RF_ANGLE, (GLUI_Update_CB)RightFootAngleChanged);
+
+	m_torso_state_spinner->set_float_limits(TORSO_LOW_CONSTRAINT, TORSO_HIGH_CONSTRAINT);
+	m_ull_state_spinner->set_float_limits(UPPER_LEG_LOW_CONSTRAINT, UPPER_LEG_HIGH_CONSTRAINT);
+	m_url_state_spinner->set_float_limits(UPPER_LEG_LOW_CONSTRAINT, UPPER_LEG_HIGH_CONSTRAINT);
+	m_lll_state_spinner->set_float_limits(LOWER_LEG_LOW_CONSTRAINT, LOWER_LEG_HIGH_CONSTRAINT);
+	m_lrl_state_spinner->set_float_limits(LOWER_LEG_LOW_CONSTRAINT, LOWER_LEG_HIGH_CONSTRAINT);
+	m_lf_state_spinner->set_float_limits(FOOT_LOW_CONSTRAINT, FOOT_HIGH_CONSTRAINT);
+	m_rf_state_spinner->set_float_limits(FOOT_LOW_CONSTRAINT, FOOT_HIGH_CONSTRAINT);
 
 	m_glui_window->add_button_to_panel(states_panel, "Save States", SAVESTATES_BUTTON, (GLUI_Update_CB)SaveStatesButtonPressed);
 
@@ -344,9 +347,7 @@ void RagDollApplication::DisplayGains() {
 		default:
 			break;
 		}
-
 	}
-
 }
 
 #pragma endregion INITIALIZATION
@@ -358,39 +359,41 @@ void RagDollApplication::CreateRagDoll(const btVector3 &position) {
 	// Create a torso centered at the position
 	btVector3 halfSize(torso_height/2, torso_width/2, 0.0);
 	
-	m_torso = Create2DBox(halfSize, torso_mass, GetRandomColor(), position);
+	m_torso = Create2DBox(halfSize, torso_mass, btVector3(0, 51 / 256.0, 102 / 256.0), position); // Blue
 
 	// test box
 	//Create2DBox(halfSize, mass, GetRandomColor(), btVector3(-4, 5, 0.7));
 	//Create2DBox(halfSize, mass, GetRandomColor(), btVector3(4, 7, 0.5));
 
+	// -z is closer to the camera...
+
 	// Create Upper legs
 	halfSize = btVector3(upper_leg_height / 2, upper_leg_width / 2, 0.0f);
 	btVector3 pos1 = position;
-	pos1.setZ(pos1.getZ() - 0.25);
-	m_upperLeftLeg = Create2DBox(halfSize, upper_leg_mass, GetRandomColor(), pos1);
+	pos1.setZ(pos1.getZ() + 0.25);
+	m_upperLeftLeg = Create2DBox(halfSize, upper_leg_mass, btVector3(255 / 256.0, 102 / 256.0, 255 / 256.0), pos1); // Pink
 	btVector3 pos2 = position;
-	pos2.setZ(pos2.getZ() + 0.25);
-	m_upperRightLeg = Create2DBox(halfSize, upper_leg_mass, GetRandomColor(), pos2);
+	pos2.setZ(pos2.getZ() - 0.25);
+	m_upperRightLeg = Create2DBox(halfSize, upper_leg_mass, btVector3(0 / 256.0, 153 / 256.0, 0 / 256.0), pos2); // Green
 
 	// Create lower legs
 	halfSize = btVector3(lower_leg_height / 2, lower_leg_width / 2, 0.0f);
 	btVector3 pos3 = position;
-	pos3.setZ(pos3.getZ() - 0.27);
-	m_lowerLeftLeg = Create2DBox(halfSize, lower_leg_mass, GetRandomColor(), pos3);
+	pos3.setZ(pos3.getZ() + 0.27);
+	m_lowerLeftLeg = Create2DBox(halfSize, lower_leg_mass, btVector3(255 / 256.0, 255 / 256.0, 0 / 256.0), pos3); // Yellow
 	btVector3 pos4 = position;
-	pos4.setZ(pos4.getZ() + 0.27);
-	m_lowerRightLeg = Create2DBox(halfSize, lower_leg_mass, GetRandomColor(), pos4);
+	pos4.setZ(pos4.getZ() - 0.27);
+	m_lowerRightLeg = Create2DBox(halfSize, lower_leg_mass, btVector3(255 / 256.0, 102 / 256.0, 0 / 256.0), pos4); // Orange
 
 	// Create feet
-	halfSize = btVector3(foot_height / 2, foot_width / 2, 0.0f);
+	halfSize = btVector3(foot_height / 2, foot_width / 2, 0.0f); 
 	btVector3 pos5 = position;
-	pos5.setZ(pos5.getZ() - 0.28);
-	m_leftFoot = Create2DBox(halfSize, feet_mass, GetRandomColor(), pos5);
+	pos5.setZ(pos5.getZ() + 0.28);
+	m_leftFoot = Create2DBox(halfSize, feet_mass, btVector3(0 / 256.0, 255 / 256.0, 255 / 256.0), pos5); // aqua blue
 	halfSize = btVector3(foot_height / 2, foot_width / 2, 0.0f);
 	btVector3 pos6 = position;
-	pos6.setZ(pos6.getZ() + 0.28);
-	m_rightFoot = Create2DBox(halfSize, feet_mass, GetRandomColor(), pos6);
+	pos6.setZ(pos6.getZ() - 0.28);
+	m_rightFoot = Create2DBox(halfSize, feet_mass, btVector3(153 / 256.0, 0 / 256.0, 153 / 256.0), pos6); // purple
 
 	AddHinges();
 
@@ -512,35 +515,54 @@ void RagDollApplication::UpdateRagDoll() {
 
 	printf("Updating Rag doll:\n %f, %f, %f, %f, %f, %f, %f\n", torsoAngle, ullAngle, urlAngle, lllAngle, lrlAngle, lfAngle, rfAngle);
 
-	m_torso->Reposition(ORIGINAL_TORSO_POSITION, btQuaternion(btVector3(0, 0, 1), torsoAngle));
-	m_upperLeftLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(TORSO_HEIGHT / 2 + UL_HEIGHT / 2), -0.25), btQuaternion(btVector3(0,0,1), ullAngle));
-	m_upperRightLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(TORSO_HEIGHT / 2 + UL_HEIGHT / 2), 0.25), btQuaternion(btVector3(0, 0, 1), urlAngle));
-	m_lowerLeftLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(TORSO_HEIGHT / 2 + UL_HEIGHT + LL_HEIGHT / 2), -0.27), btQuaternion(btVector3(0, 0, 1), lllAngle));
-	m_lowerRightLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(TORSO_HEIGHT / 2 + UL_HEIGHT + LL_HEIGHT / 2), 0.27), btQuaternion(btVector3(0, 0, 1), lrlAngle));
-	m_leftFoot->Reposition(ORIGINAL_TORSO_POSITION + btVector3((F_WIDTH - LL_WIDTH) / 2, -(TORSO_HEIGHT / 2 + UL_HEIGHT + LL_HEIGHT + F_HEIGHT / 2), -0.28), btQuaternion(btVector3(0, 0, 1), lfAngle));
-	m_rightFoot->Reposition(ORIGINAL_TORSO_POSITION + btVector3((F_WIDTH - LL_WIDTH) / 2, -(TORSO_HEIGHT / 2 + UL_HEIGHT + LL_HEIGHT + F_HEIGHT / 2), 0.28), btQuaternion(btVector3(0, 0, 1), rfAngle));
+	m_torso->Reposition(ORIGINAL_TORSO_POSITION + btVector3(-(torso_height/2) * cos(PI - torsoAngle), sin(PI - torsoAngle)*(torso_height/2) - (torso_height/2),0), btQuaternion(btVector3(0, 0, 1), torsoAngle));
+	
+	m_upperLeftLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(torso_height / 2 + upper_leg_height / 2), 0.25) + btVector3(-cos(ullAngle) * (upper_leg_height/2), (upper_leg_height/2) - sin(ullAngle)*upper_leg_height/2, 0), btQuaternion(btVector3(0,0,1), ullAngle));
+	m_upperRightLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(torso_height / 2 + upper_leg_height / 2), -0.25) + btVector3(-cos(urlAngle) * (upper_leg_height / 2), (upper_leg_height / 2) - sin(urlAngle)*upper_leg_height / 2, 0), btQuaternion(btVector3(0, 0, 1), urlAngle));
+
+	btVector3 upperLeftLegBottomPoint = m_upperLeftLeg->GetCOMPosition() + btVector3(cos(PI - ullAngle) * upper_leg_height/2, -sin(PI - ullAngle) * upper_leg_height/2, 0);
+	btVector3 upperRightLegBottomPoint = m_upperRightLeg->GetCOMPosition() + btVector3(cos(PI - urlAngle) * upper_leg_height / 2, -sin(PI - urlAngle) * upper_leg_height / 2, 0);
+	//printf("ULL BP position: %f, %f\n", upperLeftLegBottomPoint.x(), upperLeftLegBottomPoint.y());
+	m_lowerLeftLeg->Reposition(upperLeftLegBottomPoint + btVector3(0.0f, 0.0, 0.27), btQuaternion(btVector3(0, 0, 1), lllAngle));
+	//m_lowerLeftLeg->Reposition(upperLeftLegBottomPoint + btVector3(0.0f, - lower_leg_height / 2, 0.27), btQuaternion(btVector3(0, 0, 1), lllAngle));
+	m_lowerRightLeg->Reposition(upperRightLegBottomPoint + btVector3(0.0f, -lower_leg_height / 2, -0.27), btQuaternion(btVector3(0, 0, 1), lrlAngle));
+
+	m_leftFoot->Reposition(ORIGINAL_TORSO_POSITION + btVector3((foot_width - lower_leg_width) / 2, -(torso_height / 2 + upper_leg_height + lower_leg_height + foot_height / 2), 0.28), btQuaternion(btVector3(0, 0, 1), lfAngle));
+	m_rightFoot->Reposition(ORIGINAL_TORSO_POSITION + btVector3((foot_width - lower_leg_width) / 2, -(torso_height / 2 + upper_leg_height + lower_leg_height + foot_height / 2), -0.28), btQuaternion(btVector3(0, 0, 1), rfAngle));
 
 }
 
 
 void RagDollApplication::ChangeTorsoAngle() {
 
+	State *state = m_states.at(m_currentState);
+	state->m_torsoAngle = m_torso_state_spinner->get_float_val();
+	UpdateRagDoll();
+
 }
 
 void RagDollApplication::ChangeUpperLeftLegAngle() {
-
+	State *state = m_states.at(m_currentState);
+	state->m_upperLeftLegAngle = m_ull_state_spinner->get_float_val();
+	UpdateRagDoll();
 }
 
 void RagDollApplication::ChangeUpperRightLegAngle() {
-
+	State *state = m_states.at(m_currentState);
+	state->m_upperRightLegAngle = m_url_state_spinner->get_float_val();
+	UpdateRagDoll();
 }
 
 void RagDollApplication::ChangeLowerLeftLegAngle() {
-
+	State *state = m_states.at(m_currentState);
+	state->m_lowerLeftLegAngle = m_lll_state_spinner->get_float_val();
+	UpdateRagDoll();
 }
 
 void RagDollApplication::ChangeLowerRightLegAngle() {
-
+	State *state = m_states.at(m_currentState);
+	state->m_lowerRightLegAngle = m_lrl_state_spinner->get_float_val();
+	UpdateRagDoll();
 }
 
 void RagDollApplication::ChangeLeftFootAngle() {
@@ -721,11 +743,11 @@ static void UpperRightLegAngleChanged(int id) {
 	m_app->ChangeUpperRightLegAngle();
 }
 
-static void LowerLeftAngleChanged(int id) {
+static void LowerLeftLegAngleChanged(int id) {
 	m_app->ChangeLowerLeftLegAngle();
 }
 
-static void LowerRightAngleChanged(int id) {
+static void LowerRightLegAngleChanged(int id) {
 	m_app->ChangeLowerRightLegAngle();
 }
 

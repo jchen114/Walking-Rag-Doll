@@ -50,7 +50,9 @@ public:
 	btCollisionShape *GetShape() { return m_pShape; }
 	btRigidBody *GetRigidBody() { return m_pBody; }
 	btMotionState *GetMotionState() { return m_pMotionState; }
-
+	const btVector3 GetCOMPosition() {
+		return m_pBody->getCenterOfMassPosition();
+	}
 	void GetTransform(btScalar *transform) {
 		if (m_pMotionState) {
 			m_pMotionState->GetWorldTransform(transform);
