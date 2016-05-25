@@ -38,6 +38,7 @@ public:
 	float Normalize(float meters, float dist2Camera, Dimension dimension);
 
 	float DegreesToRadians(float degrees);
+	float RadiansToDegrees(float radians);
 
 protected:
 

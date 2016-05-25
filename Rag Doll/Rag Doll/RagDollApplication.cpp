@@ -76,7 +76,7 @@ enum Button_IDs {
 #define FOOT_LOW_CONSTRAINT			0.0f
 #define FOOT_HIGH_CONSTRAINT		90.0f
 
-#define ORIGINAL_TORSO_POSITION btVector3(0, -9 + foot_height + lower_leg_height + upper_leg_height + torso_height/2, 0.5)
+#define ORIGINAL_TORSO_POSITION btVector3(0, -9 + foot_height/2 + lower_leg_height + upper_leg_height + torso_height/2, 0.5)
 
 #pragma endregion DEFINITIONS
 
@@ -380,9 +380,9 @@ void RagDollApplication::CreateRagDoll(const btVector3 &position) {
 	m_lowerRightLeg = Create2DBox(halfSize, lower_leg_mass, btVector3(255 / 256.0, 102 / 256.0, 0 / 256.0), position + btVector3(0, 0, 0.11)); // Orange
 
 	// Create feet
-	halfSize = btVector3(foot_height / 2, foot_width / 2, 0.0f); 
+	halfSize = btVector3(foot_width / 2, foot_height / 2, 0.0f); 
 	m_leftFoot = Create2DBox(halfSize, feet_mass, btVector3(0 / 256.0, 255 / 256.0, 255 / 256.0), position + btVector3(0,0,-0.12)); // aqua blue
-	halfSize = btVector3(foot_height / 2, foot_width / 2, 0.0f);
+	halfSize = btVector3(foot_width / 2, foot_height / 2, 0.0f);
 	m_rightFoot = Create2DBox(halfSize, feet_mass, btVector3(153 / 256.0, 0 / 256.0, 153 / 256.0), position + btVector3(0, 0, 0.12)); // purple
 
 	AddHinges();
@@ -502,8 +502,11 @@ void RagDollApplication::UpdateRagDoll() {
 	// Local coordinates convert to world coordinates
 	float lllAngle = Constants::GetInstance().DegreesToRadians(state->m_upperLeftLegAngle - state->m_lowerLeftLegAngle);
 	float lrlAngle = Constants::GetInstance().DegreesToRadians(state->m_upperRightLegAngle - state->m_lowerRightLegAngle);
-	float lfAngle = Constants::GetInstance().DegreesToRadians(state->m_leftFootAngle);
-	float rfAngle = Constants::GetInstance().DegreesToRadians(state->m_rightFootAngle);
+
+	printf("lll angle = %f, lfAngle = %f\n", Constants::GetInstance().RadiansToDegrees(lllAngle), Constants::GetInstance().RadiansToDegrees(lllAngle) - state->m_leftFootAngle - 90);
+
+	float lfAngle = lllAngle - Constants::GetInstance().DegreesToRadians(state->m_leftFootAngle - 90);
+	float rfAngle = lrlAngle - Constants::GetInstance().DegreesToRadians(state->m_rightFootAngle - 90);
 
 	printf("Updating Rag doll:\n %f, %f, %f, %f, %f, %f, %f\n", torsoAngle, ullAngle, urlAngle, lllAngle, lrlAngle, lfAngle, rfAngle);
 	// Blue
@@ -518,11 +521,14 @@ void RagDollApplication::UpdateRagDoll() {
 	//m_lowerLeftLeg->Reposition(upperLeftLegBottomPoint + btVector3(0.0f, -lower_leg_height / 2, 0.1), btQuaternion(btVector3(0, 0, 1), lllAngle));
 	m_lowerLeftLeg->Reposition(upperLeftLegBottomPoint + btVector3(-(cos(lllAngle)*lower_leg_height / 2), -(sin(lllAngle)*lower_leg_height / 2), 0.1), btQuaternion(btVector3(0, 0, 1), lllAngle));
 	m_lowerRightLeg->Reposition(upperRightLegBottomPoint + btVector3(-(cos(lrlAngle) * lower_leg_height / 2), -(sin(lrlAngle)*lower_leg_height / 2), -0.1), btQuaternion(btVector3(0, 0, 1), lrlAngle));
-	m_leftFoot->Reposition(ORIGINAL_TORSO_POSITION + btVector3((foot_width - lower_leg_width) / 2, -(torso_height / 2 + upper_leg_height + lower_leg_height + foot_height / 2), 0.28), btQuaternion(btVector3(0, 0, 1), lfAngle));
-	m_rightFoot->Reposition(ORIGINAL_TORSO_POSITION + btVector3((foot_width - lower_leg_width) / 2, -(torso_height / 2 + upper_leg_height + lower_leg_height + foot_height / 2), -0.28), btQuaternion(btVector3(0, 0, 1), rfAngle));
+
+	btVector3 lowerLeftLegBottomPoint = m_lowerLeftLeg->GetCOMPosition() + btVector3(cos(PI - lllAngle) * lower_leg_height / 2, -sin(PI - lllAngle) * lower_leg_height / 2, 0);
+	btVector3 lowerRightLegBottomPoint = m_lowerRightLeg->GetCOMPosition() + btVector3(cos(PI - lrlAngle) * lower_leg_height / 2, -sin(PI - lrlAngle) * lower_leg_height / 2, 0);
+
+	m_leftFoot->Reposition(lowerLeftLegBottomPoint - btVector3(cos(lfAngle) * foot_width/4, sin(lfAngle) * foot_width/4, 0.1), btQuaternion(btVector3(0, 0, 1), lfAngle));
+	m_rightFoot->Reposition(lowerRightLegBottomPoint - btVector3(cos(rfAngle) * foot_width/4, sin(rfAngle) * foot_width/4, -0.1), btQuaternion(btVector3(0, 0, 1), rfAngle));
 
 }
-
 
 void RagDollApplication::ChangeTorsoAngle() {
 
@@ -557,10 +563,19 @@ void RagDollApplication::ChangeLowerRightLegAngle() {
 }
 
 void RagDollApplication::ChangeLeftFootAngle() {
+	
+	State *state = m_states.at(m_currentState);
+	state->m_leftFootAngle = m_lf_state_spinner->get_float_val(); // Assume relative orientation
+	UpdateRagDoll();
 
 }
 
 void RagDollApplication::ChangeRightFootAngle() {
+
+	State *state = m_states.at(m_currentState);
+	state->m_rightFootAngle = m_rf_state_spinner->get_float_val(); // Assume relative orientation
+	UpdateRagDoll();
+
 
 }
 
@@ -693,7 +708,6 @@ btVector3 RagDollApplication::GetRandomColor() {
 
 static void RagDollIdle() {
 	m_app->Idle();
-
 }
 
 static void SaveGainsButtonPressed(int id) {

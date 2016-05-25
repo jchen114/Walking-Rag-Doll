@@ -67,6 +67,10 @@ float Constants::DegreesToRadians(float degrees) {
 
 }
 
+float Constants::RadiansToDegrees(float radians) {
+	return radians * (1 / DEG_2_RAD);
+}
+
 Constants::~Constants()
 {
 }
