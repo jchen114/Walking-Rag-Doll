@@ -294,10 +294,14 @@ void RagDollApplication::DisplayState(int state) {
 
 	State *selected_state = m_states.at(state);
 	m_torso_state_spinner->set_float_val(selected_state->m_torsoAngle);
+	
 	m_ull_state_spinner->set_float_val(selected_state->m_upperLeftLegAngle);
 	m_url_state_spinner->set_float_val(selected_state->m_upperRightLegAngle);
+	
+	// Lower legs have to relative orientation to upper legs. Local coordinates
 	m_lll_state_spinner->set_float_val(selected_state->m_lowerLeftLegAngle);
 	m_lrl_state_spinner->set_float_val(selected_state->m_lowerRightLegAngle);
+	
 	m_lf_state_spinner->set_float_val(selected_state->m_leftFootAngle);
 	m_rf_state_spinner->set_float_val(selected_state->m_rightFootAngle);
 
@@ -365,35 +369,21 @@ void RagDollApplication::CreateRagDoll(const btVector3 &position) {
 	//Create2DBox(halfSize, mass, GetRandomColor(), btVector3(-4, 5, 0.7));
 	//Create2DBox(halfSize, mass, GetRandomColor(), btVector3(4, 7, 0.5));
 
-	// -z is closer to the camera...
-
 	// Create Upper legs
 	halfSize = btVector3(upper_leg_height / 2, upper_leg_width / 2, 0.0f);
-	btVector3 pos1 = position;
-	pos1.setZ(pos1.getZ() + 0.25);
-	m_upperLeftLeg = Create2DBox(halfSize, upper_leg_mass, btVector3(255 / 256.0, 102 / 256.0, 255 / 256.0), pos1); // Pink
-	btVector3 pos2 = position;
-	pos2.setZ(pos2.getZ() - 0.25);
-	m_upperRightLeg = Create2DBox(halfSize, upper_leg_mass, btVector3(0 / 256.0, 153 / 256.0, 0 / 256.0), pos2); // Green
+	m_upperLeftLeg = Create2DBox(halfSize, upper_leg_mass, btVector3(255 / 256.0, 102 / 256.0, 255 / 256.0), position + btVector3(0,0, -0.1)); // Pink
+	m_upperRightLeg = Create2DBox(halfSize, upper_leg_mass, btVector3(0 / 256.0, 153 / 256.0, 0 / 256.0), position + btVector3(0,0,0.1)); // Green
 
 	// Create lower legs
 	halfSize = btVector3(lower_leg_height / 2, lower_leg_width / 2, 0.0f);
-	btVector3 pos3 = position;
-	pos3.setZ(pos3.getZ() + 0.27);
-	m_lowerLeftLeg = Create2DBox(halfSize, lower_leg_mass, btVector3(255 / 256.0, 255 / 256.0, 0 / 256.0), pos3); // Yellow
-	btVector3 pos4 = position;
-	pos4.setZ(pos4.getZ() - 0.27);
-	m_lowerRightLeg = Create2DBox(halfSize, lower_leg_mass, btVector3(255 / 256.0, 102 / 256.0, 0 / 256.0), pos4); // Orange
+	m_lowerLeftLeg = Create2DBox(halfSize, lower_leg_mass, btVector3(250 / 256.0, 250 / 256.0, 10 / 256.0), position + btVector3(0, 0, -0.11)); // Yellow
+	m_lowerRightLeg = Create2DBox(halfSize, lower_leg_mass, btVector3(255 / 256.0, 102 / 256.0, 0 / 256.0), position + btVector3(0, 0, 0.11)); // Orange
 
 	// Create feet
 	halfSize = btVector3(foot_height / 2, foot_width / 2, 0.0f); 
-	btVector3 pos5 = position;
-	pos5.setZ(pos5.getZ() + 0.28);
-	m_leftFoot = Create2DBox(halfSize, feet_mass, btVector3(0 / 256.0, 255 / 256.0, 255 / 256.0), pos5); // aqua blue
+	m_leftFoot = Create2DBox(halfSize, feet_mass, btVector3(0 / 256.0, 255 / 256.0, 255 / 256.0), position + btVector3(0,0,-0.12)); // aqua blue
 	halfSize = btVector3(foot_height / 2, foot_width / 2, 0.0f);
-	btVector3 pos6 = position;
-	pos6.setZ(pos6.getZ() - 0.28);
-	m_rightFoot = Create2DBox(halfSize, feet_mass, btVector3(153 / 256.0, 0 / 256.0, 153 / 256.0), pos6); // purple
+	m_rightFoot = Create2DBox(halfSize, feet_mass, btVector3(153 / 256.0, 0 / 256.0, 153 / 256.0), position + btVector3(0, 0, 0.12)); // purple
 
 	AddHinges();
 
@@ -486,6 +476,7 @@ void RagDollApplication::ChangeState(int id) {
 	m_states.at(m_previousState)->m_torsoAngle = m_torso_state_spinner->get_float_val();
 	m_states.at(m_previousState)->m_upperLeftLegAngle = m_ull_state_spinner->get_float_val();
 	m_states.at(m_previousState)->m_upperRightLegAngle = m_url_state_spinner->get_float_val();
+	// Relative Store local coordinates
 	m_states.at(m_previousState)->m_lowerLeftLegAngle = m_lll_state_spinner->get_float_val();
 	m_states.at(m_previousState)->m_lowerRightLegAngle = m_lrl_state_spinner->get_float_val();
 	m_states.at(m_previousState)->m_leftFootAngle = m_lf_state_spinner->get_float_val();
@@ -508,25 +499,25 @@ void RagDollApplication::UpdateRagDoll() {
 	float torsoAngle = Constants::GetInstance().DegreesToRadians(state->m_torsoAngle);
 	float ullAngle = Constants::GetInstance().DegreesToRadians(state->m_upperLeftLegAngle);
 	float urlAngle = Constants::GetInstance().DegreesToRadians(state->m_upperRightLegAngle);
-	float lllAngle = Constants::GetInstance().DegreesToRadians(state->m_lowerLeftLegAngle);
-	float lrlAngle = Constants::GetInstance().DegreesToRadians(state->m_lowerRightLegAngle);
+	// Local coordinates convert to world coordinates
+	float lllAngle = Constants::GetInstance().DegreesToRadians(state->m_upperLeftLegAngle - state->m_lowerLeftLegAngle);
+	float lrlAngle = Constants::GetInstance().DegreesToRadians(state->m_upperRightLegAngle - state->m_lowerRightLegAngle);
 	float lfAngle = Constants::GetInstance().DegreesToRadians(state->m_leftFootAngle);
 	float rfAngle = Constants::GetInstance().DegreesToRadians(state->m_rightFootAngle);
 
 	printf("Updating Rag doll:\n %f, %f, %f, %f, %f, %f, %f\n", torsoAngle, ullAngle, urlAngle, lllAngle, lrlAngle, lfAngle, rfAngle);
-
+	// Blue
 	m_torso->Reposition(ORIGINAL_TORSO_POSITION + btVector3(-(torso_height/2) * cos(PI - torsoAngle), sin(PI - torsoAngle)*(torso_height/2) - (torso_height/2),0), btQuaternion(btVector3(0, 0, 1), torsoAngle));
-	
-	m_upperLeftLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(torso_height / 2 + upper_leg_height / 2), 0.25) + btVector3(-cos(ullAngle) * (upper_leg_height/2), (upper_leg_height/2) - sin(ullAngle)*upper_leg_height/2, 0), btQuaternion(btVector3(0,0,1), ullAngle));
-	m_upperRightLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(torso_height / 2 + upper_leg_height / 2), -0.25) + btVector3(-cos(urlAngle) * (upper_leg_height / 2), (upper_leg_height / 2) - sin(urlAngle)*upper_leg_height / 2, 0), btQuaternion(btVector3(0, 0, 1), urlAngle));
-
+	// Pink Green
+	m_upperLeftLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(torso_height / 2 + upper_leg_height / 2), 0.1) + btVector3(-cos(ullAngle) * (upper_leg_height/2), (upper_leg_height/2) - sin(ullAngle)*upper_leg_height/2, 0), btQuaternion(btVector3(0,0,1), ullAngle));
+	m_upperRightLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(torso_height / 2 + upper_leg_height / 2), -0.1) + btVector3(-cos(urlAngle) * (upper_leg_height / 2), (upper_leg_height / 2) - sin(urlAngle)*upper_leg_height / 2, 0), btQuaternion(btVector3(0, 0, 1), urlAngle));
 	btVector3 upperLeftLegBottomPoint = m_upperLeftLeg->GetCOMPosition() + btVector3(cos(PI - ullAngle) * upper_leg_height/2, -sin(PI - ullAngle) * upper_leg_height/2, 0);
 	btVector3 upperRightLegBottomPoint = m_upperRightLeg->GetCOMPosition() + btVector3(cos(PI - urlAngle) * upper_leg_height / 2, -sin(PI - urlAngle) * upper_leg_height / 2, 0);
 	//printf("ULL BP position: %f, %f\n", upperLeftLegBottomPoint.x(), upperLeftLegBottomPoint.y());
-	m_lowerLeftLeg->Reposition(upperLeftLegBottomPoint + btVector3(0.0f, 0.0, 0.27), btQuaternion(btVector3(0, 0, 1), lllAngle));
-	//m_lowerLeftLeg->Reposition(upperLeftLegBottomPoint + btVector3(0.0f, - lower_leg_height / 2, 0.27), btQuaternion(btVector3(0, 0, 1), lllAngle));
-	m_lowerRightLeg->Reposition(upperRightLegBottomPoint + btVector3(0.0f, -lower_leg_height / 2, -0.27), btQuaternion(btVector3(0, 0, 1), lrlAngle));
-
+	// Yellow Orange
+	//m_lowerLeftLeg->Reposition(upperLeftLegBottomPoint + btVector3(0.0f, -lower_leg_height / 2, 0.1), btQuaternion(btVector3(0, 0, 1), lllAngle));
+	m_lowerLeftLeg->Reposition(upperLeftLegBottomPoint + btVector3(-(cos(lllAngle)*lower_leg_height / 2), -(sin(lllAngle)*lower_leg_height / 2), 0.1), btQuaternion(btVector3(0, 0, 1), lllAngle));
+	m_lowerRightLeg->Reposition(upperRightLegBottomPoint + btVector3(-(cos(lrlAngle) * lower_leg_height / 2), -(sin(lrlAngle)*lower_leg_height / 2), -0.1), btQuaternion(btVector3(0, 0, 1), lrlAngle));
 	m_leftFoot->Reposition(ORIGINAL_TORSO_POSITION + btVector3((foot_width - lower_leg_width) / 2, -(torso_height / 2 + upper_leg_height + lower_leg_height + foot_height / 2), 0.28), btQuaternion(btVector3(0, 0, 1), lfAngle));
 	m_rightFoot->Reposition(ORIGINAL_TORSO_POSITION + btVector3((foot_width - lower_leg_width) / 2, -(torso_height / 2 + upper_leg_height + lower_leg_height + foot_height / 2), -0.28), btQuaternion(btVector3(0, 0, 1), rfAngle));
 
@@ -555,13 +546,13 @@ void RagDollApplication::ChangeUpperRightLegAngle() {
 
 void RagDollApplication::ChangeLowerLeftLegAngle() {
 	State *state = m_states.at(m_currentState);
-	state->m_lowerLeftLegAngle = m_lll_state_spinner->get_float_val();
+	state->m_lowerLeftLegAngle = m_lll_state_spinner->get_float_val(); // Assume relative orientation
 	UpdateRagDoll();
 }
 
 void RagDollApplication::ChangeLowerRightLegAngle() {
 	State *state = m_states.at(m_currentState);
-	state->m_lowerRightLegAngle = m_lrl_state_spinner->get_float_val();
+	state->m_lowerRightLegAngle = m_lrl_state_spinner->get_float_val(); // Assume relative orientation
 	UpdateRagDoll();
 }
 

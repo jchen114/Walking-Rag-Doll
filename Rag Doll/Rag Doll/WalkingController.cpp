@@ -173,7 +173,7 @@ std::vector<Gains *>WalkingController::ReadGainsFile() {
 void WalkingController::SaveStates() {
 	std::ofstream states_file;
 	states_file.open("..\\..\\State Configurations\\states.cfg");
-	std::vector<State *> states = { m_state1, m_state2, m_state3, m_state4 };
+	std::vector<State *> states = { m_state0, m_state1, m_state2, m_state3, m_state4 };
 	for (std::vector<State *>::iterator it = states.begin(); it != states.end(); it++) {
 		char buffer[100];
 		sprintf_s(buffer, "%f, %f, %f, %f, %f, %f, %f\n", (*it)->m_torsoAngle, (*it)->m_upperLeftLegAngle, (*it)->m_upperRightLegAngle, (*it)->m_lowerLeftLegAngle, (*it)->m_lowerRightLegAngle, (*it)->m_leftFootAngle, (*it)->m_rightFootAngle);
