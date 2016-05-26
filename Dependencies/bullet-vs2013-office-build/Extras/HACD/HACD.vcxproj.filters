@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="Windows-1252"?>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\jchen114\Documents\Rag Doll\Dependencies\bullet3-2.83.7\Extras\HACD\hacdGraph.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\jchen114\Documents\Rag Doll\Dependencies\bullet3-2.83.7\Extras\HACD\hacdHACD.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\jchen114\Documents\Rag Doll\Dependencies\bullet3-2.83.7\Extras\HACD\hacdICHull.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\jchen114\Documents\Rag Doll\Dependencies\bullet3-2.83.7\Extras\HACD\hacdManifoldMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\jchen114\Documents\Rag Doll\Dependencies\bullet3-2.83.7\Extras\HACD\hacdCircularList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\jchen114\Documents\Rag Doll\Dependencies\bullet3-2.83.7\Extras\HACD\hacdGraph.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\jchen114\Documents\Rag Doll\Dependencies\bullet3-2.83.7\Extras\HACD\hacdHACD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\jchen114\Documents\Rag Doll\Dependencies\bullet3-2.83.7\Extras\HACD\hacdICHull.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\jchen114\Documents\Rag Doll\Dependencies\bullet3-2.83.7\Extras\HACD\hacdManifoldMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\jchen114\Documents\Rag Doll\Dependencies\bullet3-2.83.7\Extras\HACD\hacdVector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\jchen114\Documents\Rag Doll\Dependencies\bullet3-2.83.7\Extras\HACD\hacdVersion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\jchen114\Documents\Rag Doll\Dependencies\bullet3-2.83.7\Extras\HACD\hacdCircularList.inl">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\jchen114\Documents\Rag Doll\Dependencies\bullet3-2.83.7\Extras\HACD\hacdVector.inl">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\jchen114\Documents\Rag Doll\Dependencies\bullet3-2.83.7\Extras\HACD\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{F6F1D998-6A9B-48C9-BDC9-402FE39C09D8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{86BFD981-F451-4DFE-B484-5F367ABB41FF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
