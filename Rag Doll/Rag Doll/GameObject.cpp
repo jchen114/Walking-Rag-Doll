@@ -32,6 +32,9 @@ GameObject::GameObject(	btCollisionShape *pShape,
 
 	// create the rigid body
 	m_pBody = new btRigidBody(cInfo);
+
+	m_inertia = localInertia;
+	m_mass = mass;
 }
 
 

@@ -57,7 +57,7 @@ private:
 	void DisplayGains();
 	void DisableStateSpinner();
 	void DisableAllSpinners();
-
+	void EnableGainSpinners();
 	void UpdateRagDoll();
 
 	WalkingController *m_WalkingController;

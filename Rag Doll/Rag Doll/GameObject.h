@@ -33,13 +33,19 @@ public:
 
 	static void DisableObjects(std::vector<GameObject *> objects) {
 		for (std::vector<GameObject *>::iterator it = objects.begin(); it != objects.end(); ++it) {
-			(*it)->GetRigidBody()->setActivationState(DISABLE_SIMULATION);
+			//(*it)->GetRigidBody()->clearForces();
+			// Make object static
+			(*it)->GetRigidBody()->setMassProps(0.0f, btVector3(0, 0, 0));
 		}
 	}
 
 	static void EnableObjects(std::vector<GameObject *> objects) {
+		printf("ENABLE THE BODIES\n");
 		for (std::vector<GameObject *>::iterator it = objects.begin(); it != objects.end(); ++it) {
-			(*it)->GetRigidBody()->setActivationState(ACTIVE_TAG);
+			//(*it)->GetRigidBody()->setActivationState(DISABLE_DEACTIVATION);
+			// Set mass to original mass
+			(*it)->GetRigidBody()->setMassProps((*it)->GetMass(), (*it)->GetInertia());
+			(*it)->GetRigidBody()->activate();
 		}
 	}
 
@@ -50,6 +56,8 @@ public:
 	btCollisionShape *GetShape() { return m_pShape; }
 	btRigidBody *GetRigidBody() { return m_pBody; }
 	btMotionState *GetMotionState() { return m_pMotionState; }
+	btScalar GetMass() { return m_mass; }
+	btVector3 GetInertia() { return m_inertia; }
 	const btVector3 GetCOMPosition() {
 		return m_pBody->getCenterOfMassPosition();
 	}
@@ -66,6 +74,11 @@ protected:
 	btRigidBody *m_pBody;
 	OpenGLMotionState *m_pMotionState;
 	btVector3 m_color;
+
+	btVector3 m_inertia;
+	btScalar m_mass;
+
+
 };
 #endif
 

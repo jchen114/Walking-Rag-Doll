@@ -66,15 +66,34 @@ enum Button_IDs {
 #define KD_LOWER 0.0f
 #define KD_HIGHER 5.0f
 
-// Constraint limits
-#define TORSO_LOW_CONSTRAINT		0.0f
-#define TORSO_HIGH_CONSTRAINT		180.0f
-#define UPPER_LEG_LOW_CONSTRAINT	30.0f
-#define UPPER_LEG_HIGH_CONSTRAINT	180.0f
-#define LOWER_LEG_LOW_CONSTRAINT	0.0f
-#define LOWER_LEG_HIGH_CONSTRAINT	90.0f
-#define FOOT_LOW_CONSTRAINT			0.0f
-#define FOOT_HIGH_CONSTRAINT		90.0f
+// Spinner limits
+#define SPINNER_TORSO_LOW		0.0f
+#define SPINNER_TORSO_HIGH		180.0f
+#define SPINNER_UPPER_LEG_LOW	30.0f
+#define SPINNER_UPPER_LEG_HIGH	180.0f
+#define SPINNER_LOWER_LEG_LOW	0.0f
+#define SPINNER_LOWER_LEG_HIGH	90.0f
+#define SPINNER_FOOT_LOW		0.0f
+#define SPINNER_FOOT_HIGH		90.0f
+
+// Hinge limits
+#define HINGE_TORSO_ULL_LOW		-90.0f
+#define HINGE_TORSO_ULL_HIGH	90.0f
+
+#define HINGE_TORSO_URL_LOW		-90.0f
+#define HINGE_TORSO_URL_HIGH	90.0f
+
+#define HINGE_ULL_LLL_LOW		90.0f
+#define HINGE_ULL_LLL_HIGH		90.0f
+
+#define HINGE_URL_LRL_LOW		90.0f
+#define HINGE_URL_LRL_HIGH		90.0f
+
+#define HINGE_LLL_LF_LOW		-90.0f
+#define HINGE_LLL_LF_HIGH		0.0f
+
+#define HINGE_LRL_RF_LOW		-90.0f
+#define HINGE_LRL_RF_HIGH		0.0f
 
 #define ORIGINAL_TORSO_POSITION btVector3(0, -9 + foot_height/2 + lower_leg_height + upper_leg_height + torso_height/2, 0.5)
 
@@ -142,7 +161,7 @@ void RagDollApplication::Idle() {
 	switch (m_WalkingController->m_currentState)
 	{
 		case WALKING: {
-			DisableAllSpinners();
+			
 		}
 			break;
 		case PAUSE:
@@ -255,13 +274,13 @@ void RagDollApplication::CreateRagDollGUI() {
 	m_lf_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Left foot Angle", GLUI_SPINNER_FLOAT, NULL, LF_ANGLE, (GLUI_Update_CB)LeftFootAngleChanged);
 	m_rf_state_spinner = m_glui_window->add_spinner_to_panel(states_panel, "Right foot Angle", GLUI_SPINNER_FLOAT, NULL, RF_ANGLE, (GLUI_Update_CB)RightFootAngleChanged);
 
-	m_torso_state_spinner->set_float_limits(TORSO_LOW_CONSTRAINT, TORSO_HIGH_CONSTRAINT);
-	m_ull_state_spinner->set_float_limits(UPPER_LEG_LOW_CONSTRAINT, UPPER_LEG_HIGH_CONSTRAINT);
-	m_url_state_spinner->set_float_limits(UPPER_LEG_LOW_CONSTRAINT, UPPER_LEG_HIGH_CONSTRAINT);
-	m_lll_state_spinner->set_float_limits(LOWER_LEG_LOW_CONSTRAINT, LOWER_LEG_HIGH_CONSTRAINT);
-	m_lrl_state_spinner->set_float_limits(LOWER_LEG_LOW_CONSTRAINT, LOWER_LEG_HIGH_CONSTRAINT);
-	m_lf_state_spinner->set_float_limits(FOOT_LOW_CONSTRAINT, FOOT_HIGH_CONSTRAINT);
-	m_rf_state_spinner->set_float_limits(FOOT_LOW_CONSTRAINT, FOOT_HIGH_CONSTRAINT);
+	m_torso_state_spinner->set_float_limits(SPINNER_TORSO_LOW, SPINNER_TORSO_HIGH);
+	m_ull_state_spinner->set_float_limits(SPINNER_UPPER_LEG_LOW, SPINNER_UPPER_LEG_HIGH);
+	m_url_state_spinner->set_float_limits(SPINNER_UPPER_LEG_LOW, SPINNER_UPPER_LEG_HIGH);
+	m_lll_state_spinner->set_float_limits(SPINNER_LOWER_LEG_LOW, SPINNER_LOWER_LEG_HIGH);
+	m_lrl_state_spinner->set_float_limits(SPINNER_LOWER_LEG_LOW, SPINNER_LOWER_LEG_HIGH);
+	m_lf_state_spinner->set_float_limits(SPINNER_FOOT_LOW, SPINNER_FOOT_HIGH);
+	m_rf_state_spinner->set_float_limits(SPINNER_FOOT_LOW, SPINNER_FOOT_HIGH);
 
 	m_glui_window->add_button_to_panel(states_panel, "Save States", SAVESTATES_BUTTON, (GLUI_Update_CB)SaveStatesButtonPressed);
 
@@ -390,17 +409,20 @@ void RagDollApplication::CreateRagDoll(const btVector3 &position) {
 }
 
 void RagDollApplication::AddHinges() {
+
+	printf("Adding hinges. \n");
+
 	// Connect torso to upper legs
-	m_torso_ulLeg = AddHingeConstraint(m_torso, m_upperLeftLeg, btVector3(-torso_height / 2, 0, 0), btVector3(upper_leg_height / 2, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(UPPER_LEG_LOW_CONSTRAINT), Constants::GetInstance().DegreesToRadians(UPPER_LEG_HIGH_CONSTRAINT));
-	m_torso_urLeg = AddHingeConstraint(m_torso, m_upperRightLeg, btVector3(-torso_height / 2, 0, 0), btVector3(upper_leg_height / 2, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(UPPER_LEG_LOW_CONSTRAINT), Constants::GetInstance().DegreesToRadians(UPPER_LEG_HIGH_CONSTRAINT));
+	m_torso_ulLeg = AddHingeConstraint(m_torso, m_upperLeftLeg, btVector3(-torso_height / 2, 0, 0), btVector3(upper_leg_height / 2, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_TORSO_ULL_LOW), Constants::GetInstance().DegreesToRadians(HINGE_TORSO_ULL_HIGH));
+	m_torso_urLeg = AddHingeConstraint(m_torso, m_upperRightLeg, btVector3(-torso_height / 2, 0, 0), btVector3(upper_leg_height / 2, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_TORSO_ULL_LOW), Constants::GetInstance().DegreesToRadians(HINGE_TORSO_URL_HIGH));
 
 	// Connect upper legs to lower legs
-	m_ulLeg_llLeg = AddHingeConstraint(m_upperLeftLeg, m_lowerLeftLeg, btVector3(-upper_leg_height / 2, 0, 0), btVector3(lower_leg_height / 2, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(LOWER_LEG_LOW_CONSTRAINT), Constants::GetInstance().DegreesToRadians(LOWER_LEG_HIGH_CONSTRAINT));
-	m_urLeg_lrLeg = AddHingeConstraint(m_upperRightLeg, m_lowerRightLeg, btVector3(-upper_leg_height / 2, 0, 0), btVector3(lower_leg_height / 2, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(LOWER_LEG_LOW_CONSTRAINT), Constants::GetInstance().DegreesToRadians(LOWER_LEG_HIGH_CONSTRAINT));
+	m_ulLeg_llLeg = AddHingeConstraint(m_upperLeftLeg, m_lowerLeftLeg, btVector3(-upper_leg_height / 2, 0, 0), btVector3(lower_leg_height / 2, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_ULL_LLL_LOW), Constants::GetInstance().DegreesToRadians(HINGE_ULL_LLL_HIGH));
+	m_urLeg_lrLeg = AddHingeConstraint(m_upperRightLeg, m_lowerRightLeg, btVector3(-upper_leg_height / 2, 0, 0), btVector3(lower_leg_height / 2, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_URL_LRL_LOW), Constants::GetInstance().DegreesToRadians(HINGE_URL_LRL_HIGH));
 
 	// Connect feet to lower legs
-	m_llLeg_lFoot = AddHingeConstraint(m_lowerLeftLeg, m_leftFoot, btVector3(-lower_leg_height / 2, 0, 0), btVector3(0, (foot_width - lower_leg_width) / 2, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(FOOT_LOW_CONSTRAINT), Constants::GetInstance().DegreesToRadians(FOOT_HIGH_CONSTRAINT));
-	m_lrLeg_rFoot = AddHingeConstraint(m_lowerRightLeg, m_rightFoot, btVector3(-lower_leg_height / 2, 0, 0), btVector3(0, (foot_width - lower_leg_width) / 2, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(FOOT_LOW_CONSTRAINT), Constants::GetInstance().DegreesToRadians(FOOT_HIGH_CONSTRAINT));
+	m_llLeg_lFoot = AddHingeConstraint(m_lowerLeftLeg, m_leftFoot, btVector3(-lower_leg_height / 2, 0, 0), btVector3((foot_width) / 4, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_LLL_LF_LOW), Constants::GetInstance().DegreesToRadians(HINGE_LLL_LF_HIGH));
+	m_lrLeg_rFoot = AddHingeConstraint(m_lowerRightLeg, m_rightFoot, btVector3(-lower_leg_height / 2, 0, 0), btVector3((foot_width) / 4, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_LRL_RF_LOW), Constants::GetInstance().DegreesToRadians(HINGE_LRL_RF_HIGH));
 }
 
 void RagDollApplication::SaveStates() {
@@ -423,38 +445,30 @@ void RagDollApplication::Reset() {
 	std::vector<GameObject *> bodies{ m_torso, m_upperRightLeg, m_upperLeftLeg, m_lowerRightLeg, m_lowerLeftLeg, m_rightFoot, m_leftFoot };
 
 	// Clear Everything
-	GameObject::ClearForces(bodies);
+	//GameObject::ClearForces(bodies);
 	GameObject::ClearVelocities(bodies);
 
-	//// Set rigid angle limits
-	//m_torso_ulLeg->setLimit(0.0f, 0.0f);
-	//m_torso_urLeg->setLimit(0.0f, 0.0f);
-	//m_ulLeg_llLeg->setLimit(0.0f, 0.0f);
-	//m_urLeg_lrLeg->setLimit(0.0f, 0.0f);
-	//m_llLeg_lFoot->setLimit(0.0f, 0.0f);
-	//m_lrLeg_rFoot->setLimit(0.0f, 0.0f);
-
-
-	//m_torso->Reposition(ORIGINAL_TORSO_POSITION);
-	//m_upperLeftLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(TORSO_HEIGHT / 2 + UL_HEIGHT / 2), -0.25));
-	//m_upperRightLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(TORSO_HEIGHT / 2 + UL_HEIGHT / 2), 0.25));
-	//m_lowerLeftLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(TORSO_HEIGHT / 2 + UL_HEIGHT + LL_HEIGHT/2), -0.27));
-	//m_lowerRightLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(TORSO_HEIGHT / 2 + UL_HEIGHT + LL_HEIGHT/2), 0.27));
-	//m_leftFoot->Reposition(ORIGINAL_TORSO_POSITION + btVector3((F_WIDTH - LL_WIDTH) / 2, -(TORSO_HEIGHT / 2 + UL_HEIGHT + LL_HEIGHT + F_HEIGHT / 2), -0.28), btQuaternion(btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(90.0f)));
-	//m_rightFoot->Reposition(ORIGINAL_TORSO_POSITION + btVector3((F_WIDTH - LL_WIDTH) / 2, -(TORSO_HEIGHT / 2 + UL_HEIGHT + LL_HEIGHT + F_HEIGHT / 2), 0.28), btQuaternion(btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(90.0f)));
-
-	UpdateRagDoll();
-
 	DisableStateSpinner();
+	EnableGainSpinners();
+	m_StatesRadioGroup->enable();
 
 	GameObject::DisableObjects(bodies);
 	
 	m_StatesRadioGroup->set_int_val(0); // State 0
+	m_currentState = 0;
+	UpdateRagDoll();
 
 }
 
 void RagDollApplication::Start() {
 	
+	DisableAllSpinners();
+
+	printf("Start button Pressed\n INITIATE WALKING!!!\n");
+
+	std::vector<GameObject *> bodies{ m_torso, m_upperRightLeg, m_upperLeftLeg, m_lowerRightLeg, m_lowerLeftLeg, m_rightFoot, m_leftFoot };
+	GameObject::EnableObjects(bodies);
+
 	m_WalkingController->Walk();
 }
 
@@ -503,17 +517,17 @@ void RagDollApplication::UpdateRagDoll() {
 	float lllAngle = Constants::GetInstance().DegreesToRadians(state->m_upperLeftLegAngle - state->m_lowerLeftLegAngle);
 	float lrlAngle = Constants::GetInstance().DegreesToRadians(state->m_upperRightLegAngle - state->m_lowerRightLegAngle);
 
-	printf("lll angle = %f, lfAngle = %f\n", Constants::GetInstance().RadiansToDegrees(lllAngle), Constants::GetInstance().RadiansToDegrees(lllAngle) - state->m_leftFootAngle - 90);
+	//printf("lll angle = %f, lfAngle = %f\n", Constants::GetInstance().RadiansToDegrees(lllAngle), Constants::GetInstance().RadiansToDegrees(lllAngle) - state->m_leftFootAngle - 90);
 
 	float lfAngle = lllAngle - Constants::GetInstance().DegreesToRadians(state->m_leftFootAngle - 90);
 	float rfAngle = lrlAngle - Constants::GetInstance().DegreesToRadians(state->m_rightFootAngle - 90);
 
-	printf("Updating Rag doll:\n %f, %f, %f, %f, %f, %f, %f\n", torsoAngle, ullAngle, urlAngle, lllAngle, lrlAngle, lfAngle, rfAngle);
+	//printf("Updating Rag doll:\n %f, %f, %f, %f, %f, %f, %f\n", torsoAngle, ullAngle, urlAngle, lllAngle, lrlAngle, lfAngle, rfAngle);
 	// Blue
 	m_torso->Reposition(ORIGINAL_TORSO_POSITION + btVector3(-(torso_height/2) * cos(PI - torsoAngle), sin(PI - torsoAngle)*(torso_height/2) - (torso_height/2),0), btQuaternion(btVector3(0, 0, 1), torsoAngle));
 	// Pink Green
 	m_upperLeftLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(torso_height / 2 + upper_leg_height / 2), 0.1) + btVector3(-cos(ullAngle) * (upper_leg_height/2), (upper_leg_height/2) - sin(ullAngle)*upper_leg_height/2, 0), btQuaternion(btVector3(0,0,1), ullAngle));
-	m_upperRightLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(torso_height / 2 + upper_leg_height / 2), -0.1) + btVector3(-cos(urlAngle) * (upper_leg_height / 2), (upper_leg_height / 2) - sin(urlAngle)*upper_leg_height / 2, 0), btQuaternion(btVector3(0, 0, 1), urlAngle));
+	m_upperRightLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(torso_height / 2 + upper_leg_height / 2),- 0.1) + btVector3(-cos(urlAngle) * (upper_leg_height / 2), (upper_leg_height / 2) - sin(urlAngle)*upper_leg_height / 2, 0), btQuaternion(btVector3(0, 0, 1), urlAngle));
 	btVector3 upperLeftLegBottomPoint = m_upperLeftLeg->GetCOMPosition() + btVector3(cos(PI - ullAngle) * upper_leg_height/2, -sin(PI - ullAngle) * upper_leg_height/2, 0);
 	btVector3 upperRightLegBottomPoint = m_upperRightLeg->GetCOMPosition() + btVector3(cos(PI - urlAngle) * upper_leg_height / 2, -sin(PI - urlAngle) * upper_leg_height / 2, 0);
 	//printf("ULL BP position: %f, %f\n", upperLeftLegBottomPoint.x(), upperLeftLegBottomPoint.y());
@@ -525,8 +539,8 @@ void RagDollApplication::UpdateRagDoll() {
 	btVector3 lowerLeftLegBottomPoint = m_lowerLeftLeg->GetCOMPosition() + btVector3(cos(PI - lllAngle) * lower_leg_height / 2, -sin(PI - lllAngle) * lower_leg_height / 2, 0);
 	btVector3 lowerRightLegBottomPoint = m_lowerRightLeg->GetCOMPosition() + btVector3(cos(PI - lrlAngle) * lower_leg_height / 2, -sin(PI - lrlAngle) * lower_leg_height / 2, 0);
 
-	m_leftFoot->Reposition(lowerLeftLegBottomPoint - btVector3(cos(lfAngle) * foot_width/4, sin(lfAngle) * foot_width/4, 0.1), btQuaternion(btVector3(0, 0, 1), lfAngle));
-	m_rightFoot->Reposition(lowerRightLegBottomPoint - btVector3(cos(rfAngle) * foot_width/4, sin(rfAngle) * foot_width/4, -0.1), btQuaternion(btVector3(0, 0, 1), rfAngle));
+	m_leftFoot->Reposition(lowerLeftLegBottomPoint + btVector3(-cos(lfAngle) * foot_width/4, -sin(lfAngle) * foot_width/4, 0.1), btQuaternion(btVector3(0, 0, 1), lfAngle));
+	m_rightFoot->Reposition(lowerRightLegBottomPoint + btVector3(-cos(rfAngle) * foot_width/4, -sin(rfAngle) * foot_width/4, -0.1), btQuaternion(btVector3(0, 0, 1), rfAngle));
 
 }
 
@@ -647,6 +661,27 @@ void RagDollApplication::DisableAllSpinners() {
 	for (std::vector<GLUI_Spinner*>::iterator it = spinners.begin(); it != spinners.end(); it++) {
 		(*it)->disable();
 	}
+
+	m_StatesRadioGroup->disable();
+
+}
+
+void RagDollApplication::EnableGainSpinners() {
+
+	std::vector<GLUI_Spinner*>spinners = {
+		m_torso_kp_spinner, m_torso_kd_spinner,
+		m_ull_kp_spinner, m_ull_kd_spinner,
+		m_url_kp_spinner, m_url_kd_spinner,
+		m_lll_kp_spinner, m_lll_kd_spinner,
+		m_lrl_kp_spinner, m_lrl_kd_spinner,
+		m_lf_kp_spinner, m_lf_kd_spinner,
+		m_rf_kp_spinner, m_rf_kd_spinner
+	};
+
+	for (std::vector<GLUI_Spinner*>::iterator it = spinners.begin(); it != spinners.end(); it++) {
+		(*it)->enable();
+	}
+
 }
 
 void RagDollApplication::ApplyTorqueOnTorso(float torqueForce) {

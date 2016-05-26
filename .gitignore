@@ -248,7 +248,6 @@ _Pvt_Extensions
 
 # Paket dependency manager
 .paket/paket.exe
-<<<<<<< HEAD
 paket-files/
 
 # FAKE - F# Make
