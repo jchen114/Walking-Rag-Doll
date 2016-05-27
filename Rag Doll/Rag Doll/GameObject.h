@@ -2,7 +2,7 @@
 #define _GAMEOBJECT_H_
 
 #include "btBulletDynamicsCommon.h"
-
+#include "Constants.h"
 #include "OpenGLMotionState.h"
 #include <vector>
 
@@ -49,8 +49,18 @@ public:
 		}
 	}
 
-	void Reposition(const btVector3 &position, const btQuaternion &orientation = btQuaternion(0, 0, 1, 1));
+	static void PrintOrientations(std::vector<GameObject *> objects) {
+		for (std::vector<GameObject *>::iterator it = objects.begin(); it != objects.end(); ++it) {
+			float angle = Constants::GetInstance().RadiansToDegrees((*it)->GetRigidBody()->getOrientation().getAngle());
+			printf("Angle = %f, ", angle);
+		}
+		printf("\n");
+	}
 
+	void Reposition(const btVector3 &position, const btQuaternion &orientation = btQuaternion(0, 0, 1, 1));
+	float GetPosition() {
+		return GetRigidBody()->getOrientation().getAngle();
+	}
 
 	// accessors
 	btCollisionShape *GetShape() { return m_pShape; }
@@ -66,6 +76,21 @@ public:
 			m_pMotionState->GetWorldTransform(transform);
 		}
 	}
+
+	float GetOrientation() {
+		float angle = Constants::GetInstance().RadiansToDegrees(GetRigidBody()->getOrientation().getAngle());
+		return angle;
+	}
+
+	float GetAngularVelocity() {
+		/*printf("Angular Velocity = %f, %f, %f \n", 
+			Constants::GetInstance().RadiansToDegrees(GetRigidBody()->getAngularVelocity().x()), 
+			Constants::GetInstance().RadiansToDegrees(GetRigidBody()->getAngularVelocity().y()), 
+			Constants::GetInstance().RadiansToDegrees(GetRigidBody()->getAngularVelocity().z()));*/
+		float angle = Constants::GetInstance().RadiansToDegrees(GetRigidBody()->getAngularVelocity().z());
+		return angle;
+	}
+
 
 	btVector3 GetColor() { return m_color; }
 

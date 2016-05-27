@@ -34,70 +34,10 @@ enum Button_IDs {
 	PAUSE_BUTTON,
 	START_BUTTON,
 	SAVESTATES_BUTTON,
-	SAVEGAINS_BUTTON
+	SAVEGAINS_BUTTON,
+	SAVEFEEDBACK_BUTTON,
+	SAVETIME_BUTTON
 };
-
-#pragma region DEFINITIONS 
-
-#define PI 3.14159265
-
-// MASS
-#define torso_mass 70
-#define upper_leg_mass 5
-#define lower_leg_mass 4
-#define feet_mass 1
-
-// DIMENSIONS
-#define torso_width 1.0f
-#define torso_height 3.0
-
-#define upper_leg_height 3.0f
-#define upper_leg_width 0.7f
-
-#define lower_leg_height 3.0f
-#define lower_leg_width 0.5f
-
-#define foot_height 0.3f
-#define foot_width 1.2f
-
-// Gains
-#define KP_LOWER 0.0f
-#define KP_HIGHER 5.0f
-#define KD_LOWER 0.0f
-#define KD_HIGHER 5.0f
-
-// Spinner limits
-#define SPINNER_TORSO_LOW		0.0f
-#define SPINNER_TORSO_HIGH		180.0f
-#define SPINNER_UPPER_LEG_LOW	30.0f
-#define SPINNER_UPPER_LEG_HIGH	180.0f
-#define SPINNER_LOWER_LEG_LOW	0.0f
-#define SPINNER_LOWER_LEG_HIGH	90.0f
-#define SPINNER_FOOT_LOW		0.0f
-#define SPINNER_FOOT_HIGH		90.0f
-
-// Hinge limits
-#define HINGE_TORSO_ULL_LOW		-90.0f
-#define HINGE_TORSO_ULL_HIGH	90.0f
-
-#define HINGE_TORSO_URL_LOW		-90.0f
-#define HINGE_TORSO_URL_HIGH	90.0f
-
-#define HINGE_ULL_LLL_LOW		90.0f
-#define HINGE_ULL_LLL_HIGH		90.0f
-
-#define HINGE_URL_LRL_LOW		90.0f
-#define HINGE_URL_LRL_HIGH		90.0f
-
-#define HINGE_LLL_LF_LOW		-90.0f
-#define HINGE_LLL_LF_HIGH		0.0f
-
-#define HINGE_LRL_RF_LOW		-90.0f
-#define HINGE_LRL_RF_HIGH		0.0f
-
-#define ORIGINAL_TORSO_POSITION btVector3(0, -9 + foot_height/2 + lower_leg_height + upper_leg_height + torso_height/2, 0.5)
-
-#pragma endregion DEFINITIONS
 
 RagDollApplication::RagDollApplication()
 {
@@ -153,25 +93,29 @@ void RagDollApplication::InitializePhysics() {
 	SetupGUIConfiguration(m_states, m_gains);
 
 	Reset();
+
+	m_pWorld->setInternalTickCallback(InternalTickCallback);
+
 }
 
 void RagDollApplication::Idle() {
 	BulletOpenGLApplication::Idle();
+}
 
+void RagDollApplication::RagDollStep() {
+	//printf("Callback after every physics tick.\n");
 	switch (m_WalkingController->m_currentState)
 	{
-		case WALKING: {
-			
-		}
-			break;
-		case PAUSE:
-			break;
-		case RESET:
-			break;
-		default:
-			break;
+	case WALKING:
+		m_WalkingController->Walk();
+		break;
+	case PAUSE:
+		break;
+	case RESET:
+		break;
+	default:
+		break;
 	}
-
 }
 
 void RagDollApplication::CreateRagDollGUI() {
@@ -284,6 +228,19 @@ void RagDollApplication::CreateRagDollGUI() {
 
 	m_glui_window->add_button_to_panel(states_panel, "Save States", SAVESTATES_BUTTON, (GLUI_Update_CB)SaveStatesButtonPressed);
 
+	/*===================================== FEEDBACK =========================================*/
+	GLUI_Panel *feedback_panel = m_glui_window->add_panel("Feedback");
+	m_cd_1_spinner = m_glui_window->add_spinner_to_panel(feedback_panel, "cd 1", GLUI_SPINNER_FLOAT, &m_WalkingController->m_cd_1);
+	m_cv_1_spinner = m_glui_window->add_spinner_to_panel(feedback_panel, "cv 1", GLUI_SPINNER_FLOAT, &m_WalkingController->m_cv_1);
+	m_cd_2_spinner = m_glui_window->add_spinner_to_panel(feedback_panel, "cd 2", GLUI_SPINNER_FLOAT, &m_WalkingController->m_cd_2);
+	m_cv_2_spinner = m_glui_window->add_spinner_to_panel(feedback_panel, "cv 2", GLUI_SPINNER_FLOAT, &m_WalkingController->m_cv_2);
+	m_glui_window->add_button_to_panel(feedback_panel, "Save Feedback", SAVEFEEDBACK_BUTTON, (GLUI_Update_CB)SaveFeedbackButtonPressed);
+
+	/*===================================== STATE TIME ============================================*/
+	GLUI_Panel *time_panel = m_glui_window->add_panel("State time");
+	m_timer_spinner = m_glui_window->add_spinner_to_panel(time_panel, "time", GLUI_SPINNER_FLOAT, &m_WalkingController->m_state_time);
+	m_glui_window->add_button_to_panel(time_panel, "Save Time", SAVETIME_BUTTON, (GLUI_Update_CB)SaveTimeButtonPressed);
+
 	/*===================================== CONTROLS =========================================*/
 
 	GLUI_Panel *control_panel = m_glui_window->add_panel("Controls");
@@ -300,6 +257,9 @@ void RagDollApplication::SetupGUIConfiguration(std::vector<State *>states, std::
 	// Assume Currently Selected State is 0
 	DisplayState(0);
 	DisplayGains();
+
+	DisplayFeedback(m_WalkingController->ReadFeedbackFile());
+	DisplayTime(m_WalkingController->ReadTimeFile());
 
 	DisableStateSpinner();
 
@@ -373,6 +333,21 @@ void RagDollApplication::DisplayGains() {
 	}
 }
 
+void RagDollApplication::DisplayFeedback(std::vector<float> feedbacks) {
+
+	m_cd_1_spinner->set_float_val(feedbacks.at(0));
+	m_cv_1_spinner->set_float_val(feedbacks.at(1));
+	m_cd_2_spinner->set_float_val(feedbacks.at(2));
+	m_cv_2_spinner->set_float_val(feedbacks.at(3));
+
+}
+
+void RagDollApplication::DisplayTime(float time) {
+
+	m_timer_spinner->set_float_val(time);
+
+}
+
 #pragma endregion INITIALIZATION
 
 #pragma region RAG_DOLL
@@ -406,6 +381,8 @@ void RagDollApplication::CreateRagDoll(const btVector3 &position) {
 
 	AddHinges();
 
+	m_bodies = { m_torso, m_upperRightLeg, m_upperLeftLeg, m_lowerRightLeg, m_lowerLeftLeg, m_rightFoot, m_leftFoot };
+
 }
 
 void RagDollApplication::AddHinges() {
@@ -436,23 +413,29 @@ void RagDollApplication::SaveGains(){
 	m_WalkingController->SaveGains();
 }
 
+void RagDollApplication::SaveFeedback() {
+	m_WalkingController->SaveFeedback();
+}
+
+void RagDollApplication::SaveTime() {
+	m_WalkingController->SaveTime();
+}
+
 void RagDollApplication::Reset() {
 
 	printf("Reset button pressed \n");
 
 	m_WalkingController->Reset();
 
-	std::vector<GameObject *> bodies{ m_torso, m_upperRightLeg, m_upperLeftLeg, m_lowerRightLeg, m_lowerLeftLeg, m_rightFoot, m_leftFoot };
-
 	// Clear Everything
 	//GameObject::ClearForces(bodies);
-	GameObject::ClearVelocities(bodies);
+	GameObject::ClearVelocities(m_bodies);
 
 	DisableStateSpinner();
 	EnableGainSpinners();
 	m_StatesRadioGroup->enable();
 
-	GameObject::DisableObjects(bodies);
+	GameObject::DisableObjects(m_bodies);
 	
 	m_StatesRadioGroup->set_int_val(0); // State 0
 	m_currentState = 0;
@@ -466,8 +449,7 @@ void RagDollApplication::Start() {
 
 	printf("Start button Pressed\n INITIATE WALKING!!!\n");
 
-	std::vector<GameObject *> bodies{ m_torso, m_upperRightLeg, m_upperLeftLeg, m_lowerRightLeg, m_lowerLeftLeg, m_rightFoot, m_leftFoot };
-	GameObject::EnableObjects(bodies);
+	GameObject::EnableObjects(m_bodies);
 
 	m_WalkingController->Walk();
 }
@@ -476,8 +458,7 @@ void RagDollApplication::Pause() {
 
 	printf("Pause button pressed \n");
 
-	std::vector<GameObject *> bodies{ m_torso, m_upperRightLeg, m_upperLeftLeg, m_lowerRightLeg, m_lowerLeftLeg, m_rightFoot, m_leftFoot };
-	GameObject::DisableObjects(bodies);
+	GameObject::DisableObjects(m_bodies);
 
 	m_WalkingController->PauseWalking();
 }
@@ -542,6 +523,8 @@ void RagDollApplication::UpdateRagDoll() {
 	m_leftFoot->Reposition(lowerLeftLegBottomPoint + btVector3(-cos(lfAngle) * foot_width/4, -sin(lfAngle) * foot_width/4, 0.1), btQuaternion(btVector3(0, 0, 1), lfAngle));
 	m_rightFoot->Reposition(lowerRightLegBottomPoint + btVector3(-cos(rfAngle) * foot_width/4, -sin(rfAngle) * foot_width/4, -0.1), btQuaternion(btVector3(0, 0, 1), rfAngle));
 
+	GameObject::PrintOrientations(m_bodies);
+
 }
 
 void RagDollApplication::ChangeTorsoAngle() {
@@ -593,6 +576,16 @@ void RagDollApplication::ChangeRightFootAngle() {
 
 }
 
+void RagDollApplication::UpdateGains() {
+	m_WalkingController->SetTorsoGains(m_torso_kp_spinner->get_float_val(), m_torso_kd_spinner->get_float_val());
+	m_WalkingController->SetUpperLeftLegGains(m_ull_kp_spinner->get_float_val(), m_ull_kd_spinner->get_float_val());
+	m_WalkingController->SetUpperRightLegGains(m_url_kp_spinner->get_float_val(), m_url_kd_spinner->get_float_val());
+	m_WalkingController->SetLowerLeftLegGains(m_lll_kp_spinner->get_float_val(), m_lll_kd_spinner->get_float_val());
+	m_WalkingController->SetLowerRightLegGains(m_lrl_kp_spinner->get_float_val(), m_lrl_kd_spinner->get_float_val());
+	m_WalkingController->SetLeftFootGains(m_lf_kp_spinner->get_float_val(), m_lf_kd_spinner->get_float_val());
+	m_WalkingController->SetRightFootGains(m_rf_kp_spinner->get_float_val(), m_rf_kd_spinner->get_float_val());
+}
+
 void RagDollApplication::DisableStateSpinner() {
 
 	switch (m_currentState)
@@ -610,30 +603,47 @@ void RagDollApplication::DisableStateSpinner() {
 		break;
 		case 1: 
 		case 2: {
-			// Deactivate
-			m_url_state_spinner->disable();
-			m_lrl_state_spinner->disable();
-			m_rf_state_spinner->disable();
+			//// Deactivate
+			//m_url_state_spinner->disable();
+			//m_lrl_state_spinner->disable();
+			//m_rf_state_spinner->disable();
+
+			//// Activate
+			//m_ull_state_spinner->enable();
+			//m_lll_state_spinner->enable();
+			//m_lf_state_spinner->enable();
+			//m_torso_state_spinner->enable();
 
 			// Activate
+			m_url_state_spinner->enable();
+			m_lrl_state_spinner->enable();
+			m_rf_state_spinner->enable();
+			m_torso_state_spinner->enable();
 			m_ull_state_spinner->enable();
 			m_lll_state_spinner->enable();
 			m_lf_state_spinner->enable();
-			m_torso_state_spinner->enable();
 			break;
 		}
 		case 3:
 		case 4:{
-			  // Deactivate
-			  m_ull_state_spinner->disable();
-			  m_lll_state_spinner->disable();
-			  m_lf_state_spinner->disable();
+			  //// Deactivate
+			  //m_ull_state_spinner->disable();
+			  //m_lll_state_spinner->disable();
+			  //m_lf_state_spinner->disable();
 
-			  // Activate
-			  m_url_state_spinner->enable();
-			  m_lrl_state_spinner->enable();
-			  m_rf_state_spinner->enable();
-			  m_torso_state_spinner->enable();
+			  //// Activate
+			  //m_url_state_spinner->enable();
+			  //m_lrl_state_spinner->enable();
+			  //m_rf_state_spinner->enable();
+			  //m_torso_state_spinner->enable();
+
+			m_url_state_spinner->enable();
+			m_lrl_state_spinner->enable();
+			m_rf_state_spinner->enable();
+			m_torso_state_spinner->enable();
+			m_ull_state_spinner->enable();
+			m_lll_state_spinner->enable();
+			m_lf_state_spinner->enable();
 		}
 		break;
 	default:
@@ -753,6 +763,14 @@ static void SaveStatesButtonPressed(int id) {
 	m_app->SaveStates();
 }
 
+static void SaveFeedbackButtonPressed(int id) {
+	m_app->SaveFeedback();
+}
+
+static void SaveTimeButtonPressed(int id) {
+	m_app->SaveTime();
+}
+
 static void ResetButtonPressed(int id) {
 	m_app->Reset();
 }
@@ -798,5 +816,11 @@ static void LeftFootAngleChanged(int id) {
 static void RightFootAngleChanged(int id) {
 	m_app->ChangeRightFootAngle();
 }
+
+void InternalTickCallback(btDynamicsWorld *world, btScalar timeStep)  {
+	m_app->RagDollStep();
+}
+
+
 
 #pragma endregion GLUI_CALLBACKS

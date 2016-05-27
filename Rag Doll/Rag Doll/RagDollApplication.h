@@ -28,9 +28,20 @@ public:
 
 	btVector3 GetRandomColor();
 
+	// Rag Doll model
+	GameObject *m_torso;
+	GameObject *m_upperRightLeg;
+	GameObject *m_upperLeftLeg;
+	GameObject *m_lowerRightLeg;
+	GameObject *m_lowerLeftLeg;
+	GameObject *m_rightFoot;
+	GameObject *m_leftFoot;
+
 	void Reset();
 	void SaveStates();
 	void SaveGains();
+	void SaveFeedback();
+	void SaveTime();
 	void Start();
 	void Pause();
 	void CloseGLUIWindow(int id);
@@ -50,15 +61,19 @@ public:
 	void ApplyTorqueOnLowerLeftLeg(float torqueForce);
 	void ApplyTorqueOnRightFoot(float torqueForce);
 	void ApplyTorqueOnLeftFoot(float torqueForce);
+	void RagDollStep();
 
 private:
 
 	void DisplayState(int state);
 	void DisplayGains();
+	void DisplayFeedback(std::vector<float> feedbacks);
+	void DisplayTime(float time);
 	void DisableStateSpinner();
 	void DisableAllSpinners();
 	void EnableGainSpinners();
 	void UpdateRagDoll();
+	void UpdateGains();
 
 	WalkingController *m_WalkingController;
 
@@ -67,14 +82,7 @@ private:
 	int m_currentState = 0;
 	int m_previousState = 0;
 
-	// Rag Doll model
-	GameObject *m_torso;
-	GameObject *m_upperRightLeg;
-	GameObject *m_upperLeftLeg;
-	GameObject *m_lowerRightLeg;
-	GameObject *m_lowerLeftLeg;
-	GameObject *m_rightFoot;
-	GameObject *m_leftFoot;
+	std::vector<GameObject *> m_bodies;
 
 	btHingeConstraint *m_torso_urLeg;
 	btHingeConstraint *m_torso_ulLeg;
@@ -123,12 +131,21 @@ private:
 	GLUI_Spinner *m_lf_state_spinner;
 	GLUI_Spinner *m_rf_state_spinner;
 
+	GLUI_Spinner *m_cd_1_spinner;
+	GLUI_Spinner *m_cv_1_spinner;
+	GLUI_Spinner *m_cd_2_spinner;
+	GLUI_Spinner *m_cv_2_spinner;
+
+	GLUI_Spinner *m_timer_spinner;
+
 };
 
 /* GLUI CALLBACKS */
 static void RagDollIdle();
 static void SaveGainsButtonPressed(int id);
 static void SaveStatesButtonPressed(int id);
+static void SaveFeedbackButtonPressed(int id);
+static void SaveTimeButtonPressed(int id);
 static void ResetButtonPressed(int id);
 static void PauseButtonPressed(int id);
 static void StartButtonPressed(int id);
@@ -141,3 +158,7 @@ static void LowerLeftLegAngleChanged(int id);
 static void LowerRightLegAngleChanged(int id);
 static void LeftFootAngleChanged(int id);
 static void RightFootAngleChanged(int id);
+static void GainsChanged(int id);
+
+/* Bullet Physics Tick callback */
+void InternalTickCallback(btDynamicsWorld *world, btScalar timestep);
