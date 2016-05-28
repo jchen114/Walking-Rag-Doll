@@ -699,31 +699,32 @@ void RagDollApplication::ApplyTorqueOnTorso(float torqueForce) {
 }
 
 void RagDollApplication::ApplyTorqueOnUpperRightLeg(float torqueForce) {
-	ApplyTorqueOnGameBody(m_upperRightLeg, torqueForce);
+
 }
 
 void RagDollApplication::ApplyTorqueOnUpperLeftLeg(float torqueForce) {
-	ApplyTorqueOnGameBody(m_upperLeftLeg, torqueForce);
+
 }
 
 void RagDollApplication::ApplyTorqueOnLowerRightLeg(float torqueForce) {
-	ApplyTorqueOnGameBody(m_lowerRightLeg, torqueForce);
+
 }
 
 void RagDollApplication::ApplyTorqueOnLowerLeftLeg(float torqueForce) {
-	ApplyTorqueOnGameBody(m_lowerLeftLeg, torqueForce);
+
 }
 
 void RagDollApplication::ApplyTorqueOnRightFoot(float torqueForce) {
-	ApplyTorqueOnGameBody(m_rightFoot, torqueForce);
+
 }
 
 void RagDollApplication::ApplyTorqueOnLeftFoot(float torqueForce) {
-	ApplyTorqueOnGameBody(m_leftFoot, torqueForce);
+
 }
 
-void RagDollApplication::ApplyTorqueOnGameBody(GameObject *body, float torqueForce) {
+void RagDollApplication::ApplyTorqueOnGameBody(GameObject *body, const btVector3 &torque) {
 	// make btVector3
+
 	// apply torque to body
 }
 
