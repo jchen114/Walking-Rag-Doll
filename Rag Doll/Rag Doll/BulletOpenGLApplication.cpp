@@ -129,7 +129,7 @@ void BulletOpenGLApplication::KeyboardUp(unsigned char key, int x, int y) {}
 void BulletOpenGLApplication::Special(int key, int x, int y) {
 	// This function is called by FreeGLUT whenever special keys
 	// are pressed down, like the arrow keys, or Insert, Delete etc.
-	printf("Received Special Key\n");
+	//printf("Received Special Key\n");
 
 	switch (key) {
 		// the arrow keys rotate the camera up/down/left/right
@@ -430,7 +430,7 @@ GameObject* BulletOpenGLApplication::CreateGameObject(
 		// assume the shape is a 2d box (plane) and typecast it
 		btRigidBody *body = pObject->GetRigidBody();
 		// ASSUMPTION: Limit motion along x-y plane
-		printf("Allow in x y direction, disallow in z direction \n");
+		//printf("Allow in x y direction, disallow in z direction \n");
 		body->setLinearFactor(btVector3(1, 1, 0));
 		body->setAngularFactor(btVector3(0, 0, 1));
 	}
@@ -475,6 +475,8 @@ btHingeConstraint *BulletOpenGLApplication::AddHingeConstraint(
 }
 
 void BulletOpenGLApplication::ApplyTorque(GameObject *object, const btVector3 &torque) {
+
+	object->ApplyTorque(torque);
 
 }
 

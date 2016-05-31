@@ -3,6 +3,8 @@
 #include <cstdio>
 #include <ctime>
 
+#include "RagDollContactResult.h"
+
 
 class RagDollApplication;
 class State;
@@ -33,9 +35,9 @@ class Gains;
 
 // Gains
 #define KP_LOWER 0.0f
-#define KP_HIGHER 5.0f
+#define KP_HIGHER 50.0f
 #define KD_LOWER 0.0f
-#define KD_HIGHER 5.0f
+#define KD_HIGHER 50.0f
 
 // Spinner limits
 #define SPINNER_TORSO_LOW		0.0f
@@ -118,7 +120,13 @@ public:
 	float m_cd_2 = 0.0f;
 	float m_cv_2 = 0.0f;
 
+	bool m_leftFootContact = false;
+	bool m_rightFootContact = false;
+
 	float m_state_time = 0.0f;
+
+	RagDollContactResult m_rightFootGroundContact;
+	RagDollContactResult m_leftFootGroundContact;
 
 private:
 

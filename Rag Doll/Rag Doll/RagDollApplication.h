@@ -28,6 +28,8 @@ public:
 
 	btVector3 GetRandomColor();
 
+	GameObject *m_ground;
+
 	// Rag Doll model
 	GameObject *m_torso;
 	GameObject *m_upperRightLeg;
@@ -95,7 +97,6 @@ private:
 	std::vector<State *> m_states;
 	std::vector<Gains *> m_gains;
 
-	void ApplyTorqueOnGameBody(GameObject *body, const btVector3 &torque);
 	void CreateRagDollGUI();
 	void SetupGUIConfiguration(std::vector<State *>states, std::vector<Gains *> gains);
 

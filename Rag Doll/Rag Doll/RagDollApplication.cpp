@@ -47,7 +47,6 @@ RagDollApplication::RagDollApplication(ProjectionMode mode) :BulletOpenGLApplica
 	m_app = this;
 }
 
-
 RagDollApplication::~RagDollApplication()
 {
 }
@@ -70,10 +69,10 @@ void RagDollApplication::InitializePhysics() {
 	m_pWorld = new btDiscreteDynamicsWorld(m_pDispatcher, m_pBroadphase, m_pSolver, m_pCollisionConfiguration);
 
 	// Create ground
-	btVector3 ground(1.0f, 25.0f, 10.0f);
+	btVector3 ground(1.0f, 100.0f, 10.0f);
 	float mass = 0.0f;
 	btVector3 position(0.0f, -10.0f, 0.0f);
-	Create3DBox(ground, mass, GetRandomColor(), position);
+	m_ground = Create3DBox(ground, mass, GetRandomColor(), position);
 
 	CreateRagDoll(ORIGINAL_TORSO_POSITION);
 
@@ -85,6 +84,12 @@ void RagDollApplication::InitializePhysics() {
 
 	// Read from a file for last gains configuration
 	m_gains = m_WalkingController->ReadGainsFile();
+
+	// Setup collision detection between feet and ground.
+	m_leftFoot->GetRigidBody()->setCollisionFlags(m_leftFoot->GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
+	m_rightFoot->GetRigidBody()->setCollisionFlags(m_rightFoot->GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
+	m_pWorld->contactPairTest(m_leftFoot->GetRigidBody(), m_ground->GetRigidBody(), m_WalkingController->m_leftFootGroundContact);
+	m_pWorld->contactPairTest(m_rightFoot->GetRigidBody(), m_ground->GetRigidBody(), m_WalkingController->m_rightFootGroundContact);
 
 	// Create GUI
 	CreateRagDollGUI();
@@ -108,6 +113,7 @@ void RagDollApplication::RagDollStep() {
 	{
 	case WALKING:
 		m_WalkingController->Walk();
+		//GameObject::PrintOrientations(m_bodies);
 		break;
 	case PAUSE:
 		break;
@@ -141,7 +147,7 @@ void RagDollApplication::CreateRagDollGUI() {
 
 	m_glui_window->add_statictext_to_panel(gains_panel, "Upper Left Leg");
 	m_ull_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_gains.at(1)->m_kp, UPPER_L_LEG_KP);
-	m_ull_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(1)->m_kp, UPPER_L_LEG_KD);
+	m_ull_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(1)->m_kd, UPPER_L_LEG_KD);
 
 	m_ull_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
 	m_ull_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
@@ -150,7 +156,7 @@ void RagDollApplication::CreateRagDollGUI() {
 
 	m_glui_window->add_statictext_to_panel(gains_panel, "Upper Right Leg");
 	m_url_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_gains.at(2)->m_kp, UPPER_R_LEG_KP);
-	m_url_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(2)->m_kp, UPPER_R_LEG_KD);
+	m_url_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(2)->m_kd, UPPER_R_LEG_KD);
 
 	m_url_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
 	m_url_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
@@ -159,7 +165,7 @@ void RagDollApplication::CreateRagDollGUI() {
 
 	m_glui_window->add_statictext_to_panel(gains_panel, "Lower Left Leg");
 	m_lll_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_gains.at(3)->m_kp, LOWER_L_LEG_KP);
-	m_lll_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(3)->m_kp, LOWER_L_LEG_KD);
+	m_lll_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(3)->m_kd, LOWER_L_LEG_KD);
 
 	m_lll_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
 	m_lll_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
@@ -168,7 +174,7 @@ void RagDollApplication::CreateRagDollGUI() {
 
 	m_glui_window->add_statictext_to_panel(gains_panel, "Lower Right Leg");
 	m_lrl_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_gains.at(4)->m_kp, LOWER_R_LEG_KP);
-	m_lrl_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(4)->m_kp, LOWER_R_LEG_KD);
+	m_lrl_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(4)->m_kd, LOWER_R_LEG_KD);
 
 	m_lrl_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
 	m_lrl_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
@@ -177,7 +183,7 @@ void RagDollApplication::CreateRagDollGUI() {
 
 	m_glui_window->add_statictext_to_panel(gains_panel, "Left Foot");
 	m_lf_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_gains.at(5)->m_kp, L_FOOT_KP);
-	m_lf_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(5)->m_kp, L_FOOT_KD);
+	m_lf_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(5)->m_kd, L_FOOT_KD);
 
 	m_lf_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
 	m_lf_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
@@ -186,7 +192,7 @@ void RagDollApplication::CreateRagDollGUI() {
 
 	m_glui_window->add_statictext_to_panel(gains_panel, "Right foot");
 	m_rf_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_gains.at(6)->m_kp, R_FOOT_KP);
-	m_rf_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(6)->m_kp, R_FOOT_KD);
+	m_rf_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(6)->m_kd, R_FOOT_KD);
 
 	m_rf_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
 	m_rf_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
@@ -446,10 +452,13 @@ void RagDollApplication::Reset() {
 void RagDollApplication::Start() {
 	
 	DisableAllSpinners();
-
+	
 	printf("Start button Pressed\n INITIATE WALKING!!!\n");
 
 	GameObject::EnableObjects(m_bodies);
+
+	// Save state!
+	ChangeState(-1);
 
 	m_WalkingController->Walk();
 }
@@ -476,6 +485,17 @@ void RagDollApplication::ChangeState(int id) {
 	m_states.at(m_previousState)->m_lowerRightLegAngle = m_lrl_state_spinner->get_float_val();
 	m_states.at(m_previousState)->m_leftFootAngle = m_lf_state_spinner->get_float_val();
 	m_states.at(m_previousState)->m_rightFootAngle = m_rf_state_spinner->get_float_val();
+
+	//// Absolute Orientation
+	//m_states.at(m_previousState)->m_absTAngle = m_torso->GetOrientation();
+	//m_states.at(m_previousState)->m_absULLAngle = m_upperLeftLeg->GetOrientation();
+	//m_states.at(m_previousState)->m_absURLAngle = m_upperRightLeg->GetOrientation();
+	//// Relative Store local coordinates
+	//m_states.at(m_previousState)->m_absLLLAngle = m_lowerLeftLeg->GetOrientation();
+	//m_states.at(m_previousState)->m_absLRLAngle = m_lowerRightLeg->GetOrientation();
+	//m_states.at(m_previousState)->m_absLFAngle = m_leftFoot->GetOrientation();
+	//m_states.at(m_previousState)->m_absRFAngle = m_rightFoot->GetOrientation();
+
 	// Change previous to current state
 	DisplayState(m_currentState);
 	m_previousState = m_currentState;
@@ -695,38 +715,43 @@ void RagDollApplication::EnableGainSpinners() {
 }
 
 void RagDollApplication::ApplyTorqueOnTorso(float torqueForce) {
-	ApplyTorqueOnGameBody(m_torso, torqueForce);
+	btVector3 torque(btVector3(0, 0, torqueForce));
+	ApplyTorque(m_torso, torque);
+}
+
+// Upper legs
+void RagDollApplication::ApplyTorqueOnUpperLeftLeg(float torqueForce) {
+	btVector3 torque(btVector3(0, 0, torqueForce));
+	ApplyTorque(m_upperLeftLeg, torque);
 }
 
 void RagDollApplication::ApplyTorqueOnUpperRightLeg(float torqueForce) {
-
+	btVector3 torque(btVector3(0, 0, torqueForce));
+	ApplyTorque(m_upperRightLeg, torque);
 }
 
-void RagDollApplication::ApplyTorqueOnUpperLeftLeg(float torqueForce) {
-
+// Lower legs
+void RagDollApplication::ApplyTorqueOnLowerLeftLeg(float torqueForce) {
+	btVector3 torque(btVector3(0, 0, torqueForce));
+	ApplyTorque(m_lowerLeftLeg, torque);
 }
 
 void RagDollApplication::ApplyTorqueOnLowerRightLeg(float torqueForce) {
-
+	btVector3 torque(btVector3(0, 0, torqueForce));
+	ApplyTorque(m_lowerRightLeg, torque);
 }
 
-void RagDollApplication::ApplyTorqueOnLowerLeftLeg(float torqueForce) {
-
+// Feet
+void RagDollApplication::ApplyTorqueOnLeftFoot(float torqueForce) {
+	btVector3 torque(btVector3(0, 0, torqueForce));
+	ApplyTorque(m_leftFoot, torque);
 }
 
 void RagDollApplication::ApplyTorqueOnRightFoot(float torqueForce) {
-
+	btVector3 torque(btVector3(0, 0, torqueForce));
+	ApplyTorque(m_rightFoot, torque);
 }
 
-void RagDollApplication::ApplyTorqueOnLeftFoot(float torqueForce) {
-
-}
-
-void RagDollApplication::ApplyTorqueOnGameBody(GameObject *body, const btVector3 &torque) {
-	// make btVector3
-
-	// apply torque to body
-}
 
 #pragma endregion RAG_DOLL
 

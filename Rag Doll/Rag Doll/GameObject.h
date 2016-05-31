@@ -91,6 +91,11 @@ public:
 		return angle;
 	}
 
+	void ApplyTorque(const btVector3 &torque) {
+		//GetRigidBody()->applyTorque(torque);
+		GetRigidBody()->applyTorqueImpulse(torque);
+		//GetRigidBody()->applyTorqueImpulse(btVector3(0,0,-100));
+	}
 
 	btVector3 GetColor() { return m_color; }
 

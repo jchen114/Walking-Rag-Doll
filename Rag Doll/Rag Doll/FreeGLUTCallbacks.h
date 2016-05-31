@@ -16,7 +16,7 @@ static void KeyboardUpCallback(unsigned char key, int x, int y) {
 	g_pApp->KeyboardUp(key, x, y);
 }
 static void SpecialCallback(int key, int x, int y) {
-	printf("Special key pressed\n");
+	//printf("Special key pressed\n");
 	g_pApp->Special(key, x, y);
 }
 static void SpecialUpCallback(int key, int x, int y) {

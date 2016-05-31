@@ -303,7 +303,7 @@ WalkingController::~WalkingController()
 void WalkingController::Walk() {
 
 	m_currentState = WALKING;
-
+	std::vector<float>torques = { 0, 0, 0, 0, 0, 0, 0 };
 	switch (m_ragDollState)
 	{
 	case STATE_0:
@@ -311,36 +311,76 @@ void WalkingController::Walk() {
 		printf("~*~*~*~*~*~*~*~*~*~ STATE 0 ~*~*~*~*~*~*~*~*~*~\n");
 		start = std::clock();
 		m_ragDollState = STATE_1;
+		printf("~*~*~*~*~*~*~*~*~*~ STATE 1 ~*~*~*~*~*~*~*~*~*~\n");
 	}
 		break;
 	case STATE_1:
-		printf("~*~*~*~*~*~*~*~*~*~ STATE 1 ~*~*~*~*~*~*~*~*~*~\n");
 		m_duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
 		if (m_duration >= m_state_time) {
 			m_ragDollState = STATE_2;
+			printf("~*~*~*~*~*~*~*~*~*~ STATE 2 ~*~*~*~*~*~*~*~*~*~\n");
 		}
 		else {
 			// Compute torques for bodies
-			std::vector<float> torques = CalculateState1Torques();
-			// Apply torques to bodies
-			
+			torques = CalculateState1Torques();		
 		}
 		break;
 	case STATE_2: {
-		printf("~*~*~*~*~*~*~*~*~*~ STATE 2 ~*~*~*~*~*~*~*~*~*~\n");
-		// Wait until foot contact
+		
+		if (m_leftFootContact)
+		{
+			// Contacted the floor
+			m_ragDollState = STATE_3;
+			m_leftFootContact = false;
+			start = std::clock();
+			printf("~*~*~*~*~*~*~*~*~*~ STATE 3 ~*~*~*~*~*~*~*~*~*~\n");
+		}
+		else {
+			torques = CalculateState2Torques();
+		}
 	}
 		break;
-	case STATE_3:
-		printf("~*~*~*~*~*~*~*~*~*~ STATE 3 ~*~*~*~*~*~*~*~*~*~\n");
+	case STATE_3: {
+		m_duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
+		if (m_duration >= m_state_time) {
+			m_ragDollState = STATE_4;
+			printf("~*~*~*~*~*~*~*~*~*~ STATE 4 ~*~*~*~*~*~*~*~*~*~\n");
+		}
+		else {
+			torques = CalculateState3Torques();
+		}
+	}
 		break;
-	case STATE_4:
-		printf("~*~*~*~*~*~*~*~*~*~ STATE 4 ~*~*~*~*~*~*~*~*~*~\n");
+	case STATE_4: {
+		if (m_rightFootContact)
+		{
+			// Contacted the floor
+			m_ragDollState = STATE_1;
+			m_rightFootContact = false;
+			start = std::clock();
+			printf("~*~*~*~*~*~*~*~*~*~ STATE 1 ~*~*~*~*~*~*~*~*~*~\n");
+		}
+		else {
+			torques = CalculateState4Torques();
+		}
+	}
+		
 		break;
 	default:
 		break;
 	}
 
+	// Apply torques to bodies	
+	m_app->ApplyTorqueOnTorso(torques.at(0));
+
+	m_app->ApplyTorqueOnUpperLeftLeg(torques.at(1));
+	m_app->ApplyTorqueOnUpperRightLeg(torques.at(2));
+
+	m_app->ApplyTorqueOnLowerLeftLeg(torques.at(3));
+	m_app->ApplyTorqueOnLowerRightLeg(torques.at(4));
+
+	m_app->ApplyTorqueOnLeftFoot(torques.at(5));
+	m_app->ApplyTorqueOnRightFoot(torques.at(6));
 }
 
 void WalkingController::PauseWalking(){
@@ -398,9 +438,7 @@ void WalkingController::SetRightFootGains(float kp, float kd){
 #pragma region STATES
 
 void WalkingController::SetState1(float torso, float upperLeftLeg, float upperRightLeg, float lowerLeftLeg, float lowerRightLeg, float leftFoot, float rightFoot){
-
 	m_state1 = new State(torso, upperLeftLeg, upperRightLeg, lowerLeftLeg, lowerRightLeg, leftFoot, rightFoot);
-	
 }
 
 void WalkingController::SetState2(float torso, float upperLeftLeg, float upperRightLeg, float lowerLeftLeg, float lowerRightLeg, float leftFoot, float rightFoot){
@@ -408,9 +446,7 @@ void WalkingController::SetState2(float torso, float upperLeftLeg, float upperRi
 }
 
 void WalkingController::SetState3(float torso, float upperLeftLeg, float upperRightLeg, float lowerLeftLeg, float lowerRightLeg, float leftFoot, float rightFoot){
-
 	m_state3 = new State(torso, upperLeftLeg, upperRightLeg, lowerLeftLeg, lowerRightLeg, leftFoot, rightFoot);
-
 }
 
 void WalkingController::SetState4(float torso, float upperLeftLeg, float upperRightLeg, float lowerLeftLeg, float lowerRightLeg, float leftFoot, float rightFoot){
@@ -430,15 +466,22 @@ std::vector<float> WalkingController::CalculateState1Torques() {
 	float torsoTorque = CalculateTorqueForTorso(m_state1->m_torsoAngle, m_app->m_torso->GetOrientation(), m_app->m_torso->GetAngularVelocity());
 	//printf("==================== Calculating torque for Upper Legs ======================= \n");
 	float upperLeftLegTorque = CalculateTorqueForUpperLeftLeg(feedbackTargetAngle, m_app->m_upperLeftLeg->GetOrientation(), m_app->m_upperLeftLeg->GetAngularVelocity());
-	float upperRightLegTorque = -torsoTorque - upperLeftLegTorque;
+	float upperRightLegTorque = -1*(- torsoTorque - upperLeftLegTorque);
+	printf("------ Upper right leg torque: %f ------ \n", upperRightLegTorque);
 	//printf("==================== Calculating torque for Lower Legs ======================= \n");
-	float lowerLeftLegTorque = CalculateTorqueForLowerLeftLeg(m_state1->m_lowerLeftLegAngle, m_app->m_lowerLeftLeg->GetOrientation(), m_app->m_lowerLeftLeg->GetAngularVelocity());
-	float lowerRightLegTorque = CalculateTorqueForLowerRightLeg(m_state1->m_lowerRightLegAngle, m_app->m_lowerRightLeg->GetOrientation(), m_app->m_lowerRightLeg->GetAngularVelocity());
+	float lowerLeftLegTorque = CalculateTorqueForLowerLeftLeg(m_app->m_upperLeftLeg->GetOrientation() - m_state1->m_lowerLeftLegAngle, m_app->m_lowerLeftLeg->GetOrientation(), m_app->m_lowerLeftLeg->GetAngularVelocity());
+	float lowerRightLegTorque = CalculateTorqueForLowerRightLeg(m_app->m_upperRightLeg->GetOrientation() - m_state1->m_lowerRightLegAngle, m_app->m_lowerRightLeg->GetOrientation(), m_app->m_lowerRightLeg->GetAngularVelocity());
 	//printf("==================== Calculating torque for Feet ======================= \n");
-	float leftFootTorque = CalculateTorqueForLeftFoot(m_state1->m_leftFootAngle, m_app->m_leftFoot->GetOrientation(), m_app->m_leftFoot->GetAngularVelocity());
-	float rightFootTorque = CalculateTorqueForRightFoot(m_state1->m_rightFootAngle, m_app->m_rightFoot->GetOrientation(), m_app->m_rightFoot->GetAngularVelocity());
+	float leftFootTorque = CalculateTorqueForLeftFoot(
+		m_app->m_lowerLeftLeg->GetOrientation() - (m_state1->m_leftFootAngle - 90), 
+		m_app->m_leftFoot->GetOrientation(), 
+		0.0f);
+	float rightFootTorque = CalculateTorqueForRightFoot(
+		m_app->m_lowerRightLeg->GetOrientation() - (m_state1->m_rightFootAngle - 90), 
+		m_app->m_rightFoot->GetOrientation(), 
+		0.0f);
 
-	printf("Torques = %f, %f, %f, %f, %f, %f, %f \n", torsoTorque, upperLeftLegTorque, upperRightLegTorque, lowerLeftLegTorque, lowerRightLegTorque, leftFootTorque, rightFootTorque);
+	printf("Torques (T: %f, ULL: %f, URL: %f, LLL: %f, LRL: %f, LF: %f, RF: %f) \n", torsoTorque, upperLeftLegTorque, upperRightLegTorque, lowerLeftLegTorque, lowerRightLegTorque, leftFootTorque, rightFootTorque);
 
 	return std::vector < float > {torsoTorque, upperLeftLegTorque, upperRightLegTorque, lowerLeftLegTorque, lowerRightLegTorque, leftFootTorque, rightFootTorque};
 }
@@ -458,9 +501,10 @@ float WalkingController::CalculateFeedbackSwingHip() {
 	// Swing hip changes between states.
 	GameObject *swingHipBody;
 	float targetAngle;
-	float distance;
+	float distance = 0;
 	float velocity = m_app->m_torso->GetRigidBody()->getVelocityInLocalPoint(btVector3(-torso_height/2, 0, 0)).x();
 	float cd, cv = 0.0f;
+	btVector3 stanceAnkle(0, 0, 0);
 	switch (m_ragDollState)
 	{
 	case STATE_0:
@@ -468,7 +512,12 @@ float WalkingController::CalculateFeedbackSwingHip() {
 	case STATE_1: {
 		swingHipBody = m_app->m_upperLeftLeg;
 		targetAngle = m_state1->m_upperLeftLegAngle;
-		distance = abs(Constants::GetInstance().DegreesToRadians(m_state1->m_rightFootAngle - 90) * (foot_width / 4));	
+
+		float lrlAngle = Constants::GetInstance().DegreesToRadians(m_state1->m_upperRightLegAngle - m_state1->m_lowerRightLegAngle);
+
+		stanceAnkle = m_app->m_lowerRightLeg->GetCOMPosition() + btVector3(cos(PI - lrlAngle) * lower_leg_height / 2, -sin(PI - lrlAngle) * lower_leg_height / 2, 0);
+		distance = m_app->m_torso->GetCOMPosition().x() - stanceAnkle.x();	
+
 		cd = m_cd_1;
 		cv = m_cv_1;
 	}
@@ -476,7 +525,12 @@ float WalkingController::CalculateFeedbackSwingHip() {
 	case STATE_2: {
 		swingHipBody = m_app->m_upperLeftLeg;
 		targetAngle = m_state2->m_upperLeftLegAngle;
-		distance = abs(Constants::GetInstance().DegreesToRadians(m_state1->m_rightFootAngle - 90) * (foot_width / 4));
+
+		float lrlAngle = Constants::GetInstance().DegreesToRadians(m_state1->m_upperRightLegAngle - m_state1->m_lowerRightLegAngle);
+
+		stanceAnkle = m_app->m_lowerRightLeg->GetCOMPosition() + btVector3(cos(PI - lrlAngle) * lower_leg_height / 2, -sin(PI - lrlAngle) * lower_leg_height / 2, 0);
+		distance = m_app->m_torso->GetCOMPosition().x() - stanceAnkle.x();
+		
 		cd = m_cd_2;
 		cv = m_cv_2;
 	}
@@ -484,7 +538,12 @@ float WalkingController::CalculateFeedbackSwingHip() {
 	case STATE_3: {
 		swingHipBody = m_app->m_upperRightLeg;
 		targetAngle = m_state3->m_upperRightLegAngle;
-		distance = abs(Constants::GetInstance().DegreesToRadians(m_state1->m_leftFootAngle - 90) * (foot_width / 4));
+
+		float lllAngle = Constants::GetInstance().DegreesToRadians(m_state1->m_upperLeftLegAngle - m_state1->m_lowerLeftLegAngle);
+
+		stanceAnkle = m_app->m_lowerLeftLeg->GetCOMPosition() + btVector3(cos(PI - lllAngle) * lower_leg_height / 2, -sin(PI - lllAngle) * lower_leg_height / 2, 0);
+		distance = m_app->m_torso->GetCOMPosition().x() - stanceAnkle.x();
+
 		cd = m_cd_1;
 		cv = m_cv_1;
 	}
@@ -492,7 +551,12 @@ float WalkingController::CalculateFeedbackSwingHip() {
 	case STATE_4: {
 		swingHipBody = m_app->m_upperRightLeg;
 		targetAngle = m_state4->m_upperRightLegAngle;
-		distance = abs(Constants::GetInstance().DegreesToRadians(m_state1->m_leftFootAngle - 90) * (foot_width / 4));
+
+		float lllAngle = Constants::GetInstance().DegreesToRadians(m_state1->m_upperLeftLegAngle - m_state1->m_lowerLeftLegAngle);
+
+		stanceAnkle = m_app->m_lowerLeftLeg->GetCOMPosition() + btVector3(cos(PI - lllAngle) * lower_leg_height / 2, -sin(PI - lllAngle) * lower_leg_height / 2, 0);
+		distance = m_app->m_torso->GetCOMPosition().x() - stanceAnkle.x();
+
 		cd = m_cd_2;
 		cv = m_cv_2;
 	}
@@ -506,30 +570,44 @@ float WalkingController::CalculateFeedbackSwingHip() {
 }
 
 float WalkingController::CalculateTorqueForTorso(float targetPosition, float currentPosition, float currentVelocity) {
+	printf("^^^^^^^^ Torso ^^^^^^^^ \n");
+	printf("Target Position: %f, Current Position: %f \n", targetPosition, currentPosition);
 	return CalculateTorque(m_torso_gains->m_kp, m_torso_gains->m_kd, targetPosition, currentPosition, currentVelocity);
 }
 
 float WalkingController::CalculateTorqueForUpperLeftLeg(float targetPosition, float currentPosition, float currentVelocity) {
+	printf("------ Upper left leg ------ \n");
+	printf("Target Position: %f, Current Position: %f \n", targetPosition, currentPosition);
 	return CalculateTorque(m_ull_gains->m_kp, m_ull_gains->m_kd, targetPosition, currentPosition, currentVelocity);
 }
 
 float WalkingController::CalculateTorqueForUpperRightLeg(float targetPosition, float currentPosition, float currentVelocity) {
+	printf("------ Upper right leg ------ \n");
+	printf("Target Position: %f, Current Position: %f \n", targetPosition, currentPosition);
 	return CalculateTorque(m_url_gains->m_kp, m_url_gains->m_kd, targetPosition, currentPosition, currentVelocity);
 }
 
 float WalkingController::CalculateTorqueForLowerLeftLeg(float targetPosition, float currentPosition, float currentVelocity) {
+	printf("------ Lower left leg ------ \n");
+	printf("Target Position: %f, Current Position: %f \n", targetPosition, currentPosition);
 	return CalculateTorque(m_lll_gains->m_kp, m_lll_gains->m_kd, targetPosition, currentPosition, currentVelocity);
 }
 
 float WalkingController::CalculateTorqueForLowerRightLeg(float targetPosition, float currentPosition, float currentVelocity) {
+	printf("------ Lower right leg ------ \n");
+	printf("Target Position: %f, Current Position: %f \n", targetPosition, currentPosition);
 	return CalculateTorque(m_lrl_gains->m_kp, m_lrl_gains->m_kd, targetPosition, currentPosition, currentVelocity);
 }
 
 float WalkingController::CalculateTorqueForLeftFoot(float targetPosition, float currentPosition, float currentVelocity) {
+	printf("------ Left foot ------ \n");
+	printf("Target Position: %f, Current Position: %f, current velocity = %f \n", targetPosition, currentPosition, currentVelocity);
 	return CalculateTorque(m_lf_gains->m_kp, m_lf_gains->m_kd, targetPosition, currentPosition, currentVelocity);
 }
 
 float WalkingController::CalculateTorqueForRightFoot(float targetPosition, float currentPosition, float currentVelocity) {
+	printf("------ Right foot ------ \n");
+	printf("Target Position: %f, Current Position: %f, current velocity = %f \n", targetPosition, currentPosition, currentVelocity);
 	return CalculateTorque(m_rf_gains->m_kp, m_rf_gains->m_kd, targetPosition, currentPosition, currentVelocity);
 }
 

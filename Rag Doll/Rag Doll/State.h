@@ -12,6 +12,7 @@ public:
 		m_lowerRightLegAngle = lowerRightLeg;
 		m_leftFootAngle = leftFoot;
 		m_rightFootAngle = rightFoot;
+
 	}
 
 	State();
@@ -24,5 +25,6 @@ public:
 	float m_lowerLeftLegAngle;
 	float m_rightFootAngle;
 	float m_leftFootAngle;
+
 
 };
