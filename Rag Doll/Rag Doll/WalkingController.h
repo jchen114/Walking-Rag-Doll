@@ -20,7 +20,7 @@ class Gains;
 #define lower_leg_mass 4
 #define feet_mass 1
 
-// DIMENSIONS
+// DIMENSIONS, tis a giant... 
 #define torso_width 1.0f
 #define torso_height 3.0
 

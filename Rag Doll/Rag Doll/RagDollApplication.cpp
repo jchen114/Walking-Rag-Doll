@@ -73,6 +73,7 @@ void RagDollApplication::InitializePhysics() {
 	float mass = 0.0f;
 	btVector3 position(0.0f, -10.0f, 0.0f);
 	m_ground = Create3DBox(ground, mass, GetRandomColor(), position);
+	m_ground->GetRigidBody()->setCollisionFlags(m_ground->GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
 
 	CreateRagDoll(ORIGINAL_TORSO_POSITION);
 
@@ -88,6 +89,7 @@ void RagDollApplication::InitializePhysics() {
 	// Setup collision detection between feet and ground.
 	m_leftFoot->GetRigidBody()->setCollisionFlags(m_leftFoot->GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
 	m_rightFoot->GetRigidBody()->setCollisionFlags(m_rightFoot->GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
+
 	m_pWorld->contactPairTest(m_leftFoot->GetRigidBody(), m_ground->GetRigidBody(), m_WalkingController->m_leftFootGroundContact);
 	m_pWorld->contactPairTest(m_rightFoot->GetRigidBody(), m_ground->GetRigidBody(), m_WalkingController->m_rightFootGroundContact);
 
@@ -98,6 +100,8 @@ void RagDollApplication::InitializePhysics() {
 	SetupGUIConfiguration(m_states, m_gains);
 
 	Reset();
+
+	GameObject::DisableDeactivation(m_bodies);
 
 	m_pWorld->setInternalTickCallback(InternalTickCallback);
 
@@ -304,7 +308,7 @@ void RagDollApplication::DisplayGains() {
 			break;
 		case UPPER_LEFT_LEG: {
 			m_ull_kp_spinner->set_float_val((*it)->m_kp);
-			m_ull_kd_spinner->set_float_val((*it)->m_kp);
+			m_ull_kd_spinner->set_float_val((*it)->m_kd);
 		}
 			break;
 		case UPPER_RIGHT_LEG: {
@@ -371,23 +375,23 @@ void RagDollApplication::CreateRagDoll(const btVector3 &position) {
 
 	// Create Upper legs
 	halfSize = btVector3(upper_leg_height / 2, upper_leg_width / 2, 0.0f);
-	m_upperLeftLeg = Create2DBox(halfSize, upper_leg_mass, btVector3(255 / 256.0, 102 / 256.0, 255 / 256.0), position + btVector3(0,0, -0.1)); // Pink
-	m_upperRightLeg = Create2DBox(halfSize, upper_leg_mass, btVector3(0 / 256.0, 153 / 256.0, 0 / 256.0), position + btVector3(0,0,0.1)); // Green
+	m_upperLeftLeg = Create2DBox(halfSize, upper_leg_mass, btVector3(255 / 256.0, 102 / 256.0, 255 / 256.0), position + btVector3(0,0, 0.1)); // Pink
+	m_upperRightLeg = Create2DBox(halfSize, upper_leg_mass, btVector3(0 / 256.0, 153 / 256.0, 0 / 256.0), position + btVector3(0,0, -0.1)); // Green
 
 	// Create lower legs
 	halfSize = btVector3(lower_leg_height / 2, lower_leg_width / 2, 0.0f);
-	m_lowerLeftLeg = Create2DBox(halfSize, lower_leg_mass, btVector3(250 / 256.0, 250 / 256.0, 10 / 256.0), position + btVector3(0, 0, -0.11)); // Yellow
-	m_lowerRightLeg = Create2DBox(halfSize, lower_leg_mass, btVector3(255 / 256.0, 102 / 256.0, 0 / 256.0), position + btVector3(0, 0, 0.11)); // Orange
+	m_lowerLeftLeg = Create2DBox(halfSize, lower_leg_mass, btVector3(250 / 256.0, 250 / 256.0, 10 / 256.0), position + btVector3(0, 0, 0.11)); // Yellow
+	m_lowerRightLeg = Create2DBox(halfSize, lower_leg_mass, btVector3(255 / 256.0, 102 / 256.0, 0 / 256.0), position + btVector3(0, 0, -0.11)); // Orange
 
 	// Create feet
 	halfSize = btVector3(foot_width / 2, foot_height / 2, 0.0f); 
-	m_leftFoot = Create2DBox(halfSize, feet_mass, btVector3(0 / 256.0, 255 / 256.0, 255 / 256.0), position + btVector3(0,0,-0.12)); // aqua blue
+	m_leftFoot = Create2DBox(halfSize, feet_mass, btVector3(0 / 256.0, 255 / 256.0, 255 / 256.0), position + btVector3(0,0,0.12)); // aqua blue
 	halfSize = btVector3(foot_width / 2, foot_height / 2, 0.0f);
-	m_rightFoot = Create2DBox(halfSize, feet_mass, btVector3(153 / 256.0, 0 / 256.0, 153 / 256.0), position + btVector3(0, 0, 0.12)); // purple
+	m_rightFoot = Create2DBox(halfSize, feet_mass, btVector3(153 / 256.0, 0 / 256.0, 153 / 256.0), position + btVector3(0, 0, -0.12)); // purple
 
 	AddHinges();
 
-	m_bodies = { m_torso, m_upperRightLeg, m_upperLeftLeg, m_lowerRightLeg, m_lowerLeftLeg, m_rightFoot, m_leftFoot };
+	m_bodies = { m_torso, m_upperLeftLeg, m_upperRightLeg, m_lowerLeftLeg, m_lowerRightLeg, m_leftFoot, m_rightFoot, };
 
 }
 

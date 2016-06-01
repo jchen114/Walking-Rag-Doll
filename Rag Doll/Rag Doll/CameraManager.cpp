@@ -39,8 +39,8 @@ void CameraManager::UpdateCamera() {
 	{
 	case ORTHOGRAPHIC:
 		//SetupModelView();
-		SetupOrthographicModelView();
-		//SetupOrthographicCamera();
+		//SetupOrthographicModelView();
+		SetupOrthographicCamera();
 		break;
 	case PERSPECTIVE:
 		SetupPerspectiveCamera();
@@ -56,12 +56,12 @@ void CameraManager::SetupOrthographicCamera() {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	//float aspectRatio = m_screenWidth / (float)m_screenHeight;
+	float aspectRatio = Constants::GetInstance().GetScreenWidth() / (float)Constants::GetInstance().GetScreenHeight();
 
 	// create a viewing frustum based on the aspect ratio and the
 	// boundaries of the camera
-	//glOrtho(0, 1, -1, 1, 1, 100);
-	gluOrtho2D(-5, 5, -5, 5);
+	glOrtho(-aspectRatio, 1*aspectRatio, -1, 1, 1, -1);
+	//gluOrtho2D(-5, 5, -5, 5);
 	//TEST_MODEL_VIEW_ORTHO();
 	SetupOrthographicModelView();
 }

@@ -17,46 +17,6 @@ public:
 		const btQuaternion &initialRotation = btQuaternion(0, 0, 1, 1));
 	~GameObject();
 
-	static void ClearForces(std::vector<GameObject *> objects) {
-		for (std::vector<GameObject *>::iterator it = objects.begin(); it != objects.end(); ++it) {
-			(*it)->GetRigidBody()->clearForces();
-		}
-	}
-
-	static void ClearVelocities(std::vector<GameObject *>objects) {
-		btVector3 zeroVec(0, 0, 0);
-		for (std::vector<GameObject *>::iterator it = objects.begin(); it != objects.end(); ++it) {
-			(*it)->GetRigidBody()->setLinearVelocity(zeroVec);
-			(*it)->GetRigidBody()->setAngularVelocity(zeroVec);
-		}
-	}
-
-	static void DisableObjects(std::vector<GameObject *> objects) {
-		for (std::vector<GameObject *>::iterator it = objects.begin(); it != objects.end(); ++it) {
-			//(*it)->GetRigidBody()->clearForces();
-			// Make object static
-			(*it)->GetRigidBody()->setMassProps(0.0f, btVector3(0, 0, 0));
-		}
-	}
-
-	static void EnableObjects(std::vector<GameObject *> objects) {
-		printf("ENABLE THE BODIES\n");
-		for (std::vector<GameObject *>::iterator it = objects.begin(); it != objects.end(); ++it) {
-			//(*it)->GetRigidBody()->setActivationState(DISABLE_DEACTIVATION);
-			// Set mass to original mass
-			(*it)->GetRigidBody()->setMassProps((*it)->GetMass(), (*it)->GetInertia());
-			(*it)->GetRigidBody()->activate();
-		}
-	}
-
-	static void PrintOrientations(std::vector<GameObject *> objects) {
-		for (std::vector<GameObject *>::iterator it = objects.begin(); it != objects.end(); ++it) {
-			float angle = Constants::GetInstance().RadiansToDegrees((*it)->GetRigidBody()->getOrientation().getAngle());
-			printf("Angle = %f, ", angle);
-		}
-		printf("\n");
-	}
-
 	void Reposition(const btVector3 &position, const btQuaternion &orientation = btQuaternion(0, 0, 1, 1));
 	float GetPosition() {
 		return GetRigidBody()->getOrientation().getAngle();
@@ -98,6 +58,52 @@ public:
 	}
 
 	btVector3 GetColor() { return m_color; }
+
+	static void ClearForces(std::vector<GameObject *> objects) {
+		for (std::vector<GameObject *>::iterator it = objects.begin(); it != objects.end(); ++it) {
+			(*it)->GetRigidBody()->clearForces();
+		}
+	}
+
+	static void ClearVelocities(std::vector<GameObject *>objects) {
+		btVector3 zeroVec(0, 0, 0);
+		for (std::vector<GameObject *>::iterator it = objects.begin(); it != objects.end(); ++it) {
+			(*it)->GetRigidBody()->setLinearVelocity(zeroVec);
+			(*it)->GetRigidBody()->setAngularVelocity(zeroVec);
+		}
+	}
+
+	static void DisableObjects(std::vector<GameObject *> objects) {
+		for (std::vector<GameObject *>::iterator it = objects.begin(); it != objects.end(); ++it) {
+			//(*it)->GetRigidBody()->clearForces();
+			// Make object static
+			(*it)->GetRigidBody()->setMassProps(0.0f, btVector3(0, 0, 0));
+		}
+	}
+
+	static void EnableObjects(std::vector<GameObject *> objects) {
+		printf("ENABLE THE BODIES\n");
+		for (std::vector<GameObject *>::iterator it = objects.begin(); it != objects.end(); ++it) {
+			//(*it)->GetRigidBody()->setActivationState(DISABLE_DEACTIVATION);
+			// Set mass to original mass
+			(*it)->GetRigidBody()->setMassProps((*it)->GetMass(), (*it)->GetInertia());
+			(*it)->GetRigidBody()->activate();
+		}
+	}
+
+	static void PrintOrientations(std::vector<GameObject *> objects) {
+		for (std::vector<GameObject *>::iterator it = objects.begin(); it != objects.end(); ++it) {
+			float angle = Constants::GetInstance().RadiansToDegrees((*it)->GetRigidBody()->getOrientation().getAngle());
+			printf("Angle = %f, ", angle);
+		}
+		printf("\n");
+	}
+
+	static void DisableDeactivation(std::vector<GameObject *> objects) {
+		for (std::vector<GameObject *>::iterator it = objects.begin(); it != objects.end(); ++it) {
+			(*it)->GetRigidBody()->setActivationState(DISABLE_DEACTIVATION);
+		}
+	}
 
 protected:
 	btCollisionShape *m_pShape;

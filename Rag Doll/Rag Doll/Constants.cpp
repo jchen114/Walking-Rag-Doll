@@ -34,6 +34,7 @@ ProjectionMode Constants::GetProjectionMode() {
 float Constants::GetPixelsToMeters(float dist2Camera) {
 	// ASSUMPTION: Found this empirically;
 	return 0.00162*dist2Camera + 0.0261;
+	//return 1;
 
 }
 

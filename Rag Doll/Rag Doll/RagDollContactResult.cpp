@@ -4,7 +4,12 @@
 #include "WalkingController.h"
 
 
-RagDollContactResult::RagDollContactResult(WalkingController *controller, ContactType contactType)
+RagDollContactResult::RagDollContactResult():btCollisionWorld::ContactResultCallback()
+{
+
+}
+
+RagDollContactResult::RagDollContactResult(WalkingController *controller, ContactType contactType) :btCollisionWorld::ContactResultCallback()
 {
 	m_walkingController = controller;
 	m_contactType = contactType;
@@ -25,20 +30,22 @@ btScalar RagDollContactResult::addSingleResult(
 	int partId1, 
 	int index1) {
 
-	printf("Collision occured. \n");
+	printf("************************************* Collision occured. ************************************\n");
 
 	switch (m_contactType)
 	{
 	case LEFT_FOOT_GROUND: {
-		m_walkingController->m_leftFootContact = true;
+		printf("LEFT FOOT CONTACTED GROUND. \n");
+		//m_walkingController->m_leftFootContact = true;
 	}
 		break;
 	case RIGHT_FOOT_GROUND: {
-		m_walkingController->m_rightFootContact = true;
+		printf("RIGHT FOOT CONTACTED GROUND. \n");
+		//m_walkingController->m_rightFootContact = true;
 	}
 		break;
 	default:
 		break;
 	}
-
+	return 0;
 }
