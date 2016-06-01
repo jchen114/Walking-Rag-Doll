@@ -98,6 +98,8 @@ public:
 	void Walk();
 	void PauseWalking();
 	void Reset();
+	void NotifyLeftFootGroundContact();
+	void NotifyRightFootGroundContact();
 
 	void SetState1(float torso, float upperLeftLeg, float upperRightLeg, float lowerLeftLeg, float lowerRightLeg, float leftFoot, float rightFoot);
 	void SetState2(float torso, float upperLeftLeg, float upperRightLeg, float lowerLeftLeg, float lowerRightLeg, float leftFoot, float rightFoot);
@@ -120,15 +122,12 @@ public:
 	float m_cd_2 = 0.0f;
 	float m_cv_2 = 0.0f;
 
-	bool m_leftFootContact = false;
-	bool m_rightFootContact = false;
-
 	float m_state_time = 0.0f;
 
-	RagDollContactResult m_rightFootGroundContact;
-	RagDollContactResult m_leftFootGroundContact;
-
 private:
+
+	bool m_leftFootGroundHasContacted = false;
+	bool m_rightFootGroundHasContacted = false;
 
 	RagDollApplication *m_app;
 

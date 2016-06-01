@@ -101,7 +101,6 @@
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="OpenGLMotionState.h" />
     <ClInclude Include="RagDollApplication.h" />
-    <ClInclude Include="RagDollContactResult.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -118,7 +117,6 @@
     <ClCompile Include="FallingBoxesApplication.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="RagDollApplication.cpp" />
-    <ClCompile Include="RagDollContactResult.cpp" />
     <ClCompile Include="State.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

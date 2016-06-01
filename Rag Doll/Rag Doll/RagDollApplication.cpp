@@ -86,13 +86,6 @@ void RagDollApplication::InitializePhysics() {
 	// Read from a file for last gains configuration
 	m_gains = m_WalkingController->ReadGainsFile();
 
-	// Setup collision detection between feet and ground.
-	m_leftFoot->GetRigidBody()->setCollisionFlags(m_leftFoot->GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
-	m_rightFoot->GetRigidBody()->setCollisionFlags(m_rightFoot->GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
-
-	m_pWorld->contactPairTest(m_leftFoot->GetRigidBody(), m_ground->GetRigidBody(), m_WalkingController->m_leftFootGroundContact);
-	m_pWorld->contactPairTest(m_rightFoot->GetRigidBody(), m_ground->GetRigidBody(), m_WalkingController->m_rightFootGroundContact);
-
 	// Create GUI
 	CreateRagDollGUI();
 
@@ -113,6 +106,26 @@ void RagDollApplication::Idle() {
 
 void RagDollApplication::RagDollStep() {
 	//printf("Callback after every physics tick.\n");
+	int numManifolds = m_pWorld->getDispatcher()->getNumManifolds();
+	for (int i = 0; i<numManifolds; i++)
+	{
+		btPersistentManifold* contactManifold = m_pWorld->getDispatcher()->getManifoldByIndexInternal(i);
+
+		btCollisionObject* obA = const_cast<btCollisionObject*>(contactManifold->getBody0());
+		btCollisionObject* obB = const_cast<btCollisionObject*>(contactManifold->getBody1());
+
+		//printf(">>>>>>>>>>>>>>>>>>>>>> Collision. <<<<<<<<<<<<<<<<<<<<<< \n");
+
+		if ((obA->getUserPointer() == m_leftFoot && obB->getUserPointer() == m_ground) || (obA->getUserPointer() == m_ground && obB->getUserPointer() == m_leftFoot)) {
+			//printf(">>>>>>>>>>>>>>>>>>>>>> Collision with left foot to ground detected. <<<<<<<<<<<<<<<<<<<<<< \n");
+			m_WalkingController->NotifyLeftFootGroundContact();
+		}
+
+		if ((obA->getUserPointer() == m_rightFoot && obB->getUserPointer() == m_ground) || (obA->getUserPointer() == m_ground && obB->getUserPointer() == m_rightFoot)) {
+			//printf(">>>>>>>>>>>>>>>>>>>>>> Collision with right foot to ground detected. <<<<<<<<<<<<<<<<<<<<<< \n");
+			m_WalkingController->NotifyRightFootGroundContact();
+		}
+	}
 	switch (m_WalkingController->m_currentState)
 	{
 	case WALKING:

@@ -35,6 +35,8 @@ GameObject::GameObject(	btCollisionShape *pShape,
 
 	m_inertia = localInertia;
 	m_mass = mass;
+	// Set pointer to self
+	m_pBody->setUserPointer(this);
 }
 
 
