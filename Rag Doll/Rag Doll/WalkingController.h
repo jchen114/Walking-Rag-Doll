@@ -168,5 +168,7 @@ private:
 
 	float CalculateTorque(float kp, float kd, float targetPosition, float currentPosition, float velocity);
 
+	void DrawStanceAnkle();
+	void DrawTorsoCOM();
 
 };

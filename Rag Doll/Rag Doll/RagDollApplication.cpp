@@ -96,7 +96,8 @@ void RagDollApplication::InitializePhysics() {
 
 	GameObject::DisableDeactivation(m_bodies);
 
-	m_pWorld->setInternalTickCallback(InternalTickCallback);
+	m_pWorld->setInternalTickCallback(InternalPreTickCallback, 0, true);
+	m_pWorld->setInternalTickCallback(InternalPostTickCallback, 0, false);
 
 }
 
@@ -106,6 +107,23 @@ void RagDollApplication::Idle() {
 
 void RagDollApplication::RagDollStep() {
 	//printf("Callback after every physics tick.\n");
+	switch (m_WalkingController->m_currentState)
+	{
+	case WALKING:
+		m_WalkingController->Walk();
+		//GameObject::PrintOrientations(m_bodies);
+		break;
+	case PAUSE:
+		break;
+	case RESET:
+		break;
+	default:
+		break;
+	}
+}
+
+void RagDollApplication::RagDollCollision() {
+
 	int numManifolds = m_pWorld->getDispatcher()->getNumManifolds();
 	for (int i = 0; i<numManifolds; i++)
 	{
@@ -126,20 +144,14 @@ void RagDollApplication::RagDollStep() {
 			m_WalkingController->NotifyRightFootGroundContact();
 		}
 	}
-	switch (m_WalkingController->m_currentState)
-	{
-	case WALKING:
-		m_WalkingController->Walk();
-		//GameObject::PrintOrientations(m_bodies);
-		break;
-	case PAUSE:
-		break;
-	case RESET:
-		break;
-	default:
-		break;
-	}
 }
+
+
+void RagDollApplication::ShutdownPhysics() {
+
+}
+
+#pragma region GUI
 
 void RagDollApplication::CreateRagDollGUI() {
 
@@ -154,7 +166,7 @@ void RagDollApplication::CreateRagDollGUI() {
 	/*===================================== GAINS =========================================*/
 	GLUI_Panel *gains_panel = m_glui_window->add_panel("Gains");
 	m_glui_window->add_statictext_to_panel(gains_panel, "Torso");
-	m_torso_kp_spinner =  m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_gains.at(0)->m_kp, TORSO_KP);
+	m_torso_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_gains.at(0)->m_kp, TORSO_KP);
 	m_torso_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(0)->m_kd, TORSO_KD);
 
 	m_torso_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
@@ -288,9 +300,6 @@ void RagDollApplication::SetupGUIConfiguration(std::vector<State *>states, std::
 
 }
 
-void RagDollApplication::ShutdownPhysics() {
-
-}
 
 void RagDollApplication::DisplayState(int state) {
 
@@ -370,6 +379,8 @@ void RagDollApplication::DisplayTime(float time) {
 	m_timer_spinner->set_float_val(time);
 
 }
+
+#pragma endregion GUI
 
 #pragma endregion INITIALIZATION
 
@@ -757,6 +768,8 @@ void RagDollApplication::EnableGainSpinners() {
 
 }
 
+#pragma region TORQUES
+
 // Upper legs
 void RagDollApplication::ApplyTorqueOnUpperLeftLeg(float torqueForce) {
 	btVector3 torque(btVector3(0, 0, torqueForce));
@@ -790,6 +803,7 @@ void RagDollApplication::ApplyTorqueOnRightFoot(float torqueForce) {
 	ApplyTorque(m_rightFoot, torque);
 }
 
+#pragma endregion TORQUES
 
 #pragma endregion RAG_DOLL
 
@@ -881,10 +895,12 @@ static void RightFootAngleChanged(int id) {
 	m_app->ChangeRightFootAngle();
 }
 
-void InternalTickCallback(btDynamicsWorld *world, btScalar timeStep)  {
+#pragma endregion GLUI_CALLBACKS
+
+void InternalPreTickCallback(btDynamicsWorld *world, btScalar timeStep)  {
 	m_app->RagDollStep();
 }
 
-
-
-#pragma endregion GLUI_CALLBACKS
+void InternalPostTickCallback(btDynamicsWorld *world, btScalar timestep) {
+	m_app->RagDollCollision();
+}

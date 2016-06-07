@@ -63,6 +63,7 @@ public:
 	void ApplyTorqueOnRightFoot(float torqueForce);
 	void ApplyTorqueOnLeftFoot(float torqueForce);
 	void RagDollStep();
+	void RagDollCollision();
 
 private:
 
@@ -161,4 +162,5 @@ static void RightFootAngleChanged(int id);
 static void GainsChanged(int id);
 
 /* Bullet Physics Tick callback */
-void InternalTickCallback(btDynamicsWorld *world, btScalar timestep);
+void InternalPreTickCallback(btDynamicsWorld *world, btScalar timestep);
+void InternalPostTickCallback(btDynamicsWorld *world, btScalar timestep);
