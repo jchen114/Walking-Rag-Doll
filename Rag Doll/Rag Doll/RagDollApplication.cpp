@@ -69,9 +69,9 @@ void RagDollApplication::InitializePhysics() {
 	m_pWorld = new btDiscreteDynamicsWorld(m_pDispatcher, m_pBroadphase, m_pSolver, m_pCollisionConfiguration);
 
 	// Create ground
-	btVector3 ground(1.0f, 100.0f, 10.0f);
+	btVector3 ground(0.2f, 100.0f, 10.0f);
 	float mass = 0.0f;
-	btVector3 position(0.0f, -10.0f, 0.0f);
+	btVector3 position(0.0f, -0.5f, 0.0f);
 	m_ground = Create3DBox(ground, mass, GetRandomColor(), position);
 	m_ground->GetRigidBody()->setCollisionFlags(m_ground->GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
 
@@ -378,30 +378,23 @@ void RagDollApplication::DisplayTime(float time) {
 void RagDollApplication::CreateRagDoll(const btVector3 &position) {
 
 	// Create a torso centered at the position
-	btVector3 halfSize(torso_height/2, torso_width/2, 0.0);
+	btVector3 torsoHalfSize(torso_height/2, torso_width/2, 0.0);
+	btVector3 ulHalfSize = btVector3(upper_leg_height / 2, upper_leg_width / 2, 0.0f);
+	btVector3 llHalfSize = btVector3(lower_leg_height / 2, lower_leg_width / 2, 0.0f);
+	btVector3 fHalfSize = btVector3(foot_width / 2, foot_height / 2, 0.0f);
 	
-	m_torso = Create2DBox(halfSize, torso_mass, btVector3(0, 51 / 256.0, 102 / 256.0), position); // Blue
+	// Create RIGHT LEG	
+	m_upperRightLeg = Create2DBox(ulHalfSize, upper_leg_mass, btVector3(0 / 256.0, 153 / 256.0, 0 / 256.0), position + btVector3(0, 0, 0)); // Green
+	m_rightFoot = Create2DBox(fHalfSize, feet_mass, btVector3(153 / 256.0, 0 / 256.0, 153 / 256.0), position + btVector3(0, 0, -0)); // purple
+	m_lowerRightLeg = Create2DBox(llHalfSize, lower_leg_mass, btVector3(255 / 256.0, 102 / 256.0, 0 / 256.0), position + btVector3(0, 0, 0)); // Orange
 
-	// test box
-	//Create2DBox(halfSize, mass, GetRandomColor(), btVector3(-4, 5, 0.7));
-	//Create2DBox(halfSize, mass, GetRandomColor(), btVector3(4, 7, 0.5));
+	m_torso = Create2DBox(torsoHalfSize, torso_mass, btVector3(0, 51 / 256.0, 102 / 256.0), position); // Blue
 
-	// Create Upper legs
-	halfSize = btVector3(upper_leg_height / 2, upper_leg_width / 2, 0.0f);
-	m_upperLeftLeg = Create2DBox(halfSize, upper_leg_mass, btVector3(255 / 256.0, 102 / 256.0, 255 / 256.0), position + btVector3(0,0, 0.1)); // Pink
-	m_upperRightLeg = Create2DBox(halfSize, upper_leg_mass, btVector3(0 / 256.0, 153 / 256.0, 0 / 256.0), position + btVector3(0,0, -0.1)); // Green
-
-	// Create lower legs
-	halfSize = btVector3(lower_leg_height / 2, lower_leg_width / 2, 0.0f);
-	m_lowerLeftLeg = Create2DBox(halfSize, lower_leg_mass, btVector3(250 / 256.0, 250 / 256.0, 10 / 256.0), position + btVector3(0, 0, 0.11)); // Yellow
-	m_lowerRightLeg = Create2DBox(halfSize, lower_leg_mass, btVector3(255 / 256.0, 102 / 256.0, 0 / 256.0), position + btVector3(0, 0, -0.11)); // Orange
-
-	// Create feet
-	halfSize = btVector3(foot_width / 2, foot_height / 2, 0.0f); 
-	m_leftFoot = Create2DBox(halfSize, feet_mass, btVector3(0 / 256.0, 255 / 256.0, 255 / 256.0), position + btVector3(0,0,0.12)); // aqua blue
-	halfSize = btVector3(foot_width / 2, foot_height / 2, 0.0f);
-	m_rightFoot = Create2DBox(halfSize, feet_mass, btVector3(153 / 256.0, 0 / 256.0, 153 / 256.0), position + btVector3(0, 0, -0.12)); // purple
-
+	// Create LEFT LEG
+	m_upperLeftLeg = Create2DBox(ulHalfSize, upper_leg_mass, btVector3(255 / 256.0, 102 / 256.0, 255 / 256.0), position + btVector3(0, 0, 0)); // Pink
+	m_leftFoot = Create2DBox(fHalfSize, feet_mass, btVector3(0 / 256.0, 255 / 256.0, 255 / 256.0), position + btVector3(0, 0, 0)); // aqua blue
+	m_lowerLeftLeg = Create2DBox(llHalfSize, lower_leg_mass, btVector3(250 / 256.0, 250 / 256.0, 10 / 256.0), position + btVector3(0, 0, 0)); // Yellow
+	
 	AddHinges();
 
 	m_bodies = { m_torso, m_upperLeftLeg, m_upperRightLeg, m_lowerLeftLeg, m_lowerRightLeg, m_leftFoot, m_rightFoot, };
@@ -474,9 +467,6 @@ void RagDollApplication::Start() {
 
 	GameObject::EnableObjects(m_bodies);
 
-	// Save state!
-	ChangeState(-1);
-
 	m_WalkingController->Walk();
 }
 
@@ -542,23 +532,59 @@ void RagDollApplication::UpdateRagDoll() {
 
 	//printf("Updating Rag doll:\n %f, %f, %f, %f, %f, %f, %f\n", torsoAngle, ullAngle, urlAngle, lllAngle, lrlAngle, lfAngle, rfAngle);
 	// Blue
-	m_torso->Reposition(ORIGINAL_TORSO_POSITION + btVector3(-(torso_height/2) * cos(PI - torsoAngle), sin(PI - torsoAngle)*(torso_height/2) - (torso_height/2),0), btQuaternion(btVector3(0, 0, 1), torsoAngle));
-	// Pink Green
-	m_upperLeftLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(torso_height / 2 + upper_leg_height / 2), 0.1) + btVector3(-cos(ullAngle) * (upper_leg_height/2), (upper_leg_height/2) - sin(ullAngle)*upper_leg_height/2, 0), btQuaternion(btVector3(0,0,1), ullAngle));
-	m_upperRightLeg->Reposition(ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(torso_height / 2 + upper_leg_height / 2),- 0.1) + btVector3(-cos(urlAngle) * (upper_leg_height / 2), (upper_leg_height / 2) - sin(urlAngle)*upper_leg_height / 2, 0), btQuaternion(btVector3(0, 0, 1), urlAngle));
-	btVector3 upperLeftLegBottomPoint = m_upperLeftLeg->GetCOMPosition() + btVector3(cos(PI - ullAngle) * upper_leg_height/2, -sin(PI - ullAngle) * upper_leg_height/2, 0);
+	m_torso->Reposition(
+		ORIGINAL_TORSO_POSITION + btVector3(-(torso_height/2) * cos(PI - torsoAngle), sin(PI - torsoAngle)*(torso_height/2) - (torso_height/2),0), 
+		btQuaternion(btVector3(0, 0, 1), 
+		torsoAngle));
+	printf("Torso COM (%f, %f, %f)\n", m_torso->GetCOMPosition().x(), m_torso->GetCOMPosition().y(), m_torso->GetCOMPosition().z());
+	// GREEN
+	m_upperRightLeg->Reposition(
+		ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(torso_height / 2 + upper_leg_height / 2), 0.1) + btVector3(-cos(urlAngle) * (upper_leg_height / 2), (upper_leg_height / 2) - sin(urlAngle)*upper_leg_height / 2, 0),
+		btQuaternion(btVector3(0, 0, 1),
+		urlAngle));
+	printf("URL COM (%f, %f, %f)\n", m_upperRightLeg->GetCOMPosition().x(), m_upperRightLeg->GetCOMPosition().y(), m_upperRightLeg->GetCOMPosition().z());
 	btVector3 upperRightLegBottomPoint = m_upperRightLeg->GetCOMPosition() + btVector3(cos(PI - urlAngle) * upper_leg_height / 2, -sin(PI - urlAngle) * upper_leg_height / 2, 0);
-	//printf("ULL BP position: %f, %f\n", upperLeftLegBottomPoint.x(), upperLeftLegBottomPoint.y());
-	// Yellow Orange
-	//m_lowerLeftLeg->Reposition(upperLeftLegBottomPoint + btVector3(0.0f, -lower_leg_height / 2, 0.1), btQuaternion(btVector3(0, 0, 1), lllAngle));
-	m_lowerLeftLeg->Reposition(upperLeftLegBottomPoint + btVector3(-(cos(lllAngle)*lower_leg_height / 2), -(sin(lllAngle)*lower_leg_height / 2), 0.1), btQuaternion(btVector3(0, 0, 1), lllAngle));
-	m_lowerRightLeg->Reposition(upperRightLegBottomPoint + btVector3(-(cos(lrlAngle) * lower_leg_height / 2), -(sin(lrlAngle)*lower_leg_height / 2), -0.1), btQuaternion(btVector3(0, 0, 1), lrlAngle));
 
-	btVector3 lowerLeftLegBottomPoint = m_lowerLeftLeg->GetCOMPosition() + btVector3(cos(PI - lllAngle) * lower_leg_height / 2, -sin(PI - lllAngle) * lower_leg_height / 2, 0);
+	// ORANGE
+	m_lowerRightLeg->Reposition(
+		upperRightLegBottomPoint + btVector3(-(cos(lrlAngle) * lower_leg_height / 2), -(sin(lrlAngle)*lower_leg_height / 2), 0.1),
+		btQuaternion(btVector3(0, 0, 1),
+		lrlAngle));
+	printf("LRL COM (%f, %f, %f)\n", m_lowerRightLeg->GetCOMPosition().x(), m_lowerRightLeg->GetCOMPosition().y(), m_lowerRightLeg->GetCOMPosition().z());
+
 	btVector3 lowerRightLegBottomPoint = m_lowerRightLeg->GetCOMPosition() + btVector3(cos(PI - lrlAngle) * lower_leg_height / 2, -sin(PI - lrlAngle) * lower_leg_height / 2, 0);
+	// PURPLE
+	m_rightFoot->Reposition(
+		lowerRightLegBottomPoint + btVector3(-cos(rfAngle) * foot_width / 4, -sin(rfAngle) * foot_width / 4, 0.1),
+		btQuaternion(btVector3(0, 0, 1),
+		rfAngle));
+	printf("RF COM (%f, %f, %f)\n", m_rightFoot->GetCOMPosition().x(), m_rightFoot->GetCOMPosition().y(), m_rightFoot->GetCOMPosition().z());
 
-	m_leftFoot->Reposition(lowerLeftLegBottomPoint + btVector3(-cos(lfAngle) * foot_width/4, -sin(lfAngle) * foot_width/4, 0.1), btQuaternion(btVector3(0, 0, 1), lfAngle));
-	m_rightFoot->Reposition(lowerRightLegBottomPoint + btVector3(-cos(rfAngle) * foot_width/4, -sin(rfAngle) * foot_width/4, -0.1), btQuaternion(btVector3(0, 0, 1), rfAngle));
+	// PINK
+	m_upperLeftLeg->Reposition(
+		ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(torso_height / 2 + upper_leg_height / 2), -0.1) + btVector3(-cos(ullAngle) * (upper_leg_height/2), (upper_leg_height/2) - sin(ullAngle)*upper_leg_height/2, 0), 
+		btQuaternion(btVector3(0,0,1), 
+		ullAngle));
+	printf("ULL COM (%f, %f, %f)\n", m_upperLeftLeg->GetCOMPosition().x(), m_upperLeftLeg->GetCOMPosition().y(), m_upperLeftLeg->GetCOMPosition().z());
+	
+	btVector3 upperLeftLegBottomPoint = m_upperLeftLeg->GetCOMPosition() + btVector3(cos(PI - ullAngle) * upper_leg_height/2, -sin(PI - ullAngle) * upper_leg_height/2, 0);
+	
+	//printf("ULL BP position: %f, %f\n", upperLeftLegBottomPoint.x(), upperLeftLegBottomPoint.y());
+	// Yellow
+	//m_lowerLeftLeg->Reposition(upperLeftLegBottomPoint + btVector3(0.0f, -lower_leg_height / 2, 0.1), btQuaternion(btVector3(0, 0, 1), lllAngle));
+	m_lowerLeftLeg->Reposition(
+		upperLeftLegBottomPoint + btVector3(-(cos(lllAngle)*lower_leg_height / 2), -(sin(lllAngle)*lower_leg_height / 2), -0.1), 
+		btQuaternion(btVector3(0, 0, 1), 
+		lllAngle));
+	printf("LLL COM (%f, %f, %f)\n", m_lowerLeftLeg->GetCOMPosition().x(), m_lowerLeftLeg->GetCOMPosition().y(), m_lowerLeftLeg->GetCOMPosition().z());
+	
+	btVector3 lowerLeftLegBottomPoint = m_lowerLeftLeg->GetCOMPosition() + btVector3(cos(PI - lllAngle) * lower_leg_height / 2, -sin(PI - lllAngle) * lower_leg_height / 2, 0);
+
+	m_leftFoot->Reposition(
+		lowerLeftLegBottomPoint + btVector3(-cos(lfAngle) * foot_width/4, -sin(lfAngle) * foot_width/4, -0.1), 
+		btQuaternion(btVector3(0, 0, 1), 
+		lfAngle));
+	printf("LF COM (%f, %f, %f)\n", m_leftFoot->GetCOMPosition().x(), m_leftFoot->GetCOMPosition().y(), m_leftFoot->GetCOMPosition().z());
 
 	GameObject::PrintOrientations(m_bodies);
 
@@ -729,11 +755,6 @@ void RagDollApplication::EnableGainSpinners() {
 		(*it)->enable();
 	}
 
-}
-
-void RagDollApplication::ApplyTorqueOnTorso(float torqueForce) {
-	btVector3 torque(btVector3(0, 0, torqueForce));
-	ApplyTorque(m_torso, torque);
 }
 
 // Upper legs

@@ -56,13 +56,16 @@ void CameraManager::SetupOrthographicCamera() {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	float aspectRatio = Constants::GetInstance().GetScreenWidth() / (float)Constants::GetInstance().GetScreenHeight();
 
-	// create a viewing frustum based on the aspect ratio and the
-	// boundaries of the camera
-	glOrtho(-aspectRatio, 1*aspectRatio, -1, 1, 1, -1);
-	//gluOrtho2D(-5, 5, -5, 5);
-	//TEST_MODEL_VIEW_ORTHO();
+	// boundaries of the camera for projection
+	glOrtho(
+		-Constants::GetInstance().GetScreenWidth() / 2,
+		Constants::GetInstance().GetScreenWidth() / 2,
+		-Constants::GetInstance().GetScreenHeight() / 2,
+		Constants::GetInstance().GetScreenHeight() / 2,
+		-1,
+		1
+		);
 	SetupOrthographicModelView();
 }
 
@@ -70,9 +73,11 @@ void CameraManager::SetupOrthographicModelView() {
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
-	// Translation
-	gluLookAt(m_cameraPosX, m_cameraPosY, 0.0, m_cameraPosX, m_cameraPosY, -1.0f, 0.0, 1.0, 0.0);
+	// Translate in meters.
+	glTranslatef(m_cameraPosX, m_cameraPosY, 0);
+	// Scale from meters to pixels.
+	float m2p = Constants::GetInstance().GetMetersToPixels(m_cameraDistance);
+	glScalef(m2p, m2p, 0);
 	
 }
 

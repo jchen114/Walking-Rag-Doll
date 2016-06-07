@@ -10,7 +10,7 @@ BulletOpenGLApplication::BulletOpenGLApplication()
 	// Create Camera manager
 	m_cameraManager = new CameraManager(
 		btVector3(0.0f, 0.0f, 0.0f),	// Target
-		30.0f,							// Distance
+		0.25f,							// Distance
 		20.0f,							// Pitch
 		0.0f,							// Yaw
 		btVector3(0.0f, 1.0f, 0.0f),	// Up Vector
@@ -184,7 +184,7 @@ void BulletOpenGLApplication::Idle() {
 	m_clock.reset();
 	// update the scene (convert ms to s)
 	UpdateScene(dt / 1000.0f);
-
+	//UpdateScene(0.001);
 	m_cameraManager->UpdateCamera();
 
 	// render the scene
@@ -255,20 +255,6 @@ void BulletOpenGLApplication::DrawPlane(const btVector3 &halfSize) {
 		btVector3(halfWidth, halfHeight, 0.0f),
 	};
 
-	// NORMALIZE VERTICES TO DRAW IN ORTHOGRAPHIC (?)
-	if (Constants::GetInstance().GetProjectionMode() == ORTHOGRAPHIC)
-	{
-		// Normalize vertices between -1 and 1
-		for (int index = 0; index < 4; index++) {
-
-			btVector3 *vec = &vertices[index];
-			vec->setX(Constants::GetInstance().Normalize(vec->getX(), 0, HEIGHT));
-			vec->setY(Constants::GetInstance().Normalize(vec->getY(), 0, WIDTH));
-			//printf("(x,y) = (%f,%f)\n", vec->getX(), vec->getY());
-
-		}
-	}
-
 	// create the indexes for each triangle, using the 
 	// vertices above. Make it static so we don't waste 
 	// processing time recreating it over and over again
@@ -316,19 +302,6 @@ void BulletOpenGLApplication::DrawWithTriangles(const btVector3 *vertices, const
 }
 
 void BulletOpenGLApplication::DrawShape(btScalar *transform, const btCollisionShape *pShape, const btVector3 &color) {
-
-
-	if (Constants::GetInstance().GetProjectionMode() == ORTHOGRAPHIC)
-	{
-		// normalize translations
-		// ASSUMPTION: Scene and camera located on z-plane at 0
-		btScalar *x_trans = &transform[12];
-		btScalar *y_trans = &transform[13];
-		//printf("Translate (x,y) = (%f,%f)\n", *x_trans, *y_trans);
-		*x_trans = Constants::GetInstance().Normalize(*x_trans, 0, HEIGHT);
-		*y_trans = Constants::GetInstance().Normalize(*y_trans, 0, WIDTH);
-		//printf("Normalized (x,y) = (%f,%f)\n", *x_trans, *y_trans);
-	}
 
 	glColor3f(color.x(), color.y(), color.z());
 

@@ -6,15 +6,6 @@ void DebugDrawer::drawLine(const btVector3 &from, const btVector3 &to, const btV
 {
 	btVector3 a = from;
 	btVector3 b = to;
-	// normalize if in orthographic mode
-	if (Constants::GetInstance().GetProjectionMode() == ORTHOGRAPHIC)
-	{
-		a.setX(Constants::GetInstance().Normalize(a.getX(), 0.0f, WIDTH));
-		a.setY(Constants::GetInstance().Normalize(a.getY(), 0.0f, HEIGHT));
-
-		b.setX(Constants::GetInstance().Normalize(b.getX(), 0.0f, WIDTH));
-		b.setY(Constants::GetInstance().Normalize(b.getY(), 0.0f, HEIGHT));
-	}
 
 	// draws a simple line of pixels between points.
 

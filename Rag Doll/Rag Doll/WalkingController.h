@@ -14,30 +14,32 @@ class Gains;
 
 #define PI 3.14159265
 
+#define TORQUE_LIMIT 370
+
 // MASS
 #define torso_mass 70
 #define upper_leg_mass 5
 #define lower_leg_mass 4
 #define feet_mass 1
 
-// DIMENSIONS, tis a giant... 
-#define torso_width 1.0f
-#define torso_height 3.0
+// DIMENSIONS. 
+#define torso_height 0.48f
+#define torso_width torso_height / 5
 
-#define upper_leg_height 3.0f
-#define upper_leg_width 0.7f
+#define upper_leg_height 0.45f
+#define upper_leg_width upper_leg_height / 5
 
-#define lower_leg_height 3.0f
-#define lower_leg_width 0.5f
+#define lower_leg_height 0.45f
+#define lower_leg_width lower_leg_height / 7
 
-#define foot_height 0.3f
-#define foot_width 1.2f
+#define foot_height 0.05f
+#define foot_width foot_height * 4
 
 // Gains
 #define KP_LOWER 0.0f
-#define KP_HIGHER 50.0f
+#define KP_HIGHER 1000.0f
 #define KD_LOWER 0.0f
-#define KD_HIGHER 50.0f
+#define KD_HIGHER 1000.0f
 
 // Spinner limits
 #define SPINNER_TORSO_LOW		0.0f
@@ -45,7 +47,7 @@ class Gains;
 #define SPINNER_UPPER_LEG_LOW	30.0f
 #define SPINNER_UPPER_LEG_HIGH	180.0f
 #define SPINNER_LOWER_LEG_LOW	0.0f
-#define SPINNER_LOWER_LEG_HIGH	90.0f
+#define SPINNER_LOWER_LEG_HIGH	150.0f
 #define SPINNER_FOOT_LOW		-15.0f
 #define SPINNER_FOOT_HIGH		90.0f
 
@@ -57,10 +59,10 @@ class Gains;
 #define HINGE_TORSO_URL_HIGH	90.0f
 
 #define HINGE_ULL_LLL_LOW		0.0f
-#define HINGE_ULL_LLL_HIGH		90.0f
+#define HINGE_ULL_LLL_HIGH		150.0f
 
 #define HINGE_URL_LRL_LOW		0.0f
-#define HINGE_URL_LRL_HIGH		90.0f
+#define HINGE_URL_LRL_HIGH		150.0f
 
 #define HINGE_LLL_LF_LOW		-105.0f
 #define HINGE_LLL_LF_HIGH		0.0f
@@ -68,7 +70,7 @@ class Gains;
 #define HINGE_LRL_RF_LOW		-105.0f
 #define HINGE_LRL_RF_HIGH		0.0f
 
-#define ORIGINAL_TORSO_POSITION btVector3(0, -9 + foot_height/2 + lower_leg_height + upper_leg_height + torso_height/2, 0.5)
+#define ORIGINAL_TORSO_POSITION btVector3(0, -0.3 + foot_height/2 + lower_leg_height + upper_leg_height + torso_height/2, 0)
 
 #pragma endregion DEFINITIONS
 

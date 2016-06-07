@@ -56,7 +56,6 @@ public:
 	void ChangeLeftFootAngle();
 	void ChangeRightFootAngle();
 
-	void ApplyTorqueOnTorso(float torqueForce);
 	void ApplyTorqueOnUpperRightLeg(float torqueForce);
 	void ApplyTorqueOnUpperLeftLeg(float torqueForce);
 	void ApplyTorqueOnLowerRightLeg(float torqueForce);

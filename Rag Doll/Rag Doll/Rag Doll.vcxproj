@@ -95,7 +95,6 @@
     <ClInclude Include="CameraManager.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="DebugDrawer.h" />
-    <ClInclude Include="FallingBoxesApplication.h" />
     <ClInclude Include="FreeGLUTCallbacks.h" />
     <ClInclude Include="Gains.h" />
     <ClInclude Include="GameObject.h" />
@@ -114,7 +113,6 @@
     <ClCompile Include="DebugDrawer.cpp" />
     <ClCompile Include="Gains.cpp" />
     <ClCompile Include="RagDoll.cpp" />
-    <ClCompile Include="FallingBoxesApplication.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="RagDollApplication.cpp" />
     <ClCompile Include="State.cpp" />

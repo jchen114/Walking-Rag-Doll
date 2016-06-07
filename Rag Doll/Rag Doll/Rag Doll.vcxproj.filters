@@ -42,9 +42,6 @@
     <ClInclude Include="BasicTest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FallingBoxesApplication.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DebugDrawer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -78,9 +75,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BasicTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FallingBoxesApplication.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DebugDrawer.cpp">

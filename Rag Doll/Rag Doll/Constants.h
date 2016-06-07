@@ -34,8 +34,7 @@ public:
 
 	ProjectionMode GetProjectionMode();
 
-	float GetPixelsToMeters(float dist2Camera);
-	float Normalize(float meters, float dist2Camera, Dimension dimension);
+	float GetMetersToPixels(float dist2Camera);
 
 	float DegreesToRadians(float degrees);
 	float RadiansToDegrees(float radians);
