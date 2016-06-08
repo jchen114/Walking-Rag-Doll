@@ -4,7 +4,7 @@
 #include <ctime>
 
 #include "RagDollContactResult.h"
-
+#include "LinearMath\btQuickprof.h"
 
 class RagDollApplication;
 class State;
@@ -37,9 +37,9 @@ class Gains;
 
 // Gains
 #define KP_LOWER 0.0f
-#define KP_HIGHER 1000.0f
+#define KP_HIGHER 5000.0f
 #define KD_LOWER 0.0f
-#define KD_HIGHER 1000.0f
+#define KD_HIGHER 5000.0f
 
 // Spinner limits
 #define SPINNER_TORSO_LOW		0.0f
@@ -133,8 +133,9 @@ private:
 
 	RagDollApplication *m_app;
 
-	std::clock_t start;
+	btClock m_clock;
 	double m_duration = 0.0f;
+	bool m_reset = true;
 
 	// Set these in the GUI
 	Gains *m_torso_gains;
@@ -167,8 +168,5 @@ private:
 	float CalculateTorqueForRightFoot(float targetPosition, float currentPosition, float currentVelocity);
 
 	float CalculateTorque(float kp, float kd, float targetPosition, float currentPosition, float velocity);
-
-	void DrawStanceAnkle();
-	void DrawTorsoCOM();
 
 };

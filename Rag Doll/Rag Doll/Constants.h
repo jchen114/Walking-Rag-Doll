@@ -4,7 +4,7 @@
 enum ProjectionMode{ ORTHOGRAPHIC, PERSPECTIVE };
 enum Dimension{ HEIGHT, WIDTH };
 
-#define CAMERA_STEP_SIZE 0.3f
+#define CAMERA_STEP_SIZE 20.0f
 #define Z_PLANE  0
 
 #define DEG_2_RAD 0.0174533

@@ -114,9 +114,9 @@ void BulletOpenGLApplication::Keyboard(unsigned char key, int x, int y) {
 	case 'z': m_cameraManager->ZoomCamera(+CAMERA_STEP_SIZE); break;			// 'z' zooms in
 	case 'x': m_cameraManager->ZoomCamera(-CAMERA_STEP_SIZE); break;			// 'x' zoom out
 	case 'w': m_cameraManager->TranslateCamera(UP, CAMERA_STEP_SIZE); break;
-	case 'a': m_cameraManager->TranslateCamera(LEFT, CAMERA_STEP_SIZE); break;
+	case 'a': m_cameraManager->TranslateCamera(LEFT, -CAMERA_STEP_SIZE); break;
 	case 's': m_cameraManager->TranslateCamera(DOWN, -CAMERA_STEP_SIZE); break;
-	case 'd': m_cameraManager->TranslateCamera(RIGHT, -CAMERA_STEP_SIZE); break;
+	case 'd': m_cameraManager->TranslateCamera(RIGHT, +CAMERA_STEP_SIZE); break;
 
 	default:
 		break;
@@ -183,7 +183,8 @@ void BulletOpenGLApplication::Idle() {
 	// reset the clock to 0
 	m_clock.reset();
 	// update the scene (convert ms to s)
-	UpdateScene(dt / 1000.0f);
+	//UpdateScene(dt / 1000.0f);
+	UpdateScene(0.002);
 	//UpdateScene(0.001);
 	m_cameraManager->UpdateCamera();
 
@@ -379,7 +380,7 @@ void BulletOpenGLApplication::UpdateScene(float dt) {
 		// step the simulation through time. This is called
 		// every update and the amount of elasped time was 
 		// determined back in ::Idle() by our clock object.
-		m_pWorld->stepSimulation(dt);
+		m_pWorld->stepSimulation(dt*3, 3, dt);
 	}
 }
 

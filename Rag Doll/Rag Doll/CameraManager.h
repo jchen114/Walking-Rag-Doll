@@ -25,7 +25,7 @@ public:
 	void TranslateCamera(TranslateDirection direction, float value);
 	void PrintCameraLocation();
 	btVector3 GetCameraLocation();
-
+	void CameraManager::Reset();
 
 protected:
 

@@ -29,6 +29,7 @@ GameObject::GameObject(	btCollisionShape *pShape,
 
 	// create the rigid body construction info using mass, motion state, and shape
 	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, m_pMotionState, pShape, localInertia);
+	cInfo.m_friction = 1.0f;
 
 	// create the rigid body
 	m_pBody = new btRigidBody(cInfo);

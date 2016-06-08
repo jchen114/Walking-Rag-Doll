@@ -82,6 +82,11 @@ void CameraManager::SetupOrthographicModelView() {
 }
 
 
+void CameraManager::Reset() {
+	m_cameraPosX = 0;
+	m_cameraPosY = 0;
+}
+
 void CameraManager::SetupPerspectiveCamera() {
 
 	// select the projection matrix

@@ -131,18 +131,23 @@ void RagDollApplication::RagDollCollision() {
 
 		btCollisionObject* obA = const_cast<btCollisionObject*>(contactManifold->getBody0());
 		btCollisionObject* obB = const_cast<btCollisionObject*>(contactManifold->getBody1());
+		
+		for (int j = 0; j<contactManifold->getNumContacts(); j++)   {
+			btManifoldPoint& pt = contactManifold->getContactPoint(j);
+			if (pt.m_distance1<0) {
+				// Valid contact point
+				if ((obA->getUserPointer() == m_leftFoot && obB->getUserPointer() == m_ground) || (obA->getUserPointer() == m_ground && obB->getUserPointer() == m_leftFoot)) {
+					//printf(">>>>>>>>>>>>>>>>>>>>>> Collision with left foot to ground detected. <<<<<<<<<<<<<<<<<<<<<< \n");
+					m_WalkingController->NotifyLeftFootGroundContact();
+				}
 
-		//printf(">>>>>>>>>>>>>>>>>>>>>> Collision. <<<<<<<<<<<<<<<<<<<<<< \n");
-
-		if ((obA->getUserPointer() == m_leftFoot && obB->getUserPointer() == m_ground) || (obA->getUserPointer() == m_ground && obB->getUserPointer() == m_leftFoot)) {
-			//printf(">>>>>>>>>>>>>>>>>>>>>> Collision with left foot to ground detected. <<<<<<<<<<<<<<<<<<<<<< \n");
-			m_WalkingController->NotifyLeftFootGroundContact();
+				if ((obA->getUserPointer() == m_rightFoot && obB->getUserPointer() == m_ground) || (obA->getUserPointer() == m_ground && obB->getUserPointer() == m_rightFoot)) {
+					//printf(">>>>>>>>>>>>>>>>>>>>>> Collision with right foot to ground detected. <<<<<<<<<<<<<<<<<<<<<< \n");
+					m_WalkingController->NotifyRightFootGroundContact();
+				}
+			}
 		}
-
-		if ((obA->getUserPointer() == m_rightFoot && obB->getUserPointer() == m_ground) || (obA->getUserPointer() == m_ground && obB->getUserPointer() == m_rightFoot)) {
-			//printf(">>>>>>>>>>>>>>>>>>>>>> Collision with right foot to ground detected. <<<<<<<<<<<<<<<<<<<<<< \n");
-			m_WalkingController->NotifyRightFootGroundContact();
-		}
+		
 	}
 }
 
@@ -468,6 +473,7 @@ void RagDollApplication::Reset() {
 	m_currentState = 0;
 	UpdateRagDoll();
 
+	m_cameraManager->Reset();
 }
 
 void RagDollApplication::Start() {
