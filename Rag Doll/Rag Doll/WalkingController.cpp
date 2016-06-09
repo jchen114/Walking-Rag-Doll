@@ -28,6 +28,8 @@ WalkingController::WalkingController(RagDollApplication *app) {
 	m_app = app;
 	m_ragDollState = STATE_0;
 	m_currentState = RESET;	
+	m_COMPosition = btVector3(0, 0, 0);
+	m_stanceAnklePosition = btVector3(0, 0, 0);
 
 }
 
@@ -656,6 +658,14 @@ float WalkingController::CalculateFeedbackSwingHip() {
 	float velocity = m_app->m_torso->GetRigidBody()->getVelocityInLocalPoint(btVector3(-torso_height/2, 0, 0)).x();
 	float cd, cv = 0.0f;
 	btVector3 stanceAnkle(0, 0, 0);
+	btVector3 hipPosition = m_app->m_torso->GetCOMPosition()
+		+ btVector3(cos(Constants::GetInstance().DegreesToRadians(180 - m_app->m_torso->GetOrientation())) * torso_height / 2,
+		-sin(Constants::GetInstance().DegreesToRadians(180 - m_app->m_torso->GetOrientation())) * torso_height / 2,
+		0);
+	/*btVector3 hipPosition = m_app->m_upperRightLeg->GetCOMPosition()
+		+ btVector3(cos(Constants::GetInstance().DegreesToRadians(m_app->m_upperRightLeg->GetOrientation())) * upper_leg_height / 2,
+		+sin(Constants::GetInstance().DegreesToRadians(m_app->m_upperRightLeg->GetOrientation())) * upper_leg_height / 2,
+		0);*/
 	switch (m_ragDollState)
 	{
 	case STATE_0:
@@ -665,10 +675,8 @@ float WalkingController::CalculateFeedbackSwingHip() {
 		swingHipBody = m_app->m_upperRightLeg;
 		targetAngle = m_state1->m_upperRightLegAngle;
 		// Calculate the distance to stance ankle
-		float lllAngle = Constants::GetInstance().DegreesToRadians(m_app->m_upperLeftLeg->GetOrientation() - m_app->m_lowerLeftLeg->GetOrientation());
+		float lllAngle = Constants::GetInstance().DegreesToRadians(m_app->m_lowerLeftLeg->GetOrientation());
 		stanceAnkle = m_app->m_lowerLeftLeg->GetCOMPosition() + btVector3(cos(PI - lllAngle) * lower_leg_height / 2, -sin(PI - lllAngle) * lower_leg_height / 2, 0);
-		// Approximate center of mass x position to be the same as torso x position
-		distance = m_app->m_torso->GetCOMPosition().x() - stanceAnkle.x();	
 
 		cd = m_cd_1;
 		cv = m_cv_1;
@@ -679,10 +687,9 @@ float WalkingController::CalculateFeedbackSwingHip() {
 		swingHipBody = m_app->m_upperRightLeg;
 		targetAngle = m_state2->m_upperRightLegAngle;
 		// Calculate the distance to stance ankle
-		float lllAngle = Constants::GetInstance().DegreesToRadians(m_app->m_upperLeftLeg->GetOrientation() - m_app->m_lowerLeftLeg->GetOrientation());
+		float lllAngle = Constants::GetInstance().DegreesToRadians(m_app->m_lowerLeftLeg->GetOrientation());
 		stanceAnkle = m_app->m_lowerLeftLeg->GetCOMPosition() + btVector3(cos(PI - lllAngle) * lower_leg_height / 2, -sin(PI - lllAngle) * lower_leg_height / 2, 0);
 		// Approximate center of mass x position to be the same as torso x position
-		distance = m_app->m_torso->GetCOMPosition().x() - stanceAnkle.x();
 		
 		cd = m_cd_2;
 		cv = m_cv_2;
@@ -693,9 +700,8 @@ float WalkingController::CalculateFeedbackSwingHip() {
 		swingHipBody = m_app->m_upperLeftLeg;
 		targetAngle = m_state3->m_upperLeftLegAngle;
 		// Calculate the distance to stance ankle
-		float lrlAngle = Constants::GetInstance().DegreesToRadians(m_app->m_upperRightLeg->GetOrientation() - m_app->m_lowerRightLeg->GetOrientation());
+		float lrlAngle = Constants::GetInstance().DegreesToRadians(m_app->m_lowerRightLeg->GetOrientation());
 		stanceAnkle = m_app->m_lowerRightLeg->GetCOMPosition() + btVector3(cos(PI - lrlAngle) * lower_leg_height / 2, -sin(PI - lrlAngle) * lower_leg_height / 2, 0);
-		distance = m_app->m_torso->GetCOMPosition().x() - stanceAnkle.x();
 
 		cd = m_cd_1;
 		cv = m_cv_1;
@@ -707,9 +713,8 @@ float WalkingController::CalculateFeedbackSwingHip() {
 		targetAngle = m_state4->m_upperLeftLegAngle;
 
 		// Calculate the distance to stance ankle
-		float lrlAngle = Constants::GetInstance().DegreesToRadians(m_app->m_upperRightLeg->GetOrientation() - m_app->m_lowerRightLeg->GetOrientation());
+		float lrlAngle = Constants::GetInstance().DegreesToRadians(m_app->m_lowerRightLeg->GetOrientation());
 		stanceAnkle = m_app->m_lowerRightLeg->GetCOMPosition() + btVector3(cos(PI - lrlAngle) * lower_leg_height / 2, -sin(PI - lrlAngle) * lower_leg_height / 2, 0);
-		distance = m_app->m_torso->GetCOMPosition().x() - stanceAnkle.x();
 
 		cd = m_cd_2;
 		cv = m_cv_2;
@@ -718,6 +723,11 @@ float WalkingController::CalculateFeedbackSwingHip() {
 	default:
 		break;
 	}
+
+	distance = hipPosition.x() - stanceAnkle.x();
+
+	m_stanceAnklePosition = stanceAnkle;
+	m_COMPosition = hipPosition;
 
 	return targetAngle + cd * distance + cv * velocity;
 

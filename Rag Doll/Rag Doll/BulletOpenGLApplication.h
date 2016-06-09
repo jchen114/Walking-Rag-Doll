@@ -4,7 +4,7 @@
 #include <Windows.h>
 #include <gl\GL.h>
 #include <freeglut\freeglut.h>
-
+#include <functional>
 
 #include "BulletDynamics\Dynamics\btDynamicsWorld.h"
 
@@ -67,6 +67,7 @@ public:
 	// Drawing Functions
 	void DrawBox(const btVector3 &halfSize);
 	void DrawPlane(const btVector3 &halfSize);
+	void DrawCircle(const float &radius);
 	void DrawShape(btScalar *transform, const btCollisionShape *pShape, const btVector3 &color);
 	void DrawWithTriangles(const btVector3 * vertices, const int *indices, int numberOfIndices);
 
@@ -94,6 +95,10 @@ public:
 		const btVector3 &initialPosition = btVector3(0.0f, 0.0f, 0.0f),
 		const btQuaternion &initialRotation = btQuaternion(0, 0, 1, 1)
 		);	
+
+	// Callback for drawing
+	std::function<void()> m_DrawCallback;
+
 
 protected:
 

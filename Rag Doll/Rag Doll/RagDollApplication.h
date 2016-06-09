@@ -25,6 +25,8 @@ public:
 
 	GameObject *Create2DBox(const btVector3 &halfSize, float mass, const btVector3 &color, const btVector3 &position);
 	GameObject *Create3DBox(const btVector3 &halfSize, float mass, const btVector3 &color, const btVector3 &position);
+	GameObject *Create2DCircle(float radius, float mass, const btVector3 &color, const btVector3 &position);
+	GameObject *Create2DLine(const btVector3 &start, const btVector3 &end, const btVector3 &color);
 
 	btVector3 GetRandomColor();
 
@@ -38,6 +40,10 @@ public:
 	GameObject *m_lowerLeftLeg;
 	GameObject *m_rightFoot;
 	GameObject *m_leftFoot;
+	// For debugging
+	GameObject *m_stanceAnkle;
+	GameObject *m_COM;
+	GameObject *m_distance;
 
 	void Reset();
 	void SaveStates();
@@ -66,6 +72,8 @@ public:
 	void RagDollCollision();
 
 private:
+
+	void DrawDebugFeedback();
 
 	void DisplayState(int state);
 	void DisplayGains();
@@ -140,6 +148,9 @@ private:
 	GLUI_Spinner *m_timer_spinner;
 
 };
+
+static void DrawFilledCircle(GLfloat x, GLfloat y, GLfloat radius, const btVector3 &color);
+static void DrawLine(const btVector3 &begin, const btVector3 &end, const btVector3 &color);
 
 /* GLUI CALLBACKS */
 static void RagDollIdle();

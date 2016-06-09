@@ -45,6 +45,7 @@ RagDollApplication::RagDollApplication()
 
 RagDollApplication::RagDollApplication(ProjectionMode mode) :BulletOpenGLApplication(mode){
 	m_app = this;
+	m_DrawCallback = std::bind(&RagDollApplication::DrawDebugFeedback, this);
 }
 
 RagDollApplication::~RagDollApplication()
@@ -150,7 +151,6 @@ void RagDollApplication::RagDollCollision() {
 		
 	}
 }
-
 
 void RagDollApplication::ShutdownPhysics() {
 
@@ -821,6 +821,18 @@ GameObject *RagDollApplication::Create2DBox(const btVector3 &halfSize, float mas
 	return aBox;
 }
 
+GameObject *RagDollApplication::Create2DCircle(float radius, float mass, const btVector3 &color, const btVector3 &position) {
+	GameObject *aCircle = CreateGameObject(new btSphereShape(radius), mass, color, position);
+	return aCircle;
+}
+
+GameObject *RagDollApplication::Create2DLine(const btVector3 &start, const btVector3 &end, const btVector3 &color) {
+	float distance = start.distance(end);
+	btVector3 halfsize(0.1, distance, 0);
+	btVector3 midpoint((start.x() + end.x()) / 2, (start.y() + end.y()) / 2, 0);
+	return Create2DBox(halfsize, 0, btVector3(1.0f, 0.0f, 0.0f), midpoint);
+}
+
 GameObject *RagDollApplication::Create3DBox(const btVector3 &halfSize, float mass, const btVector3 &color, const btVector3 &position) {
 	GameObject *aBox = CreateGameObject(new btBoxShape(halfSize), mass, color, position);
 	return aBox;
@@ -829,6 +841,50 @@ GameObject *RagDollApplication::Create3DBox(const btVector3 &halfSize, float mas
 
 btVector3 RagDollApplication::GetRandomColor() {
 	return btVector3(((double)rand() / RAND_MAX), ((double)rand() / RAND_MAX), ((double)rand() / RAND_MAX));
+}
+
+void RagDollApplication::DrawDebugFeedback() {
+	// Get Stance ankle location
+	btVector3 stanceAnkle = m_WalkingController->m_stanceAnklePosition;
+	// Draw circle
+	DrawFilledCircle(stanceAnkle.x(), stanceAnkle.y(), 0.08, btVector3(255, 255, 255));
+	// Get COM Position
+	btVector3 COMPosition = m_WalkingController->m_COMPosition;
+	DrawFilledCircle(COMPosition.x(), COMPosition.y(), 0.08, btVector3(255, 255, 255));
+	// Draw horizontal line between ankle and COM
+	
+}
+
+static void DrawFilledCircle(GLfloat x, GLfloat y, GLfloat radius, const btVector3 &color){
+	int i;
+	int triangleAmount = 20; //# of triangles used to draw circle
+	glColor3f(color.x(), color.y(), color.z());
+	glPushMatrix();
+	glTranslatef(x, y, -1);
+	//GLfloat radius = 0.8f; //radius
+	GLfloat twicePi = 2.0f * PI;
+	
+	glBegin(GL_TRIANGLE_FAN);
+	for (i = 0; i <= triangleAmount; i++) {
+		glVertex2f(
+			(radius * cos(i *  twicePi / triangleAmount)),
+			(radius * sin(i * twicePi / triangleAmount))
+			);
+	}
+	glEnd();
+
+	glPopMatrix();
+}
+
+static void DrawLine(const btVector3 &begin, const btVector3 &end, const btVector3 &color) {
+
+	glColor3f(color.x(), color.y(), color.z());
+	glLineWidth(2.5);
+	glColor3f(1.0, 0.0, 0.0);
+	glBegin(GL_LINES);
+	glVertex3f(begin.x(), begin.y(), begin.z());
+	glVertex3f(end.x(), end.y(), end.z());
+	glEnd();
 }
 
 #pragma endregion DRAWING

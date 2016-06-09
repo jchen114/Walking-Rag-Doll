@@ -185,11 +185,19 @@ void BulletOpenGLApplication::Idle() {
 	// update the scene (convert ms to s)
 	//UpdateScene(dt / 1000.0f);
 	UpdateScene(0.002);
+	//UpdateScene(0.0001);
 	//UpdateScene(0.001);
 	m_cameraManager->UpdateCamera();
 
 	// render the scene
 	RenderScene();
+
+	try {
+		m_DrawCallback();
+	}
+	catch (const std::bad_function_call& e) {
+		//std::cout << e.what() << '\n';
+	}
 
 	// swap the front and back buffers
 	glutSwapBuffers();
@@ -267,6 +275,23 @@ void BulletOpenGLApplication::DrawPlane(const btVector3 &halfSize) {
 	DrawWithTriangles(vertices, indices, 6);
 }
 
+void BulletOpenGLApplication::DrawCircle(const float &radius) {
+	
+	int triangleAmount = 20; //# of triangles used to draw circle
+	//GLfloat radius = 0.8f; //radius
+	GLfloat twicePi = 2.0f * 3.14159;
+
+	glBegin(GL_TRIANGLE_FAN);
+
+	for (int i = 0; i <= triangleAmount; i++) {
+		glVertex2f(
+			(radius * cos(i *  twicePi / triangleAmount)),
+			(radius * sin(i * twicePi / triangleAmount))
+			);
+	}
+	glEnd();
+}
+
 void BulletOpenGLApplication::DrawWithTriangles(const btVector3 *vertices, const int *indices, int numberOfIndices) {
 
 	// start processing vertices as triangles
@@ -336,6 +361,13 @@ void BulletOpenGLApplication::DrawShape(btScalar *transform, const btCollisionSh
 		DrawPlane(halfSize);
 	}
 		break;
+	case SPHERE_SHAPE_PROXYTYPE: {
+		// assume the shape is a 2d circle, typecast..
+		const btSphereShape *sphere = static_cast<const btSphereShape*> (pShape);
+		float radius = sphere->getRadius();
+		DrawCircle(radius);
+		
+	}
 	default:
 		// unsupported type
 		break;
@@ -381,6 +413,7 @@ void BulletOpenGLApplication::UpdateScene(float dt) {
 		// every update and the amount of elasped time was 
 		// determined back in ::Idle() by our clock object.
 		m_pWorld->stepSimulation(dt*3, 3, dt);
+		//m_pWorld->stepSimulation(dt * 20, 20, dt);
 	}
 }
 
