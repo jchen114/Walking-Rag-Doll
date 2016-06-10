@@ -156,6 +156,8 @@ void RagDollApplication::ShutdownPhysics() {
 
 }
 
+void RagDollApplication::
+
 #pragma region GUI
 
 void RagDollApplication::CreateRagDollGUI() {

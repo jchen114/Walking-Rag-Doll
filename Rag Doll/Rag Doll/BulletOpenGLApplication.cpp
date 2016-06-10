@@ -408,6 +408,7 @@ void BulletOpenGLApplication::RenderScene() {
 
 void BulletOpenGLApplication::UpdateScene(float dt) {
 	// check if the world object exists
+
 	if (m_pWorld) {
 		// step the simulation through time. This is called
 		// every update and the amount of elasped time was 
