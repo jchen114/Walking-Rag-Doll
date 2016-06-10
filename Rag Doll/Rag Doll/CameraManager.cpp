@@ -77,7 +77,7 @@ void CameraManager::SetupOrthographicModelView() {
 	glTranslatef(m_cameraPosX, m_cameraPosY, 0);
 	// Scale from meters to pixels.
 	float m2p = Constants::GetInstance().GetMetersToPixels(m_cameraDistance);
-	glScalef(m2p, m2p, 0);
+	glScalef(m2p, m2p, 1);
 	
 }
 
