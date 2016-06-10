@@ -43,7 +43,7 @@ RagDollApplication::RagDollApplication()
 {
 }
 
-RagDollApplication::RagDollApplication(ProjectionMode mode) :BulletOpenGLApplication(mode){
+RagDollApplication::RagDollApplication(ProjectionMode mode, bool isFrameRateFixed) :BulletOpenGLApplication(mode, isFrameRateFixed){
 	m_app = this;
 	m_DrawCallback = std::bind(&RagDollApplication::DrawDebugFeedback, this);
 }
@@ -70,11 +70,8 @@ void RagDollApplication::InitializePhysics() {
 	m_pWorld = new btDiscreteDynamicsWorld(m_pDispatcher, m_pBroadphase, m_pSolver, m_pCollisionConfiguration);
 
 	// Create ground
-	btVector3 ground(0.2f, 100.0f, 10.0f);
-	float mass = 0.0f;
 	btVector3 position(0.0f, -0.5f, 0.0f);
-	m_ground = Create3DBox(ground, mass, GetRandomColor(), position);
-	m_ground->GetRigidBody()->setCollisionFlags(m_ground->GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
+	CreateGround(position);
 
 	CreateRagDoll(ORIGINAL_TORSO_POSITION);
 
@@ -104,6 +101,25 @@ void RagDollApplication::InitializePhysics() {
 
 void RagDollApplication::Idle() {
 	BulletOpenGLApplication::Idle();
+}
+
+void RagDollApplication::CreateGround(const btVector3 &position) {
+
+	// Create ground.
+	btVector3 ground(0.2f, GROUND_WIDTH/2, 10.0f);
+	float mass = 0.0f;
+	m_ground = Create3DBox(ground, mass, GetRandomColor(), position);
+	m_ground->GetRigidBody()->setCollisionFlags(m_ground->GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
+
+	// Create markers.
+	for (int marker = 0; marker < GROUND_WIDTH; marker += MARKER_DISTANCE) {
+		// Position for marker
+		btVector3 pos(marker - GROUND_WIDTH / 2 + MARKER_WIDTH/2, position.getY() + 0.2f, 0);
+		GameObject *box = Create2DBox(btVector3(MARKER_HEIGHT / 2, MARKER_WIDTH / 2, 0), 0, MARKER_COLOR, pos);
+		// Create fixed constraint
+		AddFixedConstraint(box, m_ground);
+	}
+
 }
 
 void RagDollApplication::RagDollStep() {
@@ -305,7 +321,6 @@ void RagDollApplication::SetupGUIConfiguration(std::vector<State *>states, std::
 
 }
 
-
 void RagDollApplication::DisplayState(int state) {
 
 	State *selected_state = m_states.at(state);
@@ -385,6 +400,221 @@ void RagDollApplication::DisplayTime(float time) {
 
 }
 
+void RagDollApplication::UpdateGains() {
+	m_WalkingController->SetTorsoGains(m_torso_kp_spinner->get_float_val(), m_torso_kd_spinner->get_float_val());
+	m_WalkingController->SetUpperLeftLegGains(m_ull_kp_spinner->get_float_val(), m_ull_kd_spinner->get_float_val());
+	m_WalkingController->SetUpperRightLegGains(m_url_kp_spinner->get_float_val(), m_url_kd_spinner->get_float_val());
+	m_WalkingController->SetLowerLeftLegGains(m_lll_kp_spinner->get_float_val(), m_lll_kd_spinner->get_float_val());
+	m_WalkingController->SetLowerRightLegGains(m_lrl_kp_spinner->get_float_val(), m_lrl_kd_spinner->get_float_val());
+	m_WalkingController->SetLeftFootGains(m_lf_kp_spinner->get_float_val(), m_lf_kd_spinner->get_float_val());
+	m_WalkingController->SetRightFootGains(m_rf_kp_spinner->get_float_val(), m_rf_kd_spinner->get_float_val());
+}
+
+void RagDollApplication::DisableStateSpinner() {
+
+	switch (m_currentState)
+	{
+	case 0: {
+				// Deactivate
+				m_url_state_spinner->disable();
+				m_lrl_state_spinner->disable();
+				m_rf_state_spinner->disable();
+				m_ull_state_spinner->disable();
+				m_lll_state_spinner->disable();
+				m_lf_state_spinner->disable();
+				m_torso_state_spinner->disable();
+	}
+		break;
+	case 1:
+	case 2: {
+				//// Deactivate
+				//m_url_state_spinner->disable();
+				//m_lrl_state_spinner->disable();
+				//m_rf_state_spinner->disable();
+
+				//// Activate
+				//m_ull_state_spinner->enable();
+				//m_lll_state_spinner->enable();
+				//m_lf_state_spinner->enable();
+				//m_torso_state_spinner->enable();
+
+				// Activate
+				m_url_state_spinner->enable();
+				m_lrl_state_spinner->enable();
+				m_rf_state_spinner->enable();
+				m_torso_state_spinner->enable();
+				m_ull_state_spinner->enable();
+				m_lll_state_spinner->enable();
+				m_lf_state_spinner->enable();
+				break;
+	}
+	case 3:
+	case 4:{
+			   //// Deactivate
+			   //m_ull_state_spinner->disable();
+			   //m_lll_state_spinner->disable();
+			   //m_lf_state_spinner->disable();
+
+			   //// Activate
+			   //m_url_state_spinner->enable();
+			   //m_lrl_state_spinner->enable();
+			   //m_rf_state_spinner->enable();
+			   //m_torso_state_spinner->enable();
+
+			   m_url_state_spinner->enable();
+			   m_lrl_state_spinner->enable();
+			   m_rf_state_spinner->enable();
+			   m_torso_state_spinner->enable();
+			   m_ull_state_spinner->enable();
+			   m_lll_state_spinner->enable();
+			   m_lf_state_spinner->enable();
+	}
+		break;
+	default:
+		break;
+	}
+
+}
+
+void RagDollApplication::DisableAllSpinners() {
+
+	std::vector<GLUI_Spinner*>spinners = {
+		m_torso_kp_spinner, m_torso_kd_spinner,
+		m_ull_kp_spinner, m_ull_kd_spinner,
+		m_url_kp_spinner, m_url_kd_spinner,
+		m_lll_kp_spinner, m_lll_kd_spinner,
+		m_lrl_kp_spinner, m_lrl_kd_spinner,
+		m_lf_kp_spinner, m_lf_kd_spinner,
+		m_rf_kp_spinner, m_rf_kd_spinner,
+		m_torso_state_spinner, m_ull_state_spinner,
+		m_url_state_spinner, m_lll_state_spinner,
+		m_lrl_state_spinner, m_lf_state_spinner,
+		m_rf_state_spinner
+	};
+
+	for (std::vector<GLUI_Spinner*>::iterator it = spinners.begin(); it != spinners.end(); it++) {
+		(*it)->disable();
+	}
+
+	m_StatesRadioGroup->disable();
+
+}
+
+void RagDollApplication::EnableGainSpinners() {
+
+	std::vector<GLUI_Spinner*>spinners = {
+		m_torso_kp_spinner, m_torso_kd_spinner,
+		m_ull_kp_spinner, m_ull_kd_spinner,
+		m_url_kp_spinner, m_url_kd_spinner,
+		m_lll_kp_spinner, m_lll_kd_spinner,
+		m_lrl_kp_spinner, m_lrl_kd_spinner,
+		m_lf_kp_spinner, m_lf_kd_spinner,
+		m_rf_kp_spinner, m_rf_kd_spinner
+	};
+
+	for (std::vector<GLUI_Spinner*>::iterator it = spinners.begin(); it != spinners.end(); it++) {
+		(*it)->enable();
+	}
+
+}
+
+void RagDollApplication::SaveStates() {
+	ChangeState(-1);
+	// Save States into file
+	m_WalkingController->SaveStates();
+}
+
+void RagDollApplication::SaveGains(){
+	// Save gains into file
+	m_WalkingController->SaveGains();
+}
+
+void RagDollApplication::SaveFeedback() {
+	m_WalkingController->SaveFeedback();
+}
+
+void RagDollApplication::SaveTime() {
+	m_WalkingController->SaveTime();
+}
+
+void RagDollApplication::Reset() {
+
+	printf("Reset button pressed \n");
+
+	m_WalkingController->Reset();
+
+	// Clear Everything
+	//GameObject::ClearForces(bodies);
+	GameObject::ClearVelocities(m_bodies);
+
+	DisableStateSpinner();
+	EnableGainSpinners();
+	m_StatesRadioGroup->enable();
+
+	GameObject::DisableObjects(m_bodies);
+
+	m_StatesRadioGroup->set_int_val(0); // State 0
+	m_currentState = 0;
+	UpdateRagDoll();
+
+	m_cameraManager->Reset();
+}
+
+void RagDollApplication::Start() {
+
+	DisableAllSpinners();
+
+	printf("Start button Pressed\n INITIATE WALKING!!!\n");
+
+	GameObject::EnableObjects(m_bodies);
+
+	m_WalkingController->Walk();
+}
+
+void RagDollApplication::Pause() {
+
+	printf("Pause button pressed \n");
+
+	GameObject::DisableObjects(m_bodies);
+
+	m_WalkingController->PauseWalking();
+}
+
+void RagDollApplication::ChangeState(int id) {
+
+	printf("previous state = %d\n", m_previousState);
+
+	// Update previous state
+	m_states.at(m_previousState)->m_torsoAngle = m_torso_state_spinner->get_float_val();
+	m_states.at(m_previousState)->m_upperLeftLegAngle = m_ull_state_spinner->get_float_val();
+	m_states.at(m_previousState)->m_upperRightLegAngle = m_url_state_spinner->get_float_val();
+	// Relative Store local coordinates
+	m_states.at(m_previousState)->m_lowerLeftLegAngle = m_lll_state_spinner->get_float_val();
+	m_states.at(m_previousState)->m_lowerRightLegAngle = m_lrl_state_spinner->get_float_val();
+	m_states.at(m_previousState)->m_leftFootAngle = m_lf_state_spinner->get_float_val();
+	m_states.at(m_previousState)->m_rightFootAngle = m_rf_state_spinner->get_float_val();
+
+	//// Absolute Orientation
+	//m_states.at(m_previousState)->m_absTAngle = m_torso->GetOrientation();
+	//m_states.at(m_previousState)->m_absULLAngle = m_upperLeftLeg->GetOrientation();
+	//m_states.at(m_previousState)->m_absURLAngle = m_upperRightLeg->GetOrientation();
+	//// Relative Store local coordinates
+	//m_states.at(m_previousState)->m_absLLLAngle = m_lowerLeftLeg->GetOrientation();
+	//m_states.at(m_previousState)->m_absLRLAngle = m_lowerRightLeg->GetOrientation();
+	//m_states.at(m_previousState)->m_absLFAngle = m_leftFoot->GetOrientation();
+	//m_states.at(m_previousState)->m_absRFAngle = m_rightFoot->GetOrientation();
+
+	// Change previous to current state
+	DisplayState(m_currentState);
+	m_previousState = m_currentState;
+	printf("next state = %d \n", m_currentState);
+
+	DisableStateSpinner();
+
+	UpdateRagDoll();
+
+}
+
 #pragma endregion GUI
 
 #pragma endregion INITIALIZATION
@@ -432,103 +662,6 @@ void RagDollApplication::AddHinges() {
 	// Connect feet to lower legs
 	m_llLeg_lFoot = AddHingeConstraint(m_lowerLeftLeg, m_leftFoot, btVector3(-lower_leg_height / 2, 0, 0), btVector3((foot_width) / 4, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_LLL_LF_LOW), Constants::GetInstance().DegreesToRadians(HINGE_LLL_LF_HIGH));
 	m_lrLeg_rFoot = AddHingeConstraint(m_lowerRightLeg, m_rightFoot, btVector3(-lower_leg_height / 2, 0, 0), btVector3((foot_width) / 4, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_LRL_RF_LOW), Constants::GetInstance().DegreesToRadians(HINGE_LRL_RF_HIGH));
-}
-
-void RagDollApplication::SaveStates() {
-	ChangeState(-1);
-	// Save States into file
-	m_WalkingController->SaveStates();
-}
-
-void RagDollApplication::SaveGains(){
-	// Save gains into file
-	m_WalkingController->SaveGains();
-}
-
-void RagDollApplication::SaveFeedback() {
-	m_WalkingController->SaveFeedback();
-}
-
-void RagDollApplication::SaveTime() {
-	m_WalkingController->SaveTime();
-}
-
-void RagDollApplication::Reset() {
-
-	printf("Reset button pressed \n");
-
-	m_WalkingController->Reset();
-
-	// Clear Everything
-	//GameObject::ClearForces(bodies);
-	GameObject::ClearVelocities(m_bodies);
-
-	DisableStateSpinner();
-	EnableGainSpinners();
-	m_StatesRadioGroup->enable();
-
-	GameObject::DisableObjects(m_bodies);
-	
-	m_StatesRadioGroup->set_int_val(0); // State 0
-	m_currentState = 0;
-	UpdateRagDoll();
-
-	m_cameraManager->Reset();
-}
-
-void RagDollApplication::Start() {
-	
-	DisableAllSpinners();
-	
-	printf("Start button Pressed\n INITIATE WALKING!!!\n");
-
-	GameObject::EnableObjects(m_bodies);
-
-	m_WalkingController->Walk();
-}
-
-void RagDollApplication::Pause() {
-
-	printf("Pause button pressed \n");
-
-	GameObject::DisableObjects(m_bodies);
-
-	m_WalkingController->PauseWalking();
-}
-
-void RagDollApplication::ChangeState(int id) {
-
-	printf("previous state = %d\n", m_previousState);
-	
-	// Update previous state
-	m_states.at(m_previousState)->m_torsoAngle = m_torso_state_spinner->get_float_val();
-	m_states.at(m_previousState)->m_upperLeftLegAngle = m_ull_state_spinner->get_float_val();
-	m_states.at(m_previousState)->m_upperRightLegAngle = m_url_state_spinner->get_float_val();
-	// Relative Store local coordinates
-	m_states.at(m_previousState)->m_lowerLeftLegAngle = m_lll_state_spinner->get_float_val();
-	m_states.at(m_previousState)->m_lowerRightLegAngle = m_lrl_state_spinner->get_float_val();
-	m_states.at(m_previousState)->m_leftFootAngle = m_lf_state_spinner->get_float_val();
-	m_states.at(m_previousState)->m_rightFootAngle = m_rf_state_spinner->get_float_val();
-
-	//// Absolute Orientation
-	//m_states.at(m_previousState)->m_absTAngle = m_torso->GetOrientation();
-	//m_states.at(m_previousState)->m_absULLAngle = m_upperLeftLeg->GetOrientation();
-	//m_states.at(m_previousState)->m_absURLAngle = m_upperRightLeg->GetOrientation();
-	//// Relative Store local coordinates
-	//m_states.at(m_previousState)->m_absLLLAngle = m_lowerLeftLeg->GetOrientation();
-	//m_states.at(m_previousState)->m_absLRLAngle = m_lowerRightLeg->GetOrientation();
-	//m_states.at(m_previousState)->m_absLFAngle = m_leftFoot->GetOrientation();
-	//m_states.at(m_previousState)->m_absRFAngle = m_rightFoot->GetOrientation();
-
-	// Change previous to current state
-	DisplayState(m_currentState);
-	m_previousState = m_currentState;
-	printf("next state = %d \n", m_currentState);
-
-	DisableStateSpinner();
-
-	UpdateRagDoll();
-
 }
 
 void RagDollApplication::UpdateRagDoll() {
@@ -656,124 +789,6 @@ void RagDollApplication::ChangeRightFootAngle() {
 
 }
 
-void RagDollApplication::UpdateGains() {
-	m_WalkingController->SetTorsoGains(m_torso_kp_spinner->get_float_val(), m_torso_kd_spinner->get_float_val());
-	m_WalkingController->SetUpperLeftLegGains(m_ull_kp_spinner->get_float_val(), m_ull_kd_spinner->get_float_val());
-	m_WalkingController->SetUpperRightLegGains(m_url_kp_spinner->get_float_val(), m_url_kd_spinner->get_float_val());
-	m_WalkingController->SetLowerLeftLegGains(m_lll_kp_spinner->get_float_val(), m_lll_kd_spinner->get_float_val());
-	m_WalkingController->SetLowerRightLegGains(m_lrl_kp_spinner->get_float_val(), m_lrl_kd_spinner->get_float_val());
-	m_WalkingController->SetLeftFootGains(m_lf_kp_spinner->get_float_val(), m_lf_kd_spinner->get_float_val());
-	m_WalkingController->SetRightFootGains(m_rf_kp_spinner->get_float_val(), m_rf_kd_spinner->get_float_val());
-}
-
-void RagDollApplication::DisableStateSpinner() {
-
-	switch (m_currentState)
-	{
-		case 0: {
-			// Deactivate
-			m_url_state_spinner->disable();
-			m_lrl_state_spinner->disable();
-			m_rf_state_spinner->disable();
-			m_ull_state_spinner->disable();
-			m_lll_state_spinner->disable();
-			m_lf_state_spinner->disable();
-			m_torso_state_spinner->disable();
-		}
-		break;
-		case 1: 
-		case 2: {
-			//// Deactivate
-			//m_url_state_spinner->disable();
-			//m_lrl_state_spinner->disable();
-			//m_rf_state_spinner->disable();
-
-			//// Activate
-			//m_ull_state_spinner->enable();
-			//m_lll_state_spinner->enable();
-			//m_lf_state_spinner->enable();
-			//m_torso_state_spinner->enable();
-
-			// Activate
-			m_url_state_spinner->enable();
-			m_lrl_state_spinner->enable();
-			m_rf_state_spinner->enable();
-			m_torso_state_spinner->enable();
-			m_ull_state_spinner->enable();
-			m_lll_state_spinner->enable();
-			m_lf_state_spinner->enable();
-			break;
-		}
-		case 3:
-		case 4:{
-			  //// Deactivate
-			  //m_ull_state_spinner->disable();
-			  //m_lll_state_spinner->disable();
-			  //m_lf_state_spinner->disable();
-
-			  //// Activate
-			  //m_url_state_spinner->enable();
-			  //m_lrl_state_spinner->enable();
-			  //m_rf_state_spinner->enable();
-			  //m_torso_state_spinner->enable();
-
-			m_url_state_spinner->enable();
-			m_lrl_state_spinner->enable();
-			m_rf_state_spinner->enable();
-			m_torso_state_spinner->enable();
-			m_ull_state_spinner->enable();
-			m_lll_state_spinner->enable();
-			m_lf_state_spinner->enable();
-		}
-		break;
-	default:
-		break;
-	}
-
-}
-
-void RagDollApplication::DisableAllSpinners() {
-
-	std::vector<GLUI_Spinner*>spinners = {
-		m_torso_kp_spinner, m_torso_kd_spinner,
-		m_ull_kp_spinner, m_ull_kd_spinner,
-		m_url_kp_spinner, m_url_kd_spinner,
-		m_lll_kp_spinner, m_lll_kd_spinner,
-		m_lrl_kp_spinner, m_lrl_kd_spinner,
-		m_lf_kp_spinner, m_lf_kd_spinner,
-		m_rf_kp_spinner, m_rf_kd_spinner,
-		m_torso_state_spinner, m_ull_state_spinner,
-		m_url_state_spinner, m_lll_state_spinner,
-		m_lrl_state_spinner, m_lf_state_spinner,
-		m_rf_state_spinner
-	};
-
-	for (std::vector<GLUI_Spinner*>::iterator it = spinners.begin(); it != spinners.end(); it++) {
-		(*it)->disable();
-	}
-
-	m_StatesRadioGroup->disable();
-
-}
-
-void RagDollApplication::EnableGainSpinners() {
-
-	std::vector<GLUI_Spinner*>spinners = {
-		m_torso_kp_spinner, m_torso_kd_spinner,
-		m_ull_kp_spinner, m_ull_kd_spinner,
-		m_url_kp_spinner, m_url_kd_spinner,
-		m_lll_kp_spinner, m_lll_kd_spinner,
-		m_lrl_kp_spinner, m_lrl_kd_spinner,
-		m_lf_kp_spinner, m_lf_kd_spinner,
-		m_rf_kp_spinner, m_rf_kd_spinner
-	};
-
-	for (std::vector<GLUI_Spinner*>::iterator it = spinners.begin(); it != spinners.end(); it++) {
-		(*it)->enable();
-	}
-
-}
-
 #pragma region TORQUES
 
 // Upper legs
@@ -844,13 +859,23 @@ btVector3 RagDollApplication::GetRandomColor() {
 }
 
 void RagDollApplication::DrawDebugFeedback() {
+	/* Draw the speed up*/
+	/*btVector3 color(255, 255, 255);
+	if (m_draw % DRAW_SPEEDUP == 0) {
+		float speedup = m_DeltaSimTime / m_DeltaGlutTime;
+		sprintf_s(buf, "Speedup = %8.5f", speedup);
+		speedup > 1 ? color = btVector3(255, 0, 0) : color = btVector3(255, 255, 255);
+	}
+	DisplayText(-2, 2, color, buf);
+	m_draw++;*/
+
 	// Get Stance ankle location
 	btVector3 stanceAnkle = m_WalkingController->m_stanceAnklePosition;
 	// Draw circle
-	DrawFilledCircle(stanceAnkle.x(), stanceAnkle.y(), 0.08, btVector3(255, 255, 255));
+	DrawFilledCircle(stanceAnkle.x(), stanceAnkle.y(), 0.03, btVector3(255, 255, 255));
 	// Get COM Position
 	btVector3 COMPosition = m_WalkingController->m_COMPosition;
-	DrawFilledCircle(COMPosition.x(), COMPosition.y(), 0.08, btVector3(255, 255, 255));
+	DrawFilledCircle(COMPosition.x(), COMPosition.y(), 0.03, btVector3(255, 255, 255));
 	// Draw horizontal line between ankle and COM
 	
 }
@@ -860,7 +885,7 @@ static void DrawFilledCircle(GLfloat x, GLfloat y, GLfloat radius, const btVecto
 	int triangleAmount = 20; //# of triangles used to draw circle
 	glColor3f(color.x(), color.y(), color.z());
 	glPushMatrix();
-	glTranslatef(x, y, -1);
+	glTranslatef(x, y, 0.9);
 	//GLfloat radius = 0.8f; //radius
 	GLfloat twicePi = 2.0f * PI;
 	

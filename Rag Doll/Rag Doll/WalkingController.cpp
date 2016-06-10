@@ -2,7 +2,6 @@
 
 #include "WalkingController.h"
 #include "RagDollApplication.h"
-#include "RagDollContactResult.h"
 #include "State.h"
 #include "Gains.h"
 
@@ -766,26 +765,12 @@ float WalkingController::CalculateTorqueForLowerRightLeg(float targetPosition, f
 float WalkingController::CalculateTorqueForLeftFoot(float targetPosition, float currentPosition, float currentVelocity) {
 	printf("------ Left foot ------ \n");
 	printf("Target Position: %f, Current Position: %f, current velocity = %f \n", targetPosition, currentPosition, currentVelocity);
-	/*if (currentVelocity > 50) {
-		currentVelocity = 50;
-	}
-	if (currentVelocity < -50) {
-		currentVelocity = -50;
-	}*/
-	//printf("kp = %f, kd = %f \n", m_lf_gains->m_kp, m_lf_gains->m_kd);
 	return CalculateTorque(m_lf_gains->m_kp, m_lf_gains->m_kd, targetPosition, currentPosition, currentVelocity);
 }
 
 float WalkingController::CalculateTorqueForRightFoot(float targetPosition, float currentPosition, float currentVelocity) {
 	printf("------ Right foot ------ \n");
 	printf("Target Position: %f, Current Position: %f, current velocity = %f \n", targetPosition, currentPosition, currentVelocity);
-	/*if (currentVelocity > 50) {
-		currentVelocity = 50;
-	}
-	if (currentVelocity < -50) {
-		currentVelocity = -50;
-	}*/
-	//printf("kp = %f, kd = %f \n", m_rf_gains->m_kp, m_rf_gains->m_kd);
 	return CalculateTorque(m_rf_gains->m_kp, m_rf_gains->m_kd, targetPosition, currentPosition, currentVelocity);
 }
 

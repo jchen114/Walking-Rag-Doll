@@ -39,6 +39,11 @@ public:
 	float DegreesToRadians(float degrees);
 	float RadiansToDegrees(float radians);
 
+	// Frame Rate
+	int m_StartTime;
+	int m_PrevTime;
+	int m_CurrentTime;
+
 protected:
 
 	Constants();

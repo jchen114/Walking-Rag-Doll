@@ -36,7 +36,7 @@ static void MotionCallback(int x, int y) {
 }
 static void DisplayCallback(void) {
 	g_pApp->Display();
-}
+} 
 
 // our custom-built 'main' function, which accepts a reference to a 
 // BulletOpenGLApplication object.
@@ -65,11 +65,14 @@ int glutmain(int argc, char **argv, int width, int height, const char* title, Bu
 	glutSpecialFunc(SpecialCallback);
 	glutSpecialUpFunc(SpecialUpCallback);
 	glutReshapeFunc(ReshapeCallback);
-	glutIdleFunc(IdleCallback);
+	
 	glutMouseFunc(MouseCallback);
 	glutPassiveMotionFunc(MotionCallback);
 	glutMotionFunc(MotionCallback);
 	glutDisplayFunc(DisplayCallback);
+
+	// Rendering
+	glutIdleFunc(IdleCallback);
 
 	// perform one render before we launch the application
 	g_pApp->Idle();

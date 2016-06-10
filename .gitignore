@@ -6,7 +6,7 @@
 *.user
 *.userosscache
 *.sln.docstates
-Rag Doll/Rag Doll.sln
+#Rag Doll/Rag Doll.sln
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

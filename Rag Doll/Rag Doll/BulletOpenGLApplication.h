@@ -26,6 +26,9 @@
 #include "GameObject.h"
 #include <vector>
 
+#define BULLET_TIME_STEP 0.002f
+#define RENDER_TIME_STEP 0.03f
+
 class DebugDrawer;
 
 typedef std::vector<GameObject*> GameObjects; // GameObjects is a data type for storing game objects
@@ -34,7 +37,7 @@ class BulletOpenGLApplication
 {
 public:
 	BulletOpenGLApplication();
-	BulletOpenGLApplication(ProjectionMode mode);
+	BulletOpenGLApplication(ProjectionMode mode, bool isFrameRateFixed = false);
 
 	~BulletOpenGLApplication();
 
@@ -53,6 +56,7 @@ public:
 	virtual void PassiveMotion(int x, int y);
 	virtual void Motion(int x, int y);
 	virtual void Display();
+	virtual void GLUTTimerFunc(int value);
 
 	// rendering. Can be overrideen by derived classes
 	virtual void RenderScene();
@@ -86,6 +90,13 @@ public:
 		btScalar lowLimit,
 		btScalar highLimit);
 
+	btFixedConstraint *AddFixedConstraint(
+		GameObject *obj1,
+		GameObject *obj2,
+		const btTransform &trans1 = btTransform(btQuaternion(0, 0, 0, 1)),
+		const btTransform &trans2 = btTransform(btQuaternion(0, 0, 0, 1))
+		);
+
 	void ApplyTorque(GameObject *object, const btVector3 &torque);
 
 	GameObject *CreateGameObject(
@@ -99,6 +110,8 @@ public:
 	// Callback for drawing
 	std::function<void()> m_DrawCallback;
 
+	float m_DeltaGlutTime;
+	float m_DeltaSimTime;
 
 protected:
 
@@ -111,7 +124,8 @@ protected:
 
 	// clock for counting time
 	btClock m_clock;
-
+	// clock for timing simulation
+	btClock m_SimClock;
 	// Array for game objects
 	GameObjects m_objects;
 
@@ -122,6 +136,16 @@ protected:
 	// debug renderer
 	DebugDrawer* m_pDebugDrawer;
 
+	void DisplayText(float x, float y, const btVector3 &color, const char *string);
+
+	bool m_IsFrameRateFixed;
+
 };
+
+static BulletOpenGLApplication *m_me;
+
+static void GLUTTimerCallback(int value) {
+	m_me->GLUTTimerFunc(value);
+}
 
 #endif

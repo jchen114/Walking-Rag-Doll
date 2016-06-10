@@ -7,19 +7,27 @@ class WalkingController;
 class State;
 class Gains;
 
+#define MARKER_DISTANCE 2.0f
+#define GROUND_WIDTH 200.0f
+#define MARKER_WIDTH 0.03f
+#define MARKER_HEIGHT 0.09f
+#define MARKER_COLOR btVector3(255,255,0)
+#define DRAW_SPEEDUP 10
+
 class RagDollApplication :
 	public BulletOpenGLApplication
 {
 
 public:
 	RagDollApplication();
-	RagDollApplication(ProjectionMode mode);
+	RagDollApplication(ProjectionMode mode, bool isFrameRateFixed = false);
 	~RagDollApplication();
 
 	virtual void InitializePhysics() override;
 	virtual void ShutdownPhysics() override;
 	virtual void Idle() override;
 
+	void CreateGround(const btVector3 &position);
 	void CreateRagDoll(const btVector3 &position);
 	void AddHinges();
 
@@ -146,6 +154,9 @@ private:
 	GLUI_Spinner *m_cv_2_spinner;
 
 	GLUI_Spinner *m_timer_spinner;
+
+	int m_draw = 0;
+	char buf[1000];
 
 };
 

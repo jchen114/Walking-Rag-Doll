@@ -3,12 +3,13 @@
 #include <cstdio>
 #include <ctime>
 
-#include "RagDollContactResult.h"
 #include "LinearMath\btQuickprof.h"
+#include "LinearMath\btVector3.h"
 
 class RagDollApplication;
 class State;
 class Gains;
+
 
 #pragma region DEFINITIONS 
 
@@ -127,7 +128,7 @@ public:
 	float m_state_time = 0.0f;
 
 	btVector3 m_stanceAnklePosition = btVector3(0, 0, 0);
-	btVector3 m_COMPosition = btVector3(0, 0, 0);
+	btVector3 m_COMPosition = btVector3(0,0,0);
 
 private:
 
