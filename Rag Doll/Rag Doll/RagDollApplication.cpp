@@ -3,7 +3,9 @@
 #include "WalkingController.h"
 
 #include "State.h"	
-#include "Gains.h"	
+#include "Gains.h"
+
+#include <iostream>
 
 
 #pragma region INITIALIZATION
@@ -172,13 +174,11 @@ void RagDollApplication::ShutdownPhysics() {
 
 }
 
-void RagDollApplication::
-
 #pragma region GUI
 
 void RagDollApplication::CreateRagDollGUI() {
 
-	printf("Create Glui Window \n");
+	Debug("Create Glui Window");
 
 	// Setup
 	GLUI_Master.set_glutIdleFunc(RagDollIdle);
@@ -541,7 +541,7 @@ void RagDollApplication::SaveTime() {
 
 void RagDollApplication::Reset() {
 
-	printf("Reset button pressed \n");
+	Debug("Reset button pressed");
 
 	m_WalkingController->Reset();
 
@@ -566,7 +566,7 @@ void RagDollApplication::Start() {
 
 	DisableAllSpinners();
 
-	printf("Start button Pressed\n INITIATE WALKING!!!\n");
+	Debug("Start button Pressed\n INITIATE WALKING!!!");
 
 	GameObject::EnableObjects(m_bodies);
 
@@ -575,7 +575,7 @@ void RagDollApplication::Start() {
 
 void RagDollApplication::Pause() {
 
-	printf("Pause button pressed \n");
+	Debug("Pause button pressed");
 
 	GameObject::DisableObjects(m_bodies);
 
@@ -584,7 +584,7 @@ void RagDollApplication::Pause() {
 
 void RagDollApplication::ChangeState(int id) {
 
-	printf("previous state = %d\n", m_previousState);
+	Debug("Previous state" << m_previousState);
 
 	// Update previous state
 	m_states.at(m_previousState)->m_torsoAngle = m_torso_state_spinner->get_float_val();
@@ -609,7 +609,7 @@ void RagDollApplication::ChangeState(int id) {
 	// Change previous to current state
 	DisplayState(m_currentState);
 	m_previousState = m_currentState;
-	printf("next state = %d \n", m_currentState);
+	Debug("next state = " << m_currentState);
 
 	DisableStateSpinner();
 
@@ -651,7 +651,7 @@ void RagDollApplication::CreateRagDoll(const btVector3 &position) {
 
 void RagDollApplication::AddHinges() {
 
-	printf("Adding hinges. \n");
+	Debug("Adding hinges.");
 
 	// Connect torso to upper legs
 	m_torso_ulLeg = AddHingeConstraint(m_torso, m_upperLeftLeg, btVector3(-torso_height / 2, 0, 0), btVector3(upper_leg_height / 2, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_TORSO_ULL_LOW), Constants::GetInstance().DegreesToRadians(HINGE_TORSO_ULL_HIGH));
@@ -688,13 +688,13 @@ void RagDollApplication::UpdateRagDoll() {
 		ORIGINAL_TORSO_POSITION + btVector3(-(torso_height/2) * cos(PI - torsoAngle), sin(PI - torsoAngle)*(torso_height/2) - (torso_height/2),0), 
 		btQuaternion(btVector3(0, 0, 1), 
 		torsoAngle));
-	printf("Torso COM (%f, %f, %f)\n", m_torso->GetCOMPosition().x(), m_torso->GetCOMPosition().y(), m_torso->GetCOMPosition().z());
+	Debug("Torso COM (" << m_torso->GetCOMPosition().x() << ", " << m_torso->GetCOMPosition().y() << ", " << m_torso->GetCOMPosition().z() << ")");
 	// GREEN
 	m_upperRightLeg->Reposition(
 		ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(torso_height / 2 + upper_leg_height / 2), 0.1) + btVector3(-cos(urlAngle) * (upper_leg_height / 2), (upper_leg_height / 2) - sin(urlAngle)*upper_leg_height / 2, 0),
 		btQuaternion(btVector3(0, 0, 1),
 		urlAngle));
-	printf("URL COM (%f, %f, %f)\n", m_upperRightLeg->GetCOMPosition().x(), m_upperRightLeg->GetCOMPosition().y(), m_upperRightLeg->GetCOMPosition().z());
+	Debug("URL COM (" << m_upperRightLeg->GetCOMPosition().x() << ", " << m_upperRightLeg->GetCOMPosition().y() << ", " << m_upperRightLeg->GetCOMPosition().z(), ")");
 	btVector3 upperRightLegBottomPoint = m_upperRightLeg->GetCOMPosition() + btVector3(cos(PI - urlAngle) * upper_leg_height / 2, -sin(PI - urlAngle) * upper_leg_height / 2, 0);
 
 	// ORANGE
@@ -702,7 +702,7 @@ void RagDollApplication::UpdateRagDoll() {
 		upperRightLegBottomPoint + btVector3(-(cos(lrlAngle) * lower_leg_height / 2), -(sin(lrlAngle)*lower_leg_height / 2), 0.1),
 		btQuaternion(btVector3(0, 0, 1),
 		lrlAngle));
-	printf("LRL COM (%f, %f, %f)\n", m_lowerRightLeg->GetCOMPosition().x(), m_lowerRightLeg->GetCOMPosition().y(), m_lowerRightLeg->GetCOMPosition().z());
+	Debug("LRL COM (" << m_lowerRightLeg->GetCOMPosition().x() << ", " << m_lowerRightLeg->GetCOMPosition().y() << ", " << m_lowerRightLeg->GetCOMPosition().z(), ")");
 
 	btVector3 lowerRightLegBottomPoint = m_lowerRightLeg->GetCOMPosition() + btVector3(cos(PI - lrlAngle) * lower_leg_height / 2, -sin(PI - lrlAngle) * lower_leg_height / 2, 0);
 	// PURPLE
@@ -710,14 +710,14 @@ void RagDollApplication::UpdateRagDoll() {
 		lowerRightLegBottomPoint + btVector3(-cos(rfAngle) * foot_width / 4, -sin(rfAngle) * foot_width / 4, 0.1),
 		btQuaternion(btVector3(0, 0, 1),
 		rfAngle));
-	printf("RF COM (%f, %f, %f)\n", m_rightFoot->GetCOMPosition().x(), m_rightFoot->GetCOMPosition().y(), m_rightFoot->GetCOMPosition().z());
+	Debug("RF COM (" << m_rightFoot->GetCOMPosition().x() << ", " << m_rightFoot->GetCOMPosition().y() << ", " << m_rightFoot->GetCOMPosition().z() << ")");
 
 	// PINK
 	m_upperLeftLeg->Reposition(
 		ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(torso_height / 2 + upper_leg_height / 2), -0.1) + btVector3(-cos(ullAngle) * (upper_leg_height/2), (upper_leg_height/2) - sin(ullAngle)*upper_leg_height/2, 0), 
 		btQuaternion(btVector3(0,0,1), 
 		ullAngle));
-	printf("ULL COM (%f, %f, %f)\n", m_upperLeftLeg->GetCOMPosition().x(), m_upperLeftLeg->GetCOMPosition().y(), m_upperLeftLeg->GetCOMPosition().z());
+	Debug("ULL COM (" << m_upperLeftLeg->GetCOMPosition().x() << ", " << m_upperLeftLeg->GetCOMPosition().y() << ", " << m_upperLeftLeg->GetCOMPosition().z() << ")");
 	
 	btVector3 upperLeftLegBottomPoint = m_upperLeftLeg->GetCOMPosition() + btVector3(cos(PI - ullAngle) * upper_leg_height/2, -sin(PI - ullAngle) * upper_leg_height/2, 0);
 	
@@ -728,7 +728,7 @@ void RagDollApplication::UpdateRagDoll() {
 		upperLeftLegBottomPoint + btVector3(-(cos(lllAngle)*lower_leg_height / 2), -(sin(lllAngle)*lower_leg_height / 2), -0.1), 
 		btQuaternion(btVector3(0, 0, 1), 
 		lllAngle));
-	printf("LLL COM (%f, %f, %f)\n", m_lowerLeftLeg->GetCOMPosition().x(), m_lowerLeftLeg->GetCOMPosition().y(), m_lowerLeftLeg->GetCOMPosition().z());
+	Debug("LLL COM (" << m_lowerLeftLeg->GetCOMPosition().x() << ", " << m_lowerLeftLeg->GetCOMPosition().y() << ", " << m_lowerLeftLeg->GetCOMPosition().z() << ")");
 	
 	btVector3 lowerLeftLegBottomPoint = m_lowerLeftLeg->GetCOMPosition() + btVector3(cos(PI - lllAngle) * lower_leg_height / 2, -sin(PI - lllAngle) * lower_leg_height / 2, 0);
 
@@ -736,7 +736,7 @@ void RagDollApplication::UpdateRagDoll() {
 		lowerLeftLegBottomPoint + btVector3(-cos(lfAngle) * foot_width/4, -sin(lfAngle) * foot_width/4, -0.1), 
 		btQuaternion(btVector3(0, 0, 1), 
 		lfAngle));
-	printf("LF COM (%f, %f, %f)\n", m_leftFoot->GetCOMPosition().x(), m_leftFoot->GetCOMPosition().y(), m_leftFoot->GetCOMPosition().z());
+	Debug("LF COM (" << m_leftFoot->GetCOMPosition().x() << ", " << m_leftFoot->GetCOMPosition().y() << ", " << m_leftFoot->GetCOMPosition().z() << ")");
 
 	GameObject::PrintOrientations(m_bodies);
 
@@ -862,13 +862,13 @@ btVector3 RagDollApplication::GetRandomColor() {
 
 void RagDollApplication::DrawDebugFeedback() {
 	/* Draw the speed up*/
-	/*btVector3 color(255, 255, 255);
-	if (m_draw % DRAW_SPEEDUP == 0) {
+	
+	/*if (m_draw % DRAW_SPEEDUP == 0) {
 		float speedup = m_DeltaSimTime / m_DeltaGlutTime;
-		sprintf_s(buf, "Speedup = %8.5f", speedup);
-		speedup > 1 ? color = btVector3(255, 0, 0) : color = btVector3(255, 255, 255);
+		sprintf_s(buf, "Sim/Render = %8.5f", speedup);
+		speedup > 1 ? m_color = btVector3(255, 0, 0) : m_color = btVector3(255, 255, 255);
 	}
-	DisplayText(-2, 2, color, buf);
+	DisplayText(-2, 2, m_color, buf);
 	m_draw++;*/
 
 	// Get Stance ankle location

@@ -6,7 +6,7 @@
 
 BulletOpenGLApplication::BulletOpenGLApplication()
 {
-	std::cout << "Constructing BulletOpenGLApplication and building camera" << std::endl;
+	Debug("Constructing BulletOpenGLApplication and building camera");
 	// Create Camera manager
 	m_cameraManager = new CameraManager(
 		btVector3(0.0f, 0.0f, 0.0f),	// Target
@@ -21,7 +21,7 @@ BulletOpenGLApplication::BulletOpenGLApplication()
 }
 
 BulletOpenGLApplication::BulletOpenGLApplication(ProjectionMode mode, bool isFrameRateFixed) : BulletOpenGLApplication() {
-	std::cout << "Constructing BulletOpenGLApplication and building camera" << std::endl;
+	Debug("Constructing BulletOpenGLApplication and building camera");
 	Constants::GetInstance().SetProjectionMode(mode);
 	m_IsFrameRateFixed = isFrameRateFixed;
 }
@@ -32,7 +32,7 @@ BulletOpenGLApplication::~BulletOpenGLApplication() {
 }
 
 void BulletOpenGLApplication::Initialize() {
-	std::cout << "Initializing BulletOpenGLApplication" << std::endl;
+	Debug("Initializing BulletOpenGLApplication");
 	// this function is called inside glutmain() after
 	// creating the window, but before handing control
 	// to FreeGLUT
@@ -112,13 +112,13 @@ void BulletOpenGLApplication::Keyboard(unsigned char key, int x, int y) {
 	case 'v': {
 		// toggle wireframe debug drawing
 		m_pDebugDrawer->ToggleDebugFlag(btIDebugDraw::DBG_DrawWireframe);
-		printf("toggle debug wireframe\n");
+		Debug("toggle debug wireframe");
 	}
 		break;
 	case 'b': {
 		// toggle AABB debug drawing
 		m_pDebugDrawer->ToggleDebugFlag(btIDebugDraw::DBG_DrawAabb);
-		printf("toggle debug flag\n");
+		Debug("toggle debug flag");
 	}
 		break;
 	case 'z': m_cameraManager->ZoomCamera(+CAMERA_STEP_SIZE); break;			// 'z' zooms in
@@ -160,7 +160,7 @@ void BulletOpenGLApplication::SpecialUp(int key, int x, int y) {}
 #pragma endregion KEYBOARD
 
 void BulletOpenGLApplication::Reshape(int w, int h) {
-	printf("BulletOpenGLApplication Reshape called\n");
+	Debug("BulletOpenGLApplication Reshape called");
 	// this function is called once during application intialization
 	// and again every time we resize the window
 
@@ -178,24 +178,58 @@ void BulletOpenGLApplication::Reshape(int w, int h) {
 
 void BulletOpenGLApplication::Idle() {
 
+	// this function is called frequently, whenever FreeGlut
+	// isn't busy processing its own events. It should be used
+	// to perform any updating and rendering tasks
+
 	if (!m_IsFrameRateFixed) {
 		glutSetWindow(m_main_window_id);
-		glutPostRedisplay();
-
-		// this function is called frequently, whenever FreeGlut
-		// isn't busy processing its own events. It should be used
-		// to perform any updating and rendering tasks
 
 		// clear the backbuffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// get the time since the last iteration
-		float dt = m_clock.getTimeMilliseconds();
-		// reset the clock to 0
+		static bool firstTime = true;
+		float dt = firstTime ? 0.0 : 0.001 * 0.001 * m_clock.getTimeMicroseconds();
+		firstTime = false;
 		m_clock.reset();
-		// update the scene (convert ms to s)
-		UpdateScene(dt / 1000.0f);
-		//UpdateScene(0.002);
+		
+		float completeTime = dt + m_RemainingTime;
+
+		float desiredTimeBetweenFrames = 1.0 / 60.0; // 60 frames per seconds
+		int numSteps = ceil(desiredTimeBetweenFrames / BULLET_TIME_STEP); // if ???
+		//int numSteps = ceil(completeTime / BULLET_TIME_STEP); // or this if desiredTimeBetweenFrames < monitor refresh rate ???
+		m_RemainingTime = completeTime - numSteps * BULLET_TIME_STEP;
+
+		if (m_RemainingTime > 3 * dt)
+		{
+			m_RemainingTime = 0;
+		}
+
+		while (m_RemainingTime < 0 && numSteps > 0)
+		{
+			numSteps -= 1;
+			m_RemainingTime = completeTime - numSteps * BULLET_TIME_STEP;
+		}
+
+		if (m_pWorld) {
+
+			// step the simulation through time. This is called
+			// every update and the amount of elasped time was 
+			// determined back in ::Idle() by our clock object.
+
+			//m_SimClock.reset();
+			for (int i = 0; i < numSteps; i++) {
+				m_pWorld->stepSimulation(BULLET_TIME_STEP, 0);
+			}
+			//m_DeltaSimTime = m_SimClock.getTimeMilliseconds();
+		}
+		int m = m_clock.getTimeMicroseconds();
+
+		char buf[200];
+		sprintf_s(buf, "physics computation time = %d, numsteps = %d, elapsed time = %f, remaining time = %f, complete time = %f", m, numSteps, dt, m_RemainingTime, completeTime);
+		DisplayText(-2, 2, btVector3(0,0,0), buf);
+
 		m_cameraManager->UpdateCamera();
 
 		// render the scene
@@ -211,13 +245,15 @@ void BulletOpenGLApplication::Idle() {
 		}
 
 		// swap the front and back buffers
+		glutPostRedisplay();
 		glutSwapBuffers();
 	}
 }
 
 void BulletOpenGLApplication::GLUTTimerFunc(int value) {
+	
 	// Setup next timer tick 
-	glutTimerFunc(RENDER_TIME_STEP, GLUTTimerCallback, 0);
+	glutTimerFunc((int)(RENDER_TIME_STEP * 1000), GLUTTimerCallback, 0);
 	glutSetWindow(m_main_window_id);
 		
 	glutPostRedisplay();
@@ -233,6 +269,9 @@ void BulletOpenGLApplication::GLUTTimerFunc(int value) {
 	// Measure the elapsed time
 	Constants::GetInstance().m_CurrentTime = glutGet(GLUT_ELAPSED_TIME);
 	int timeSincePrevFrame = Constants::GetInstance().m_CurrentTime - Constants::GetInstance().m_PrevTime; // milliseconds
+	char buf[100];
+	sprintf_s(buf, "Time since previous frame: %d ms", timeSincePrevFrame);
+	DisplayText(-2, 1.5, btVector3(0,0,0), buf);
 	float dt = (float)timeSincePrevFrame / 1000.0f; // seconds
 	UpdateScene(dt);
 	
@@ -251,9 +290,10 @@ void BulletOpenGLApplication::GLUTTimerFunc(int value) {
 	}
 
 	// swap the front and back buffers
-	glutSwapBuffers();
+	//glutSwapBuffers();
 
 	Constants::GetInstance().m_PrevTime = Constants::GetInstance().m_CurrentTime;
+	
 }
 
 void BulletOpenGLApplication::Mouse(int button, int state, int x, int y) {}
@@ -473,17 +513,29 @@ void BulletOpenGLApplication::UpdateScene(float dt) {
 	// check if the world object exists
 
 	if (m_pWorld) {
-		m_SimClock.reset();
+		
 		// step the simulation through time. This is called
 		// every update and the amount of elasped time was 
 		// determined back in ::Idle() by our clock object.
-		
-		int numberOfSteps = (int) (dt / BULLET_TIME_STEP);
+				
 
-		m_pWorld->stepSimulation(dt, numberOfSteps, BULLET_TIME_STEP);
+		// max simulation steps: .03/.002 = 15
 		
-		//m_pWorld->stepSimulation(dt * 20, 20, dt);
+		
+		//m_Simclock.reset();
+		m_pWorld->stepSimulation(dt, 15, BULLET_TIME_STEP);
+		//m_deltasimtime = m_simclock.gettimemilliseconds();
+		
+		/*int numberOfSteps = 1000;
+		m_SimClock.reset();
+		for (int i = 0; i < numberOfSteps; ++i)
+		{
+			m_pWorld->stepSimulation(BULLET_TIME_STEP, 0);
+		}
 		m_DeltaSimTime = m_SimClock.getTimeMilliseconds();
+		char buf[1000];
+		sprintf_s(buf, "Simulation time for 1000 steps: %f", m_DeltaSimTime);
+		DisplayText(-2, 1, btVector3(0, 0, 0), buf);*/
 	}
 }
 
@@ -516,7 +568,7 @@ GameObject* BulletOpenGLApplication::CreateGameObject(
 	}
 
 	m_objects.push_back(pObject);
-	printf("Created Object and pushed to world\n");
+	Debug("Created Object and pushed to world");
 	// check if the world object is valid
 	if (m_pWorld) {
 		// add the object's rigid body to the world

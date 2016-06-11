@@ -157,6 +157,7 @@ private:
 
 	int m_draw = 0;
 	char buf[1000];
+	btVector3 m_color;
 
 };
 

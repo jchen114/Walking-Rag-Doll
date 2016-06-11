@@ -26,8 +26,17 @@
 #include "GameObject.h"
 #include <vector>
 
-#define BULLET_TIME_STEP 0.002f
-#define RENDER_TIME_STEP 0.03f
+#define BULLET_TIME_STEP 0.002f // 2 ms
+#define RENDER_TIME_STEP 0.02f // 20 ms = 50fps
+
+//Debug
+//#define USEDEBUG
+
+#ifdef USEDEBUG
+#define Debug( x ) std::cout << x << std::endl
+#else
+#define Debug( x ) 
+#endif
 
 class DebugDrawer;
 
@@ -139,6 +148,7 @@ protected:
 	void DisplayText(float x, float y, const btVector3 &color, const char *string);
 
 	bool m_IsFrameRateFixed;
+	float m_RemainingTime = 0.0f;
 
 };
 
