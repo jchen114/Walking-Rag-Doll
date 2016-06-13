@@ -105,6 +105,11 @@ void RagDollApplication::Idle() {
 	BulletOpenGLApplication::Idle();
 }
 
+void RagDollApplication::Keyboard(unsigned char key, int x, int y) {
+	BulletOpenGLApplication::Keyboard(key, x, y);
+
+}
+
 void RagDollApplication::CreateGround(const btVector3 &position) {
 
 	// Create ground.

@@ -25,6 +25,7 @@ public:
 
 	virtual void InitializePhysics() override;
 	virtual void ShutdownPhysics() override;
+	virtual void Keyboard(unsigned char key, int x, int y) override;
 	virtual void Idle() override;
 
 	void CreateGround(const btVector3 &position);
