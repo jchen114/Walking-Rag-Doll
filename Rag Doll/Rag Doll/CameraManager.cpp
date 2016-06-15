@@ -73,11 +73,12 @@ void CameraManager::SetupOrthographicModelView() {
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	// Translate in meters.
-	glTranslatef(m_cameraPosX, m_cameraPosY, 0);
-	// Scale from meters to pixels.
+	// Scale first
 	float m2p = Constants::GetInstance().GetMetersToPixels(m_cameraDistance);
 	glScalef(m2p, m2p, 1);
+	// Translate in meters.
+	glTranslatef(m_cameraPosX, m_cameraPosY, 0);
+
 	
 }
 
@@ -191,7 +192,7 @@ void CameraManager::RotateCamera(RotationType type, float value) {
 	if (*angle >= 360) *angle -= 360;
 	// update the camera since we changed the angular value
 	UpdateCamera();
-	PrintCameraLocation();
+	//PrintCameraLocation();
 }
 
 void CameraManager::ZoomCamera(float distance) {
@@ -201,7 +202,7 @@ void CameraManager::ZoomCamera(float distance) {
 	//if (m_cameraDistance < 0.1f) m_cameraDistance = 0.1f;
 	// update the camera since we changed the zoom distance
 	UpdateCamera();
-	PrintCameraLocation();
+	//PrintCameraLocation();
 }
 
 void CameraManager::TranslateCamera(TranslateDirection direction, float value) {
@@ -236,7 +237,7 @@ void CameraManager::TranslateCamera(TranslateDirection direction, float value) {
 
 	
 	UpdateCamera();
-	PrintCameraLocation();
+	//PrintCameraLocation();
 }
 
 void CameraManager::PrintCameraLocation() {
@@ -247,7 +248,6 @@ void CameraManager::PrintCameraLocation() {
 btVector3 CameraManager::GetCameraLocation() {
 	return m_cameraPosition;
 }
-
 
 CameraManager::~CameraManager()
 {

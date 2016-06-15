@@ -99,6 +99,8 @@ void RagDollApplication::InitializePhysics() {
 	m_pWorld->setInternalTickCallback(InternalPreTickCallback, 0, true);
 	m_pWorld->setInternalTickCallback(InternalPostTickCallback, 0, false);
 
+	m_previous_torso_position = m_WalkingController->m_COMPosition;
+
 }
 
 void RagDollApplication::Idle() {
@@ -107,6 +109,48 @@ void RagDollApplication::Idle() {
 
 void RagDollApplication::Keyboard(unsigned char key, int x, int y) {
 	BulletOpenGLApplication::Keyboard(key, x, y);
+	
+	switch (key)
+	{
+	case 'f':
+	{
+		//printf("pressed f key \n");
+		
+		m_drawBackForce = true;
+		m_drawForwardForce = false;
+		
+	}
+		break;
+	case 'g': {
+		
+		m_drawForwardForce = true;
+		m_drawBackForce = false;
+	}
+		break;
+	default:
+		break;
+	}
+	
+}
+
+void RagDollApplication::KeyboardUp(unsigned char key, int x, int y) {
+	BulletOpenGLApplication::KeyboardUp(key, x, y);
+
+	switch (key)
+	{
+	case 'f':
+	{
+		m_drawBackForce = false;
+	}
+		break;
+	case 'g': {
+		m_drawForwardForce = false;
+	}
+		break;
+
+	default:
+		break;
+	}
 
 }
 
@@ -130,20 +174,34 @@ void RagDollApplication::CreateGround(const btVector3 &position) {
 }
 
 void RagDollApplication::RagDollStep() {
-	//printf("Callback after every physics tick.\n");
+	//printf("Callback before every physics tick.\n");
+	
 	switch (m_WalkingController->m_currentState)
 	{
-	case WALKING:
-		m_WalkingController->Walk();
-		//GameObject::PrintOrientations(m_bodies);
+	case RESET:
+	case WALKING: {
+		btVector3 force;
+		btVector3 relPos;
+		if (m_drawForwardForce && !m_drawBackForce) {
+			force = btVector3(0.5f, 0.0f, 0.0f);
+			relPos = btVector3(0.0f, 0.0f, 0.0f);
+			m_torso->GetRigidBody()->applyImpulse(force, relPos);
+		}
+		if (m_drawBackForce && !m_drawForwardForce) {
+			force = btVector3(-0.5f, 0.0f, 0.0f);
+			relPos = btVector3(0.0f, 0.0f, 0.0f);
+			m_torso->GetRigidBody()->applyImpulse(force, relPos);
+		}
+	}
 		break;
 	case PAUSE:
-		break;
-	case RESET:
 		break;
 	default:
 		break;
 	}
+
+	m_WalkingController->StateLoop();
+
 }
 
 void RagDollApplication::RagDollCollision() {
@@ -434,18 +492,6 @@ void RagDollApplication::DisableStateSpinner() {
 		break;
 	case 1:
 	case 2: {
-				//// Deactivate
-				//m_url_state_spinner->disable();
-				//m_lrl_state_spinner->disable();
-				//m_rf_state_spinner->disable();
-
-				//// Activate
-				//m_ull_state_spinner->enable();
-				//m_lll_state_spinner->enable();
-				//m_lf_state_spinner->enable();
-				//m_torso_state_spinner->enable();
-
-				// Activate
 				m_url_state_spinner->enable();
 				m_lrl_state_spinner->enable();
 				m_rf_state_spinner->enable();
@@ -457,17 +503,6 @@ void RagDollApplication::DisableStateSpinner() {
 	}
 	case 3:
 	case 4:{
-			   //// Deactivate
-			   //m_ull_state_spinner->disable();
-			   //m_lll_state_spinner->disable();
-			   //m_lf_state_spinner->disable();
-
-			   //// Activate
-			   //m_url_state_spinner->enable();
-			   //m_lrl_state_spinner->enable();
-			   //m_rf_state_spinner->enable();
-			   //m_torso_state_spinner->enable();
-
 			   m_url_state_spinner->enable();
 			   m_lrl_state_spinner->enable();
 			   m_rf_state_spinner->enable();
@@ -564,7 +599,7 @@ void RagDollApplication::Reset() {
 	m_currentState = 0;
 	UpdateRagDoll();
 
-	m_cameraManager->Reset();
+	//m_cameraManager->Reset();
 }
 
 void RagDollApplication::Start() {
@@ -575,7 +610,7 @@ void RagDollApplication::Start() {
 
 	GameObject::EnableObjects(m_bodies);
 
-	m_WalkingController->Walk();
+	m_WalkingController->InitiateWalking();
 }
 
 void RagDollApplication::Pause() {
@@ -743,7 +778,7 @@ void RagDollApplication::UpdateRagDoll() {
 		lfAngle));
 	Debug("LF COM (" << m_leftFoot->GetCOMPosition().x() << ", " << m_leftFoot->GetCOMPosition().y() << ", " << m_leftFoot->GetCOMPosition().z() << ")");
 
-	GameObject::PrintOrientations(m_bodies);
+	//GameObject::PrintOrientations(m_bodies);
 
 }
 
@@ -866,15 +901,20 @@ btVector3 RagDollApplication::GetRandomColor() {
 }
 
 void RagDollApplication::DrawDebugFeedback() {
-	/* Draw the speed up*/
-	
-	/*if (m_draw % DRAW_SPEEDUP == 0) {
-		float speedup = m_DeltaSimTime / m_DeltaGlutTime;
-		sprintf_s(buf, "Sim/Render = %8.5f", speedup);
-		speedup > 1 ? m_color = btVector3(255, 0, 0) : m_color = btVector3(255, 255, 255);
+
+	if (m_drawBackForce && !m_drawForwardForce) {
+		DrawArrow(m_torso->GetCOMPosition(), LEFT);
 	}
-	DisplayText(-2, 2, m_color, buf);
-	m_draw++;*/
+	if (m_drawForwardForce && !m_drawBackForce) {
+		DrawArrow(m_torso->GetCOMPosition(), RIGHT);
+	}
+
+	// Track the torso with the camera
+	btVector3 newTorsoPosition = m_WalkingController->m_COMPosition;
+	//printf(">>>new torso position x = %f \n", newTorsoPosition.x());
+	float to_Translate = newTorsoPosition.x() - m_previous_torso_position.x();
+	m_cameraManager->TranslateCamera(RIGHT, to_Translate);
+	m_previous_torso_position = newTorsoPosition;
 
 	// Get Stance ankle location
 	btVector3 stanceAnkle = m_WalkingController->m_stanceAnklePosition;
@@ -886,6 +926,55 @@ void RagDollApplication::DrawDebugFeedback() {
 	// Draw horizontal line between ankle and COM
 	
 }
+
+void RagDollApplication::DrawArrow(const btVector3 &pointOfContact, TranslateDirection direction) {
+	
+	glColor3f(255, 255, 255);
+	glPushMatrix();
+
+	static int indices[9] = {
+		0, 1, 2,
+		3, 4, 5,
+		4, 5, 6
+	};
+	switch (direction)
+	{
+	case UP:
+		break;
+	case DOWN:
+		break;
+	case LEFT: {
+		btVector3 vertices[7] = {
+			btVector3(pointOfContact.x(), pointOfContact.y(), 0.0f),
+			btVector3(pointOfContact.x() + 0.1, pointOfContact.y() + 0.15, 1.0f),
+			btVector3(pointOfContact.x() + 0.1, pointOfContact.y() - 0.15, 1.0f),
+			btVector3(pointOfContact.x() + 0.1, pointOfContact.y() + 0.05, 1.0f),
+			btVector3(pointOfContact.x() + 0.1, pointOfContact.y() - 0.05, 1.0f),
+			btVector3(pointOfContact.x() + 0.35, pointOfContact.y() + 0.05, 1.0f),
+			btVector3(pointOfContact.x() + 0.35, pointOfContact.y() - 0.05, 1.0f),
+		};
+		DrawWithTriangles(vertices, indices, 9);
+	}
+
+		break;
+	case RIGHT: {
+		btVector3 vertices[7] = {
+			btVector3(pointOfContact.x(), pointOfContact.y(), 0.0f),
+			btVector3(pointOfContact.x() - 0.1, pointOfContact.y() + 0.15, 1.0f),
+			btVector3(pointOfContact.x() - 0.1, pointOfContact.y() - 0.15, 1.0f),
+			btVector3(pointOfContact.x() - 0.1, pointOfContact.y() + 0.05, 1.0f),
+			btVector3(pointOfContact.x() - 0.1, pointOfContact.y() - 0.05, 1.0f),
+			btVector3(pointOfContact.x() - 0.35, pointOfContact.y() + 0.05, 1.0f),
+			btVector3(pointOfContact.x() - 0.35, pointOfContact.y() - 0.05, 1.0f),
+		};
+		DrawWithTriangles(vertices, indices, 9);
+	}
+		break;
+	default:
+		break;
+	}
+}
+
 
 static void DrawFilledCircle(GLfloat x, GLfloat y, GLfloat radius, const btVector3 &color){
 	int i;

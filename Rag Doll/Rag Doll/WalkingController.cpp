@@ -303,127 +303,142 @@ WalkingController::~WalkingController()
 
 #pragma region WALKER_INTERACTION
 
-void WalkingController::Walk() {
+void WalkingController::StateLoop() {
 
-	m_currentState = WALKING;
-	std::vector<float>torques = { 0, 0, 0, 0, 0, 0, 0 };
-	switch (m_ragDollState)
+	switch (m_currentState)
 	{
-	case STATE_0:
-	{
-		Debug("~*~*~*~*~*~*~*~*~*~ STATE 0 ~*~*~*~*~*~*~*~*~*~\n");
-		m_clock.reset();
-		m_ragDollState = STATE_1;
-		Debug("~*~*~*~*~*~*~*~*~*~ STATE 1 ~*~*~*~*~*~*~*~*~*~\n");
-	}
-		break;
-	case STATE_1:
-		if (m_reset) {
-			m_clock.reset();
-			m_reset = false;
-		}
-		m_duration = m_clock.getTimeMilliseconds();
-		if (m_duration >= m_state_time * 1000) {
-			m_ragDollState = STATE_2;
-			m_clock.reset();
-			Debug("~*~*~*~*~*~*~*~*~*~ STATE 2 ~*~*~*~*~*~*~*~*~*~\n");
-		}
-		else {
-			// Compute torques for bodies
-			torques = CalculateState1Torques();		
-		}
-		break;
-	case STATE_2: {
-		
-		//torques = CalculateState2Torques();
-		if (m_rightFootGroundHasContacted)
+	case WALKING: {
+		std::vector<float>torques = { 0, 0, 0, 0, 0, 0, 0 };
+		switch (m_ragDollState)
 		{
-			Debug("Right foot has contacted the floor. \n");
-			// Contacted the floor
-			m_ragDollState = STATE_3;
-			m_rightFootGroundHasContacted = false;
-			m_duration = 0;
-			m_reset = true;
-			Debug("~*~*~*~*~*~*~*~*~*~ STATE 3 ~*~*~*~*~*~*~*~*~*~\n");
-		}
-		else {
-			torques = CalculateState2Torques();
-		}
-	}
-		break;
-	case STATE_3: {
-		if (m_reset) {
-			m_clock.reset();
-			m_reset = false;
-		}
-		m_duration = m_clock.getTimeMilliseconds();
-		if (m_duration >= m_state_time * 1000) {
-			m_ragDollState = STATE_4;
-			m_clock.reset();
-			Debug("~*~*~*~*~*~*~*~*~*~ STATE 4 ~*~*~*~*~*~*~*~*~*~\n");
-		}
-		else {
-			torques = CalculateState3Torques();
-		}
-	}
-		break;
-	case STATE_4: {
-		if (m_leftFootGroundHasContacted)
+
+		case STATE_0:
 		{
-			// Contacted the floor
+			printf("~*~*~*~*~*~*~*~*~*~ STATE 0 ~*~*~*~*~*~*~*~*~*~\n");
+			m_clock.reset();
 			m_ragDollState = STATE_1;
-			m_leftFootGroundHasContacted = false;
-			m_clock.reset();
-			m_duration = 0;
-			m_reset = true;
-			Debug("~*~*~*~*~*~*~*~*~*~ STATE 1 ~*~*~*~*~*~*~*~*~*~\n");
+			printf("~*~*~*~*~*~*~*~*~*~ STATE 1 ~*~*~*~*~*~*~*~*~*~\n");
 		}
-		else {
-			torques = CalculateState4Torques();
+			break;
+		case STATE_1:
+			if (m_reset) {
+				m_clock.reset();
+				m_reset = false;
+			}
+			m_duration = m_clock.getTimeMilliseconds();
+			if (m_duration >= m_state_time * 1000) {
+				m_ragDollState = STATE_2;
+				m_clock.reset();
+				printf("~*~*~*~*~*~*~*~*~*~ STATE 2 ~*~*~*~*~*~*~*~*~*~\n");
+			}
+			else {
+				// Compute torques for bodies
+				torques = CalculateState1Torques();
+			}
+			break;
+		case STATE_2: {
+
+			//torques = CalculateState2Torques();
+			if (m_rightFootGroundHasContacted)
+			{
+				//printf("Right foot has contacted the floor. \n");
+				// Contacted the floor
+				m_ragDollState = STATE_3;
+				m_rightFootGroundHasContacted = false;
+				m_duration = 0;
+				m_reset = true;
+				printf("~*~*~*~*~*~*~*~*~*~ STATE 3 ~*~*~*~*~*~*~*~*~*~\n");
+			}
+			else {
+				torques = CalculateState2Torques();
+			}
 		}
+			break;
+		case STATE_3: {
+			if (m_reset) {
+				m_clock.reset();
+				m_reset = false;
+			}
+			m_duration = m_clock.getTimeMilliseconds();
+			if (m_duration >= m_state_time * 1000) {
+				m_ragDollState = STATE_4;
+				m_clock.reset();
+				printf("~*~*~*~*~*~*~*~*~*~ STATE 4 ~*~*~*~*~*~*~*~*~*~\n");
+			}
+			else {
+				torques = CalculateState3Torques();
+			}
+		}
+			break;
+		case STATE_4: {
+			if (m_leftFootGroundHasContacted)
+			{
+				// Contacted the floor
+				m_ragDollState = STATE_1;
+				m_leftFootGroundHasContacted = false;
+				m_clock.reset();
+				m_duration = 0;
+				m_reset = true;
+				printf("==============================\n~*~*~*~*~*~*~*~*~*~ STATE 1 ~*~*~*~*~*~*~*~*~*~\n");
+			}
+			else {
+				torques = CalculateState4Torques();
+			}
+		}
+
+			break;
+		default:
+			break;
+		}
+
+		// Apply torques to bodies
+
+		// Apply torque limits:
+		for (std::vector<float>::iterator it = torques.begin(); it != torques.end(); ++it) {
+			float *torqueValue = &(*it);
+			if (*torqueValue > TORQUE_LIMIT)
+			{
+				*torqueValue = TORQUE_LIMIT;
+			}
+			if (*torqueValue < -TORQUE_LIMIT) {
+				*torqueValue = -TORQUE_LIMIT;
+			}
+		}
+
+		m_app->ApplyTorqueOnUpperLeftLeg(torques.at(0));
+		m_app->ApplyTorqueOnUpperRightLeg(torques.at(1));
+
+		m_app->ApplyTorqueOnLowerLeftLeg(torques.at(2));
+		m_app->ApplyTorqueOnLowerRightLeg(torques.at(3));
+
+		m_app->ApplyTorqueOnLeftFoot(torques.at(4));
+		m_app->ApplyTorqueOnRightFoot(torques.at(5));
 	}
-		
+		break;
+	case PAUSE:
+		break;
+	case RESET:
+		CalculateFeedbackSwingHip();
 		break;
 	default:
 		break;
 	}
 
-	// Apply torques to bodies
-
-	// Apply torque limits:
-	for (std::vector<float>::iterator it = torques.begin(); it != torques.end(); ++it) {
-		float *torqueValue = &(*it);
-		if (*torqueValue > TORQUE_LIMIT)
-		{
-			*torqueValue = TORQUE_LIMIT;
-		}
-		if (*torqueValue < -TORQUE_LIMIT) {
-			*torqueValue = -TORQUE_LIMIT;
-		}
-	}
-	
-	m_app->ApplyTorqueOnUpperLeftLeg(torques.at(0));
-	m_app->ApplyTorqueOnUpperRightLeg(torques.at(1));
-
-	m_app->ApplyTorqueOnLowerLeftLeg(torques.at(2));
-	m_app->ApplyTorqueOnLowerRightLeg(torques.at(3));
-
-	m_app->ApplyTorqueOnLeftFoot(torques.at(4));
-	m_app->ApplyTorqueOnRightFoot(torques.at(5));
-	
-
 }
 
 void WalkingController::PauseWalking(){
-
 	m_currentState = PAUSE;
+}
 
+void WalkingController::InitiateWalking() {
+	m_currentState = WALKING;
 }
 
 void WalkingController::Reset(){
 	m_ragDollState = STATE_0;
 	m_currentState = RESET;
 }
+
 
 void WalkingController::NotifyLeftFootGroundContact() {
 	
@@ -649,10 +664,10 @@ float WalkingController::CalculateFeedbackSwingHip() {
 
 	// Swing hip changes between states.
 	GameObject *swingHipBody;
-	float targetAngle;
-	float distance = 0;
+	float targetAngle = 0.0f;
+	float distance = 0.0f;
 	float velocity = m_app->m_torso->GetRigidBody()->getVelocityInLocalPoint(btVector3(-torso_height/2, 0, 0)).x();
-	float cd, cv = 0.0f;
+	float cd = 0.0f, cv = 0.0f;
 	btVector3 stanceAnkle(0, 0, 0);
 	btVector3 hipPosition = m_app->m_torso->GetCOMPosition()
 		+ btVector3(cos(Constants::GetInstance().DegreesToRadians(180 - m_app->m_torso->GetOrientation())) * torso_height / 2,

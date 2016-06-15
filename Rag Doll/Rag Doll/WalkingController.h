@@ -34,7 +34,7 @@ class Gains;
 #define lower_leg_width lower_leg_height / 7
 
 #define foot_height 0.05f
-#define foot_width foot_height * 4
+#define foot_width foot_height * 3.5
 
 // Gains
 #define KP_LOWER 0.0f
@@ -98,7 +98,8 @@ public:
 	void SaveFeedback();
 	void SaveTime();
 
-	void Walk();
+	void StateLoop();
+	void InitiateWalking();
 	void PauseWalking();
 	void Reset();
 	void NotifyLeftFootGroundContact();

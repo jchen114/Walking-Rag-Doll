@@ -26,6 +26,7 @@ public:
 	virtual void InitializePhysics() override;
 	virtual void ShutdownPhysics() override;
 	virtual void Keyboard(unsigned char key, int x, int y) override;
+	virtual void KeyboardUp(unsigned char key, int x, int y) override;
 	virtual void Idle() override;
 
 	void CreateGround(const btVector3 &position);
@@ -70,6 +71,8 @@ public:
 	void ChangeLowerRightLegAngle();
 	void ChangeLeftFootAngle();
 	void ChangeRightFootAngle();
+
+	void DrawArrow(const btVector3 &pointOfContact, TranslateDirection direction);
 
 	void ApplyTorqueOnUpperRightLeg(float torqueForce);
 	void ApplyTorqueOnUpperLeftLeg(float torqueForce);
@@ -159,6 +162,11 @@ private:
 	int m_draw = 0;
 	char buf[1000];
 	btVector3 m_color;
+
+	btVector3 m_previous_torso_position;
+
+	bool m_drawBackForce = false;
+	bool m_drawForwardForce = false;
 
 };
 
