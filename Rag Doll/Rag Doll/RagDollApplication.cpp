@@ -7,6 +7,7 @@
 
 #include <iostream>
 
+using namespace std::placeholders;
 
 #pragma region INITIALIZATION
 
@@ -48,6 +49,7 @@ RagDollApplication::RagDollApplication()
 RagDollApplication::RagDollApplication(ProjectionMode mode, bool isFrameRateFixed) :BulletOpenGLApplication(mode, isFrameRateFixed){
 	m_app = this;
 	m_DrawCallback = std::bind(&RagDollApplication::DrawDebugFeedback, this);
+	m_DrawShapeCallback = std::bind(&RagDollApplication::DrawShape, this, _1, _2, _3);
 }
 
 RagDollApplication::~RagDollApplication()
@@ -234,6 +236,60 @@ void RagDollApplication::RagDollCollision() {
 }
 
 void RagDollApplication::ShutdownPhysics() {
+
+}
+
+void RagDollApplication::DrawShape(btScalar *transform, const btCollisionShape *pShape, const btVector3 &color) {
+	if (pShape->getUserPointer() == m_torso) {
+
+		// Special rendering
+
+		const btBoxShape *box = static_cast<const btBoxShape*>(pShape);
+		btVector3 halfSize = box->getHalfExtentsWithMargin();
+
+		glColor3f(color.x(), color.y(), color.z());
+
+		// push the matrix stack
+
+		glPushMatrix();
+		glMultMatrixf(transform);
+
+		DrawTorso(halfSize);
+
+		glPopMatrix();
+	}
+	else {
+		BulletOpenGLApplication::DrawShape(transform, pShape, color);
+	}
+}
+
+void RagDollApplication::DrawTorso(const btVector3 &halfSize) {
+
+	float halfHeight = halfSize.x();
+	float halfWidth = halfSize.y();
+	float halfDepth = halfSize.z(); // No depth
+
+	// Create Vector
+	btVector3 vertices[4] = {
+		btVector3(halfHeight, - 2 * halfWidth, 0.0f),		// 0
+		btVector3(halfHeight, 2 * halfWidth, 0.0f),			// 1
+		btVector3(-halfHeight, - 3/2 * halfWidth, 0.0f),	// 2 
+		btVector3(-halfHeight, 3/2 * halfWidth, 0.0f),		// 3
+		
+	};
+
+	float shoulderRadius = 2 * halfWidth;
+	float hipRadius = 3 / 2 * halfWidth;
+
+	static int indices[6] = {
+		0, 1, 2,
+		3, 2, 1
+	};
+
+	DrawWithTriangles(vertices, indices, 6);
+
+	// Create semisircle for shoulders
+
 
 }
 
@@ -895,7 +951,6 @@ GameObject *RagDollApplication::Create3DBox(const btVector3 &halfSize, float mas
 	return aBox;
 }
 
-
 btVector3 RagDollApplication::GetRandomColor() {
 	return btVector3(((double)rand() / RAND_MAX), ((double)rand() / RAND_MAX), ((double)rand() / RAND_MAX));
 }
@@ -974,7 +1029,6 @@ void RagDollApplication::DrawArrow(const btVector3 &pointOfContact, TranslateDir
 		break;
 	}
 }
-
 
 static void DrawFilledCircle(GLfloat x, GLfloat y, GLfloat radius, const btVector3 &color){
 	int i;

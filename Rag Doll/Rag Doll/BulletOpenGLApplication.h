@@ -66,6 +66,7 @@ public:
 	virtual void Motion(int x, int y);
 	virtual void Display();
 	virtual void GLUTTimerFunc(int value);
+	virtual void DrawShape(btScalar *transform, const btCollisionShape *pShape, const btVector3 &color);
 
 	// rendering. Can be overrideen by derived classes
 	virtual void RenderScene();
@@ -81,7 +82,7 @@ public:
 	void DrawBox(const btVector3 &halfSize);
 	void DrawPlane(const btVector3 &halfSize);
 	void DrawCircle(const float &radius);
-	void DrawShape(btScalar *transform, const btCollisionShape *pShape, const btVector3 &color);
+	
 	void DrawWithTriangles(const btVector3 * vertices, const int *indices, int numberOfIndices);
 
 	void SetScreenWidth(int width);
@@ -118,6 +119,7 @@ public:
 
 	// Callback for drawing
 	std::function<void()> m_DrawCallback;
+	std::function<void(btScalar *, const btCollisionShape *, const btVector3 &)> m_DrawShapeCallback;
 
 	float m_DeltaGlutTime;
 	float m_DeltaSimTime;

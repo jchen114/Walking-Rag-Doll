@@ -499,7 +499,14 @@ void BulletOpenGLApplication::RenderScene() {
 		pObj->GetTransform(transform);
 
 		// get data from the object and draw it
-		DrawShape(transform, pObj->GetShape(), pObj->GetColor());
+		try {
+			m_DrawShapeCallback(transform, pObj->GetShape(), pObj->GetColor());
+		}
+		catch (const std::bad_function_call& e) {
+			//std::cout << e.what() << '\n';
+			DrawShape(transform, pObj->GetShape(), pObj->GetColor());
+		}
+		
 	}
 
 	// after rendering all game objects, perform debug rendering

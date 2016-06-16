@@ -27,6 +27,9 @@ public:
 	virtual void ShutdownPhysics() override;
 	virtual void Keyboard(unsigned char key, int x, int y) override;
 	virtual void KeyboardUp(unsigned char key, int x, int y) override;
+	virtual void DrawShape(btScalar *transform, const btCollisionShape *pShape, const btVector3 &color) override;
+	void DrawTorso(const btVector3 &halfSize);
+
 	virtual void Idle() override;
 
 	void CreateGround(const btVector3 &position);
