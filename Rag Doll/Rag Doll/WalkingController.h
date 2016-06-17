@@ -34,7 +34,7 @@ class Gains;
 #define lower_leg_width lower_leg_height / 7
 
 #define foot_height 0.05f
-#define foot_width foot_height * 3.5
+#define foot_width foot_height * 3.75
 
 // Gains
 #define KP_LOWER 0.0f

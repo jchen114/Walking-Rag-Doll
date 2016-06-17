@@ -26,7 +26,7 @@
 #include "GameObject.h"
 #include <vector>
 
-#define BULLET_TIME_STEP 0.002f // 2 ms
+#define BULLET_TIME_STEP 0.002f // 1 ms
 #define RENDER_TIME_STEP 0.02f // 20 ms = 50fps
 
 //Debug
