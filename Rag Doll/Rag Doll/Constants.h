@@ -8,6 +8,8 @@ enum Dimension{ HEIGHT, WIDTH };
 #define Z_PLANE  0
 
 #define DEG_2_RAD 0.0174533
+#define PI 3.1415927
+#define TWO_PI 2 * PI
 
 class Constants
 {

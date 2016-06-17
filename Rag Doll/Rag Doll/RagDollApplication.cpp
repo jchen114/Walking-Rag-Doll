@@ -239,59 +239,7 @@ void RagDollApplication::ShutdownPhysics() {
 
 }
 
-void RagDollApplication::DrawShape(btScalar *transform, const btCollisionShape *pShape, const btVector3 &color) {
-	if (pShape->getUserPointer() == m_torso) {
 
-		// Special rendering
-
-		const btBoxShape *box = static_cast<const btBoxShape*>(pShape);
-		btVector3 halfSize = box->getHalfExtentsWithMargin();
-
-		glColor3f(color.x(), color.y(), color.z());
-
-		// push the matrix stack
-
-		glPushMatrix();
-		glMultMatrixf(transform);
-
-		DrawTorso(halfSize);
-
-		glPopMatrix();
-	}
-	else {
-		BulletOpenGLApplication::DrawShape(transform, pShape, color);
-	}
-}
-
-void RagDollApplication::DrawTorso(const btVector3 &halfSize) {
-
-	float halfHeight = halfSize.x();
-	float halfWidth = halfSize.y();
-	float halfDepth = halfSize.z(); // No depth
-
-	// Create Vector
-	btVector3 vertices[4] = {
-		btVector3(halfHeight, - 2 * halfWidth, 0.0f),		// 0
-		btVector3(halfHeight, 2 * halfWidth, 0.0f),			// 1
-		btVector3(-halfHeight, - 3/2 * halfWidth, 0.0f),	// 2 
-		btVector3(-halfHeight, 3/2 * halfWidth, 0.0f),		// 3
-		
-	};
-
-	float shoulderRadius = 2 * halfWidth;
-	float hipRadius = 3 / 2 * halfWidth;
-
-	static int indices[6] = {
-		0, 1, 2,
-		3, 2, 1
-	};
-
-	DrawWithTriangles(vertices, indices, 6);
-
-	// Create semisircle for shoulders
-
-
-}
 
 #pragma region GUI
 
@@ -725,11 +673,11 @@ void RagDollApplication::CreateRagDoll(const btVector3 &position) {
 	btVector3 torsoHalfSize(torso_height/2, torso_width/2, 0.0);
 	btVector3 ulHalfSize = btVector3(upper_leg_height / 2, upper_leg_width / 2, 0.0f);
 	btVector3 llHalfSize = btVector3(lower_leg_height / 2, lower_leg_width / 2, 0.0f);
-	btVector3 fHalfSize = btVector3(foot_width / 2, foot_height / 2, 0.0f);
+	btVector3 fHalfSize = btVector3(foot_height / 2, foot_width / 2, 0.0f);
 	
 	// Create RIGHT LEG	
 	m_upperRightLeg = Create2DBox(ulHalfSize, upper_leg_mass, btVector3(0 / 256.0, 153 / 256.0, 0 / 256.0), position + btVector3(0, 0, 0)); // Green
-	m_rightFoot = Create2DBox(fHalfSize, feet_mass, btVector3(153 / 256.0, 0 / 256.0, 153 / 256.0), position + btVector3(0, 0, -0)); // purple
+	m_rightFoot = Create2DBox(fHalfSize, feet_mass, btVector3(153 / 256.0, 0 / 256.0, 153 / 256.0), position + btVector3(0, 0, 0)); // purple
 	m_lowerRightLeg = Create2DBox(llHalfSize, lower_leg_mass, btVector3(255 / 256.0, 102 / 256.0, 0 / 256.0), position + btVector3(0, 0, 0)); // Orange
 
 	m_torso = Create2DBox(torsoHalfSize, torso_mass, btVector3(0, 51 / 256.0, 102 / 256.0), position); // Blue
@@ -758,8 +706,12 @@ void RagDollApplication::AddHinges() {
 	m_urLeg_lrLeg = AddHingeConstraint(m_upperRightLeg, m_lowerRightLeg, btVector3(-upper_leg_height / 2, 0, 0), btVector3(lower_leg_height / 2, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_URL_LRL_LOW), Constants::GetInstance().DegreesToRadians(HINGE_URL_LRL_HIGH));
 
 	// Connect feet to lower legs
+	m_llLeg_lFoot = AddHingeConstraint(m_lowerLeftLeg, m_leftFoot, btVector3(-lower_leg_height / 2, 0, 0), btVector3(0, (foot_width) / 4, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_LLL_LF_LOW), Constants::GetInstance().DegreesToRadians(HINGE_LLL_LF_HIGH));
+	m_lrLeg_rFoot = AddHingeConstraint(m_lowerRightLeg, m_rightFoot, btVector3(-lower_leg_height / 2, 0, 0), btVector3(0, (foot_width) / 4, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_LRL_RF_LOW), Constants::GetInstance().DegreesToRadians(HINGE_LRL_RF_HIGH));
+	/*
 	m_llLeg_lFoot = AddHingeConstraint(m_lowerLeftLeg, m_leftFoot, btVector3(-lower_leg_height / 2, 0, 0), btVector3((foot_width) / 4, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_LLL_LF_LOW), Constants::GetInstance().DegreesToRadians(HINGE_LLL_LF_HIGH));
 	m_lrLeg_rFoot = AddHingeConstraint(m_lowerRightLeg, m_rightFoot, btVector3(-lower_leg_height / 2, 0, 0), btVector3((foot_width) / 4, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_LRL_RF_LOW), Constants::GetInstance().DegreesToRadians(HINGE_LRL_RF_HIGH));
+	*/
 }
 
 void RagDollApplication::UpdateRagDoll() {
@@ -774,45 +726,44 @@ void RagDollApplication::UpdateRagDoll() {
 	float lrlAngle = Constants::GetInstance().DegreesToRadians(state->m_upperRightLegAngle - state->m_lowerRightLegAngle);
 
 	//printf("lll angle = %f, lfAngle = %f\n", Constants::GetInstance().RadiansToDegrees(lllAngle), Constants::GetInstance().RadiansToDegrees(lllAngle) - state->m_leftFootAngle - 90);
-
-	float lfAngle = lllAngle - Constants::GetInstance().DegreesToRadians(state->m_leftFootAngle - 90);
-	float rfAngle = lrlAngle - Constants::GetInstance().DegreesToRadians(state->m_rightFootAngle - 90);
+	//printf("state lfAngle: %f \n", state->m_leftFootAngle);
+	float lfAngle = lllAngle - Constants::GetInstance().DegreesToRadians(state->m_leftFootAngle);
+	float rfAngle = lrlAngle - Constants::GetInstance().DegreesToRadians(state->m_rightFootAngle);
 
 	//printf("Updating Rag doll:\n %f, %f, %f, %f, %f, %f, %f\n", torsoAngle, ullAngle, urlAngle, lllAngle, lrlAngle, lfAngle, rfAngle);
 	// Blue
 	m_torso->Reposition(
 		ORIGINAL_TORSO_POSITION + btVector3(-(torso_height/2) * cos(PI - torsoAngle), sin(PI - torsoAngle)*(torso_height/2) - (torso_height/2),0), 
-		btQuaternion(btVector3(0, 0, 1), 
-		torsoAngle));
+		btQuaternion(btVector3(0, 0, 1), torsoAngle));
 	Debug("Torso COM (" << m_torso->GetCOMPosition().x() << ", " << m_torso->GetCOMPosition().y() << ", " << m_torso->GetCOMPosition().z() << ")");
 	// GREEN
 	m_upperRightLeg->Reposition(
 		ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(torso_height / 2 + upper_leg_height / 2), 0.1) + btVector3(-cos(urlAngle) * (upper_leg_height / 2), (upper_leg_height / 2) - sin(urlAngle)*upper_leg_height / 2, 0),
-		btQuaternion(btVector3(0, 0, 1),
-		urlAngle));
+		btQuaternion(btVector3(0, 0, 1), urlAngle));
 	Debug("URL COM (" << m_upperRightLeg->GetCOMPosition().x() << ", " << m_upperRightLeg->GetCOMPosition().y() << ", " << m_upperRightLeg->GetCOMPosition().z(), ")");
 	btVector3 upperRightLegBottomPoint = m_upperRightLeg->GetCOMPosition() + btVector3(cos(PI - urlAngle) * upper_leg_height / 2, -sin(PI - urlAngle) * upper_leg_height / 2, 0);
 
 	// ORANGE
 	m_lowerRightLeg->Reposition(
 		upperRightLegBottomPoint + btVector3(-(cos(lrlAngle) * lower_leg_height / 2), -(sin(lrlAngle)*lower_leg_height / 2), 0.1),
-		btQuaternion(btVector3(0, 0, 1),
-		lrlAngle));
+		btQuaternion(btVector3(0, 0, 1), lrlAngle));
 	Debug("LRL COM (" << m_lowerRightLeg->GetCOMPosition().x() << ", " << m_lowerRightLeg->GetCOMPosition().y() << ", " << m_lowerRightLeg->GetCOMPosition().z(), ")");
 
 	btVector3 lowerRightLegBottomPoint = m_lowerRightLeg->GetCOMPosition() + btVector3(cos(PI - lrlAngle) * lower_leg_height / 2, -sin(PI - lrlAngle) * lower_leg_height / 2, 0);
 	// PURPLE
-	m_rightFoot->Reposition(
+	/*m_rightFoot->Reposition(
 		lowerRightLegBottomPoint + btVector3(-cos(rfAngle) * foot_width / 4, -sin(rfAngle) * foot_width / 4, 0.1),
-		btQuaternion(btVector3(0, 0, 1),
-		rfAngle));
+		btQuaternion(btVector3(0, 0, 1), rfAngle));
+	*/
+	m_rightFoot->Reposition(
+		lowerRightLegBottomPoint + btVector3(sin(rfAngle) * foot_width / 4, -cos(rfAngle) * foot_width / 4, 0.1),
+		btQuaternion(btVector3(0, 0, 1), rfAngle));
 	Debug("RF COM (" << m_rightFoot->GetCOMPosition().x() << ", " << m_rightFoot->GetCOMPosition().y() << ", " << m_rightFoot->GetCOMPosition().z() << ")");
 
 	// PINK
 	m_upperLeftLeg->Reposition(
 		ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(torso_height / 2 + upper_leg_height / 2), -0.1) + btVector3(-cos(ullAngle) * (upper_leg_height/2), (upper_leg_height/2) - sin(ullAngle)*upper_leg_height/2, 0), 
-		btQuaternion(btVector3(0,0,1), 
-		ullAngle));
+		btQuaternion(btVector3(0,0,1), ullAngle));
 	Debug("ULL COM (" << m_upperLeftLeg->GetCOMPosition().x() << ", " << m_upperLeftLeg->GetCOMPosition().y() << ", " << m_upperLeftLeg->GetCOMPosition().z() << ")");
 	
 	btVector3 upperLeftLegBottomPoint = m_upperLeftLeg->GetCOMPosition() + btVector3(cos(PI - ullAngle) * upper_leg_height/2, -sin(PI - ullAngle) * upper_leg_height/2, 0);
@@ -822,16 +773,23 @@ void RagDollApplication::UpdateRagDoll() {
 	//m_lowerLeftLeg->Reposition(upperLeftLegBottomPoint + btVector3(0.0f, -lower_leg_height / 2, 0.1), btQuaternion(btVector3(0, 0, 1), lllAngle));
 	m_lowerLeftLeg->Reposition(
 		upperLeftLegBottomPoint + btVector3(-(cos(lllAngle)*lower_leg_height / 2), -(sin(lllAngle)*lower_leg_height / 2), -0.1), 
-		btQuaternion(btVector3(0, 0, 1), 
-		lllAngle));
+		btQuaternion(btVector3(0, 0, 1), lllAngle));
 	Debug("LLL COM (" << m_lowerLeftLeg->GetCOMPosition().x() << ", " << m_lowerLeftLeg->GetCOMPosition().y() << ", " << m_lowerLeftLeg->GetCOMPosition().z() << ")");
 	
 	btVector3 lowerLeftLegBottomPoint = m_lowerLeftLeg->GetCOMPosition() + btVector3(cos(PI - lllAngle) * lower_leg_height / 2, -sin(PI - lllAngle) * lower_leg_height / 2, 0);
 
-	m_leftFoot->Reposition(
-		lowerLeftLegBottomPoint + btVector3(-cos(lfAngle) * foot_width/4, -sin(lfAngle) * foot_width/4, -0.1), 
-		btQuaternion(btVector3(0, 0, 1), 
+	printf("Before: lf orientation = %f, lfAngle = %f\n", m_leftFoot->GetOrientation(), Constants::GetInstance().RadiansToDegrees(lfAngle));
+
+	/*m_leftFoot->Reposition(
+		lowerLeftLegBottomPoint + btVector3(-cos(lfAngle) * foot_width / 4, -sin(lfAngle) * foot_width / 4, -0.1),
+		btQuaternion(btVector3(0, 0, 1),
 		lfAngle));
+		*/
+	m_leftFoot->Reposition(
+		lowerLeftLegBottomPoint + btVector3(sin(lfAngle) * foot_width / 4, -cos(lfAngle) * foot_width / 4, -0.1),
+		btQuaternion(btVector3(0, 0, 1), lfAngle));
+	
+	printf("After: lf orientation = %f, lfAngle = %f\n", m_leftFoot->GetOrientation(), Constants::GetInstance().RadiansToDegrees(lfAngle));
 	Debug("LF COM (" << m_leftFoot->GetCOMPosition().x() << ", " << m_leftFoot->GetCOMPosition().y() << ", " << m_leftFoot->GetCOMPosition().z() << ")");
 
 	//GameObject::PrintOrientations(m_bodies);
@@ -1030,20 +988,226 @@ void RagDollApplication::DrawArrow(const btVector3 &pointOfContact, TranslateDir
 	}
 }
 
+void RagDollApplication::DrawShape(btScalar *transform, const btCollisionShape *pShape, const btVector3 &color) {
+	
+	// Special rendering
+
+	if (pShape->getUserPointer() == m_torso) {
+		const btBoxShape *box = static_cast<const btBoxShape*>(pShape);
+		btVector3 halfSize = box->getHalfExtentsWithMargin();
+
+		glColor3f(color.x(), color.y(), color.z());
+
+		// push the matrix stack
+
+		glPushMatrix();
+		glMultMatrixf(transform);
+
+		DrawTorso(halfSize);
+
+		glPopMatrix();
+	}
+	else if (pShape->getUserPointer() == m_upperLeftLeg || pShape->getUserPointer() == m_upperRightLeg) {
+		// Draw Upper legs
+		const btBoxShape *box = static_cast<const btBoxShape*>(pShape);
+		btVector3 halfSize = box->getHalfExtentsWithMargin();
+		glColor3f(color.x(), color.y(), color.z());
+		glPushMatrix();
+		glMultMatrixf(transform);
+
+		DrawUpperLeg(halfSize);
+
+		glPopMatrix();
+
+	}
+	else if (pShape->getUserPointer() == m_lowerLeftLeg || pShape->getUserPointer() == m_lowerRightLeg) {
+		// Draw Lower legs
+		const btBoxShape *box = static_cast<const btBoxShape*>(pShape);
+		btVector3 halfSize = box->getHalfExtentsWithMargin();
+		glColor3f(color.x(), color.y(), color.z());
+		glPushMatrix();
+		glMultMatrixf(transform);
+
+		DrawLowerLeg(halfSize);
+
+		glPopMatrix();
+
+	}
+	else if (pShape->getUserPointer() == m_leftFoot || pShape->getUserPointer() == m_rightFoot) {
+		// Draw feet
+		const btBoxShape *box = static_cast<const btBoxShape*>(pShape);
+		btVector3 halfSize = box->getHalfExtentsWithMargin();
+
+		glColor3f(color.x(), color.y(), color.z());
+		glPushMatrix();
+		glMultMatrixf(transform);
+
+		DrawFoot(halfSize);
+
+		glPopMatrix();
+
+	}
+	else {
+		BulletOpenGLApplication::DrawShape(transform, pShape, color);
+	}
+}
+
+void RagDollApplication::DrawTorso(const btVector3 &halfSize) {
+
+	float halfHeight = halfSize.x();
+	float halfWidth = halfSize.y();
+	float halfDepth = halfSize.z(); // No depth
+
+	float shoulderRadius = 1.5 * halfWidth;
+	float hipRadius = 1.25 * halfWidth;
+
+	// Create Vector
+	btVector3 vertices[4] = {
+		btVector3(halfHeight, -shoulderRadius, 0.0f),	// 0
+		btVector3(halfHeight, shoulderRadius, 0.0f),	// 1
+		btVector3(-halfHeight, -hipRadius, 0.0f),		// 2 
+		btVector3(-halfHeight, hipRadius, 0.0f),		// 3
+
+	};
+
+	static int indices[6] = {
+		0, 1, 2,
+		3, 2, 1
+	};
+
+	DrawWithTriangles(vertices, indices, 6);
+
+	// Create semisircle for shoulders
+	//DrawPartialFilledCircle(-halfHeight/2, 0, hipRadius, 90, 270);
+	DrawPartialFilledCircle(halfHeight, 0, shoulderRadius, -90, 90);
+	DrawPartialFilledCircle(-2*halfHeight, 0, hipRadius, 90, 270);
+
+}
+
+void RagDollApplication::DrawUpperLeg(const btVector3 &halfSize) {
+
+	float halfHeight = halfSize.x();
+	float halfWidth = halfSize.y();
+	float halfDepth = halfSize.z(); // No depth
+
+	float thighRadius = 1.25f * halfWidth;
+	float kneeRadius = .9f * halfWidth;
+
+	// Create Vector
+	btVector3 vertices[4] = {
+		btVector3(halfHeight, - thighRadius, 0.0f),		// 0
+		btVector3(halfHeight, thighRadius, 0.0f),		// 1
+		btVector3(-halfHeight, - kneeRadius, 0.0f),		// 2 
+		btVector3(-halfHeight, kneeRadius, 0.0f),		// 3
+
+	};
+
+	static int indices[6] = {
+		0, 1, 2,
+		3, 2, 1
+	};
+
+	DrawWithTriangles(vertices, indices, 6);
+
+	// Create semisircle for thigh and knees
+	DrawPartialFilledCircle(halfHeight, 0, thighRadius, -90, 90);
+	DrawPartialFilledCircle(- 2*halfHeight, 0, kneeRadius, 90, 270);
+
+}
+
+void RagDollApplication::DrawLowerLeg(const btVector3 &halfSize){
+
+	float halfHeight = halfSize.x();
+	float halfWidth = halfSize.y();
+	float halfDepth = halfSize.z(); // No depth
+
+	float kneeRadius = 1.25f * halfWidth;
+	float ankleRadius = halfWidth;
+
+	// Create Vector
+	btVector3 vertices[4] = {
+		btVector3(halfHeight, -kneeRadius, 0.0f),		// 0
+		btVector3(halfHeight, kneeRadius, 0.0f),		// 1
+		btVector3(-halfHeight, - ankleRadius, 0.0f),	// 2 
+		btVector3(-halfHeight, ankleRadius, 0.0f),		// 3
+
+	};
+
+	static int indices[6] = {
+		0, 1, 2,
+		3, 2, 1
+	};
+
+	DrawWithTriangles(vertices, indices, 6);
+
+	// Create semisircle for thigh and knees
+	DrawPartialFilledCircle(halfHeight, 0, kneeRadius, -90, 90);
+	//DrawPartialFilledCircle(-2*halfHeight, 0, ankleRadius, 90, 270);
+
+}
+
+void RagDollApplication::DrawFoot(const btVector3 &halfSize) {
+
+	float halfWidth = halfSize.y();
+	float halfHeight = halfSize.x();
+	float halfDepth = halfSize.z(); // No depth
+
+	float toeRadius = halfHeight * 2;
+
+	// Create Vector
+	btVector3 vertices[4] = {
+		btVector3(halfHeight, halfWidth, 0.0f),		// 0
+		btVector3(-halfHeight, halfWidth, 0.0f),	// 1
+		btVector3(-halfHeight, - (halfWidth - 2*halfHeight), 0.0f),	// 2 
+		btVector3(halfHeight, - (halfWidth - 2 * halfHeight), 0.0f),	// 3
+
+	};
+
+	static int indices[6] = {
+		0, 1, 2,
+		3, 2, 0
+	};
+
+	DrawWithTriangles(vertices, indices, 6);
+
+	// Create quarter circle for toes
+	//DrawPartialFilledCircle(, , toeRadius, 0, 180);
+	DrawPartialFilledCircle(-halfHeight, -(halfWidth - 2 * halfHeight), toeRadius, 270, 450);
+
+}
+
+static void DrawPartialFilledCircle(GLfloat x, GLfloat y, GLfloat radius, GLfloat begin, GLfloat end) {
+	/* Draw CCW from begin to end */
+	int triangleAmount = 20; //# of triangles used to draw circle
+
+	glTranslatef(x, y, 0);
+
+	begin = Constants::GetInstance().DegreesToRadians(begin);
+	end = Constants::GetInstance().DegreesToRadians(end);
+
+	glBegin(GL_TRIANGLE_FAN);
+	for (int i = 0; i <= triangleAmount; i++) {
+		glVertex2f(
+			(radius * cos(i *  (end - begin) / triangleAmount + begin)),
+			(radius * sin(i * (end - begin) / triangleAmount + begin))
+			);
+	}
+	glEnd();
+
+}
+
 static void DrawFilledCircle(GLfloat x, GLfloat y, GLfloat radius, const btVector3 &color){
-	int i;
 	int triangleAmount = 20; //# of triangles used to draw circle
 	glColor3f(color.x(), color.y(), color.z());
 	glPushMatrix();
 	glTranslatef(x, y, 0.9);
 	//GLfloat radius = 0.8f; //radius
-	GLfloat twicePi = 2.0f * PI;
 	
 	glBegin(GL_TRIANGLE_FAN);
-	for (i = 0; i <= triangleAmount; i++) {
+	for (int i = 0; i <= triangleAmount; i++) {
 		glVertex2f(
-			(radius * cos(i *  twicePi / triangleAmount)),
-			(radius * sin(i * twicePi / triangleAmount))
+			(radius * cos(i *  TWO_PI / triangleAmount)),
+			(radius * sin(i * TWO_PI / triangleAmount))
 			);
 	}
 	glEnd();

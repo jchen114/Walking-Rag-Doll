@@ -29,6 +29,9 @@ public:
 	virtual void KeyboardUp(unsigned char key, int x, int y) override;
 	virtual void DrawShape(btScalar *transform, const btCollisionShape *pShape, const btVector3 &color) override;
 	void DrawTorso(const btVector3 &halfSize);
+	void DrawUpperLeg(const btVector3 &halfSize);
+	void DrawLowerLeg(const btVector3 &halfSize);
+	void DrawFoot(const btVector3 &halfSize);
 
 	virtual void Idle() override;
 
@@ -173,7 +176,8 @@ private:
 
 };
 
-static void DrawFilledCircle(GLfloat x, GLfloat y, GLfloat radius, const btVector3 &color);
+static void DrawFilledCircle(GLfloat x, GLfloat y, GLfloat radius, const btVector3 &color = btVector3(255, 255, 255));
+static void DrawPartialFilledCircle(GLfloat x, GLfloat y, GLfloat radius, GLfloat begin, GLfloat end); // Draw CCW from begin to end
 static void DrawLine(const btVector3 &begin, const btVector3 &end, const btVector3 &color);
 
 /* GLUI CALLBACKS */
