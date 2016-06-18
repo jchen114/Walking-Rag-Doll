@@ -15,7 +15,7 @@ class Gains;
 
 #define PI 3.14159265
 
-#define TORQUE_LIMIT 370
+#define TORQUE_LIMIT 2000
 
 // MASS
 #define torso_mass 70
@@ -34,7 +34,7 @@ class Gains;
 #define lower_leg_width lower_leg_height / 7
 
 #define foot_height 0.05f
-#define foot_width foot_height * 3.75
+#define foot_width foot_height * 4
 
 // Gains
 #define KP_LOWER 0.0f
@@ -43,10 +43,10 @@ class Gains;
 #define KD_HIGHER 5000.0f
 
 // Spinner limits
-#define SPINNER_TORSO_LOW		0.0f
-#define SPINNER_TORSO_HIGH		180.0f
-#define SPINNER_UPPER_LEG_LOW	30.0f
-#define SPINNER_UPPER_LEG_HIGH	180.0f
+#define SPINNER_TORSO_LOW		-90.0f
+#define SPINNER_TORSO_HIGH		90.0f
+#define SPINNER_UPPER_LEG_LOW	-90.0f
+#define SPINNER_UPPER_LEG_HIGH	90.0f
 #define SPINNER_LOWER_LEG_LOW	0.0f
 #define SPINNER_LOWER_LEG_HIGH	150.0f
 #define SPINNER_FOOT_LOW		-15.0f

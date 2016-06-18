@@ -16,9 +16,6 @@
 #include <iostream>
 #include <fstream>
 
-#define DURATION_1 0.3
-#define DURATION_2 0.3
-
 WalkingController::WalkingController()
 {
 }
@@ -432,13 +429,13 @@ void WalkingController::PauseWalking(){
 
 void WalkingController::InitiateWalking() {
 	m_currentState = WALKING;
+	m_ragDollState = STATE_0;
 }
 
 void WalkingController::Reset(){
 	m_ragDollState = STATE_0;
 	m_currentState = RESET;
 }
-
 
 void WalkingController::NotifyLeftFootGroundContact() {
 	
@@ -598,15 +595,16 @@ std::vector<float> WalkingController::CalculateState3Torques() {
 
 	/* ==================== Calculating torque for torso ======================= */
 	float torsoTorque = CalculateTorqueForTorso(m_state3->m_torsoAngle, m_app->m_torso->GetOrientation(), m_app->m_torso->GetAngularVelocity());
-
+	//printf("torso: desired = %f, current = %f , torque = %f\n", m_state3->m_torsoAngle, m_app->m_torso->GetOrientation(), torsoTorque);
 	/* ==================== Calculating torques for upper legs ================= */
 	// SWING
 	float feedbackTargetAngle = CalculateFeedbackSwingHip();
 	float upperLeftLegTorque = CalculateTorqueForUpperLeftLeg(feedbackTargetAngle, m_app->m_upperLeftLeg->GetOrientation(), m_app->m_upperLeftLeg->GetAngularVelocity());
-	
+	//printf("ULL: desired = %f, current = %f, torque = %f \n", feedbackTargetAngle, m_app->m_upperLeftLeg->GetOrientation(), upperLeftLegTorque);
 	// STANCE
 	float upperRightLegTorque = -torsoTorque - upperLeftLegTorque;
-	
+	//printf("URL torque = %f\n", upperRightLegTorque);
+
 	//printf("==================== Calculating torque for Lower Legs ======================= \n");
 	float lowerLeftLegTorque = CalculateTorqueForLowerLeftLeg(m_state3->m_upperLeftLegAngle - m_state3->m_lowerLeftLegAngle, m_app->m_lowerLeftLeg->GetOrientation(), m_app->m_lowerLeftLeg->GetAngularVelocity());
 	float lowerRightLegTorque = CalculateTorqueForLowerRightLeg(m_state3->m_upperRightLegAngle - m_state3->m_lowerRightLegAngle, m_app->m_lowerRightLeg->GetOrientation(), m_app->m_lowerRightLeg->GetAngularVelocity());
@@ -666,12 +664,12 @@ float WalkingController::CalculateFeedbackSwingHip() {
 	GameObject *swingHipBody;
 	float targetAngle = 0.0f;
 	float distance = 0.0f;
-	float velocity = m_app->m_torso->GetRigidBody()->getVelocityInLocalPoint(btVector3(-torso_height/2, 0, 0)).x();
+	float velocity = m_app->m_torso->GetRigidBody()->getVelocityInLocalPoint(btVector3(0, -torso_height/2, 0)).x();
 	float cd = 0.0f, cv = 0.0f;
 	btVector3 stanceAnkle(0, 0, 0);
 	btVector3 hipPosition = m_app->m_torso->GetCOMPosition()
-		+ btVector3(cos(Constants::GetInstance().DegreesToRadians(180 - m_app->m_torso->GetOrientation())) * torso_height / 2,
-		-sin(Constants::GetInstance().DegreesToRadians(180 - m_app->m_torso->GetOrientation())) * torso_height / 2,
+		+ btVector3(sin(Constants::GetInstance().DegreesToRadians(m_app->m_torso->GetOrientation())) * torso_height / 2,
+		-cos(Constants::GetInstance().DegreesToRadians(m_app->m_torso->GetOrientation())) * torso_height / 2,
 		0);
 	/*btVector3 hipPosition = m_app->m_upperRightLeg->GetCOMPosition()
 		+ btVector3(cos(Constants::GetInstance().DegreesToRadians(m_app->m_upperRightLeg->GetOrientation())) * upper_leg_height / 2,
@@ -679,15 +677,22 @@ float WalkingController::CalculateFeedbackSwingHip() {
 		0);*/
 	switch (m_ragDollState)
 	{
-	case STATE_0:
+	case STATE_0: {
+		swingHipBody = m_app->m_upperRightLeg;
+		targetAngle = m_state1->m_upperRightLegAngle;
+		// Calculate the distance to stance ankle
+		float lllAngle = Constants::GetInstance().DegreesToRadians(m_app->m_lowerLeftLeg->GetOrientation());
+		stanceAnkle = m_app->m_lowerLeftLeg->GetCOMPosition() + btVector3(sin(lllAngle) * lower_leg_height / 2, -cos(lllAngle) * lower_leg_height / 2, 0);
+	}
 		break;
 	case STATE_1: {
 		// RIGHT Leg Swing
 		swingHipBody = m_app->m_upperRightLeg;
 		targetAngle = m_state1->m_upperRightLegAngle;
 		// Calculate the distance to stance ankle
+		//printf("lower left leg angle = %f\n", m_app->m_lowerLeftLeg->GetOrientation());
 		float lllAngle = Constants::GetInstance().DegreesToRadians(m_app->m_lowerLeftLeg->GetOrientation());
-		stanceAnkle = m_app->m_lowerLeftLeg->GetCOMPosition() + btVector3(cos(PI - lllAngle) * lower_leg_height / 2, -sin(PI - lllAngle) * lower_leg_height / 2, 0);
+		stanceAnkle = m_app->m_lowerLeftLeg->GetCOMPosition() + btVector3(sin(lllAngle) * lower_leg_height / 2, -cos(lllAngle) * lower_leg_height / 2, 0);
 
 		cd = m_cd_1;
 		cv = m_cv_1;
@@ -699,7 +704,7 @@ float WalkingController::CalculateFeedbackSwingHip() {
 		targetAngle = m_state2->m_upperRightLegAngle;
 		// Calculate the distance to stance ankle
 		float lllAngle = Constants::GetInstance().DegreesToRadians(m_app->m_lowerLeftLeg->GetOrientation());
-		stanceAnkle = m_app->m_lowerLeftLeg->GetCOMPosition() + btVector3(cos(PI - lllAngle) * lower_leg_height / 2, -sin(PI - lllAngle) * lower_leg_height / 2, 0);
+		stanceAnkle = m_app->m_lowerLeftLeg->GetCOMPosition() + btVector3(sin(lllAngle) * lower_leg_height / 2, -cos(lllAngle) * lower_leg_height / 2, 0);
 		// Approximate center of mass x position to be the same as torso x position
 		
 		cd = m_cd_2;
@@ -712,7 +717,7 @@ float WalkingController::CalculateFeedbackSwingHip() {
 		targetAngle = m_state3->m_upperLeftLegAngle;
 		// Calculate the distance to stance ankle
 		float lrlAngle = Constants::GetInstance().DegreesToRadians(m_app->m_lowerRightLeg->GetOrientation());
-		stanceAnkle = m_app->m_lowerRightLeg->GetCOMPosition() + btVector3(cos(PI - lrlAngle) * lower_leg_height / 2, -sin(PI - lrlAngle) * lower_leg_height / 2, 0);
+		stanceAnkle = m_app->m_lowerRightLeg->GetCOMPosition() + btVector3(sin(lrlAngle) * lower_leg_height / 2, -cos(lrlAngle) * lower_leg_height / 2, 0);
 
 		cd = m_cd_1;
 		cv = m_cv_1;
@@ -725,7 +730,7 @@ float WalkingController::CalculateFeedbackSwingHip() {
 
 		// Calculate the distance to stance ankle
 		float lrlAngle = Constants::GetInstance().DegreesToRadians(m_app->m_lowerRightLeg->GetOrientation());
-		stanceAnkle = m_app->m_lowerRightLeg->GetCOMPosition() + btVector3(cos(PI - lrlAngle) * lower_leg_height / 2, -sin(PI - lrlAngle) * lower_leg_height / 2, 0);
+		stanceAnkle = m_app->m_lowerRightLeg->GetCOMPosition() + btVector3(sin(lrlAngle) * lower_leg_height / 2, -cos(lrlAngle) * lower_leg_height / 2, 0);
 
 		cd = m_cd_2;
 		cv = m_cv_2;

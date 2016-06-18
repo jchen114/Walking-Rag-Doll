@@ -14,10 +14,10 @@ public:
 		float mass,
 		const btVector3 &color,
 		const btVector3 &initialPosition = btVector3(0, 0, 0),
-		const btQuaternion &initialRotation = btQuaternion(0, 0, 1, 1));
+		const btQuaternion &initialRotation = btQuaternion(0, 0, 0, 1));
 	~GameObject();
 
-	void Reposition(const btVector3 &position, const btQuaternion &orientation = btQuaternion(0, 0, 1, 1));
+	void Reposition(const btVector3 &position, const btQuaternion &orientation = btQuaternion(0, 0, 0, 1));
 	float GetPosition() {
 		return GetRigidBody()->getOrientation().getAngle();
 	}
@@ -38,7 +38,10 @@ public:
 	}
 
 	float GetOrientation() {
-		float angle = Constants::GetInstance().RadiansToDegrees(GetRigidBody()->getOrientation().getAngle());
+		btScalar x, y, z;
+		GetRigidBody()->getCenterOfMassTransform().getBasis().getEulerZYX(z, y, x);
+		float angle = Constants::GetInstance().RadiansToDegrees(z);
+		//float angle = Constants::GetInstance().RadiansToDegrees(GetRigidBody()->getOrientation().getAngleShortestPath());
 		return angle;
 	}
 
@@ -88,6 +91,7 @@ public:
 			// Set mass to original mass
 			(*it)->GetRigidBody()->setMassProps((*it)->GetMass(), (*it)->GetInertia());
 			(*it)->GetRigidBody()->activate();
+			(*it)->GetRigidBody()->setRestitution(0);
 		}
 	}
 

@@ -29,7 +29,7 @@ GameObject::GameObject(	btCollisionShape *pShape,
 
 	// create the rigid body construction info using mass, motion state, and shape
 	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, m_pMotionState, pShape, localInertia);
-	cInfo.m_friction = 5.0f;
+	//cInfo.m_friction = 5.0f;
 
 	// create the rigid body
 	m_pBody = new btRigidBody(cInfo);
@@ -39,6 +39,8 @@ GameObject::GameObject(	btCollisionShape *pShape,
 	// Set pointer to self
 	m_pBody->setUserPointer(this);
 	m_pBody->getCollisionShape()->setUserPointer(this);
+	m_pBody->setRestitution(0.0f);
+	m_pBody->setFriction(5.0f);
 }
 
 

@@ -655,6 +655,27 @@ void RagDollApplication::ChangeState(int id) {
 	m_previousState = m_currentState;
 	Debug("next state = " << m_currentState);
 
+	switch (m_currentState)
+	{
+	case 0:
+		m_WalkingController->m_ragDollState = STATE_0;
+		break;
+	case 1:
+		m_WalkingController->m_ragDollState = STATE_1;
+		break;
+	case 2:
+		m_WalkingController->m_ragDollState = STATE_2;
+		break;
+	case 3:
+		m_WalkingController->m_ragDollState = STATE_3;
+		break;
+	case 4:
+		m_WalkingController->m_ragDollState = STATE_4;	
+		break;
+	default:
+		break;
+	}
+
 	DisableStateSpinner();
 
 	UpdateRagDoll();
@@ -670,10 +691,10 @@ void RagDollApplication::ChangeState(int id) {
 void RagDollApplication::CreateRagDoll(const btVector3 &position) {
 
 	// Create a torso centered at the position
-	btVector3 torsoHalfSize(torso_height/2, torso_width/2, 0.0);
-	btVector3 ulHalfSize = btVector3(upper_leg_height / 2, upper_leg_width / 2, 0.0f);
-	btVector3 llHalfSize = btVector3(lower_leg_height / 2, lower_leg_width / 2, 0.0f);
-	btVector3 fHalfSize = btVector3(foot_height / 2, foot_width / 2, 0.0f);
+	btVector3 torsoHalfSize(torso_width/2, torso_height/2, 0.0);
+	btVector3 ulHalfSize = btVector3(upper_leg_width / 2, upper_leg_height / 2, 0.0f);
+	btVector3 llHalfSize = btVector3(lower_leg_width / 2, lower_leg_height / 2, 0.0f);
+	btVector3 fHalfSize = btVector3(foot_width / 2, foot_height / 2, 0.0f);
 	
 	// Create RIGHT LEG	
 	m_upperRightLeg = Create2DBox(ulHalfSize, upper_leg_mass, btVector3(0 / 256.0, 153 / 256.0, 0 / 256.0), position + btVector3(0, 0, 0)); // Green
@@ -698,20 +719,17 @@ void RagDollApplication::AddHinges() {
 	Debug("Adding hinges.");
 
 	// Connect torso to upper legs
-	m_torso_ulLeg = AddHingeConstraint(m_torso, m_upperLeftLeg, btVector3(-torso_height / 2, 0, 0), btVector3(upper_leg_height / 2, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_TORSO_ULL_LOW), Constants::GetInstance().DegreesToRadians(HINGE_TORSO_ULL_HIGH));
-	m_torso_urLeg = AddHingeConstraint(m_torso, m_upperRightLeg, btVector3(-torso_height / 2, 0, 0), btVector3(upper_leg_height / 2, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_TORSO_ULL_LOW), Constants::GetInstance().DegreesToRadians(HINGE_TORSO_URL_HIGH));
+	m_torso_ulLeg = AddHingeConstraint(m_torso, m_upperLeftLeg, btVector3(0, -torso_height / 2, 0), btVector3(0, upper_leg_height / 2, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_TORSO_ULL_LOW), Constants::GetInstance().DegreesToRadians(HINGE_TORSO_ULL_HIGH));
+	m_torso_urLeg = AddHingeConstraint(m_torso, m_upperRightLeg, btVector3(0, -torso_height / 2, 0), btVector3(0, upper_leg_height / 2, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_TORSO_ULL_LOW), Constants::GetInstance().DegreesToRadians(HINGE_TORSO_URL_HIGH));
 
 	// Connect upper legs to lower legs
-	m_ulLeg_llLeg = AddHingeConstraint(m_upperLeftLeg, m_lowerLeftLeg, btVector3(-upper_leg_height / 2, 0, 0), btVector3(lower_leg_height / 2, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_ULL_LLL_LOW), Constants::GetInstance().DegreesToRadians(HINGE_ULL_LLL_HIGH));
-	m_urLeg_lrLeg = AddHingeConstraint(m_upperRightLeg, m_lowerRightLeg, btVector3(-upper_leg_height / 2, 0, 0), btVector3(lower_leg_height / 2, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_URL_LRL_LOW), Constants::GetInstance().DegreesToRadians(HINGE_URL_LRL_HIGH));
+	m_ulLeg_llLeg = AddHingeConstraint(m_upperLeftLeg, m_lowerLeftLeg, btVector3(0, -upper_leg_height / 2, 0), btVector3(0, lower_leg_height / 2, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_ULL_LLL_LOW), Constants::GetInstance().DegreesToRadians(HINGE_ULL_LLL_HIGH));
+	m_urLeg_lrLeg = AddHingeConstraint(m_upperRightLeg, m_lowerRightLeg, btVector3(0, -upper_leg_height / 2, 0), btVector3(0, lower_leg_height / 2, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_URL_LRL_LOW), Constants::GetInstance().DegreesToRadians(HINGE_URL_LRL_HIGH));
 
 	// Connect feet to lower legs
-	m_llLeg_lFoot = AddHingeConstraint(m_lowerLeftLeg, m_leftFoot, btVector3(-lower_leg_height / 2, 0, 0), btVector3(0, (foot_width) / 4, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_LLL_LF_LOW), Constants::GetInstance().DegreesToRadians(HINGE_LLL_LF_HIGH));
-	m_lrLeg_rFoot = AddHingeConstraint(m_lowerRightLeg, m_rightFoot, btVector3(-lower_leg_height / 2, 0, 0), btVector3(0, (foot_width) / 4, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_LRL_RF_LOW), Constants::GetInstance().DegreesToRadians(HINGE_LRL_RF_HIGH));
-	/*
-	m_llLeg_lFoot = AddHingeConstraint(m_lowerLeftLeg, m_leftFoot, btVector3(-lower_leg_height / 2, 0, 0), btVector3((foot_width) / 4, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_LLL_LF_LOW), Constants::GetInstance().DegreesToRadians(HINGE_LLL_LF_HIGH));
-	m_lrLeg_rFoot = AddHingeConstraint(m_lowerRightLeg, m_rightFoot, btVector3(-lower_leg_height / 2, 0, 0), btVector3((foot_width) / 4, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_LRL_RF_LOW), Constants::GetInstance().DegreesToRadians(HINGE_LRL_RF_HIGH));
-	*/
+	m_llLeg_lFoot = AddHingeConstraint(m_lowerLeftLeg, m_leftFoot, btVector3(0, -lower_leg_height / 2, 0), btVector3(-(foot_width) / 4, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_LLL_LF_LOW), Constants::GetInstance().DegreesToRadians(HINGE_LLL_LF_HIGH));
+	m_lrLeg_rFoot = AddHingeConstraint(m_lowerRightLeg, m_rightFoot, btVector3(0, -lower_leg_height / 2, 0), btVector3(-(foot_width) / 4, 0, 0), btVector3(0, 0, 1), btVector3(0, 0, 1), Constants::GetInstance().DegreesToRadians(HINGE_LRL_RF_LOW), Constants::GetInstance().DegreesToRadians(HINGE_LRL_RF_HIGH));
+
 }
 
 void RagDollApplication::UpdateRagDoll() {
@@ -733,63 +751,71 @@ void RagDollApplication::UpdateRagDoll() {
 	//printf("Updating Rag doll:\n %f, %f, %f, %f, %f, %f, %f\n", torsoAngle, ullAngle, urlAngle, lllAngle, lrlAngle, lfAngle, rfAngle);
 	// Blue
 	m_torso->Reposition(
-		ORIGINAL_TORSO_POSITION + btVector3(-(torso_height/2) * cos(PI - torsoAngle), sin(PI - torsoAngle)*(torso_height/2) - (torso_height/2),0), 
+		ORIGINAL_TORSO_POSITION + btVector3(-(torso_height / 2) * sin(torsoAngle), (torso_height / 2) * (cos(torsoAngle) - 1), 0),
 		btQuaternion(btVector3(0, 0, 1), torsoAngle));
 	Debug("Torso COM (" << m_torso->GetCOMPosition().x() << ", " << m_torso->GetCOMPosition().y() << ", " << m_torso->GetCOMPosition().z() << ")");
+
+	//printf("torso angle = %f, orientation = %f \n", Constants::GetInstance().RadiansToDegrees(torsoAngle), m_torso->GetOrientation());
+
+	btVector3 hipPosition = ORIGINAL_TORSO_POSITION + btVector3(0, -torso_height/2, 0);  // Hip stays constant
+
 	// GREEN
 	m_upperRightLeg->Reposition(
-		ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(torso_height / 2 + upper_leg_height / 2), 0.1) + btVector3(-cos(urlAngle) * (upper_leg_height / 2), (upper_leg_height / 2) - sin(urlAngle)*upper_leg_height / 2, 0),
+		hipPosition + btVector3(0, - upper_leg_height/2, 0.1) 
+		+ btVector3((upper_leg_height/2) * sin(urlAngle), (upper_leg_height/2)*(1-cos(urlAngle)), 0),
 		btQuaternion(btVector3(0, 0, 1), urlAngle));
 	Debug("URL COM (" << m_upperRightLeg->GetCOMPosition().x() << ", " << m_upperRightLeg->GetCOMPosition().y() << ", " << m_upperRightLeg->GetCOMPosition().z(), ")");
-	btVector3 upperRightLegBottomPoint = m_upperRightLeg->GetCOMPosition() + btVector3(cos(PI - urlAngle) * upper_leg_height / 2, -sin(PI - urlAngle) * upper_leg_height / 2, 0);
 
-	// ORANGE
-	m_lowerRightLeg->Reposition(
-		upperRightLegBottomPoint + btVector3(-(cos(lrlAngle) * lower_leg_height / 2), -(sin(lrlAngle)*lower_leg_height / 2), 0.1),
-		btQuaternion(btVector3(0, 0, 1), lrlAngle));
-	Debug("LRL COM (" << m_lowerRightLeg->GetCOMPosition().x() << ", " << m_lowerRightLeg->GetCOMPosition().y() << ", " << m_lowerRightLeg->GetCOMPosition().z(), ")");
-
-	btVector3 lowerRightLegBottomPoint = m_lowerRightLeg->GetCOMPosition() + btVector3(cos(PI - lrlAngle) * lower_leg_height / 2, -sin(PI - lrlAngle) * lower_leg_height / 2, 0);
-	// PURPLE
-	/*m_rightFoot->Reposition(
-		lowerRightLegBottomPoint + btVector3(-cos(rfAngle) * foot_width / 4, -sin(rfAngle) * foot_width / 4, 0.1),
-		btQuaternion(btVector3(0, 0, 1), rfAngle));
-	*/
-	m_rightFoot->Reposition(
-		lowerRightLegBottomPoint + btVector3(sin(rfAngle) * foot_width / 4, -cos(rfAngle) * foot_width / 4, 0.1),
-		btQuaternion(btVector3(0, 0, 1), rfAngle));
-	Debug("RF COM (" << m_rightFoot->GetCOMPosition().x() << ", " << m_rightFoot->GetCOMPosition().y() << ", " << m_rightFoot->GetCOMPosition().z() << ")");
+	//printf("URL angle = %f, orientation = %f \n", Constants::GetInstance().RadiansToDegrees(urlAngle), m_upperRightLeg->GetOrientation());
 
 	// PINK
 	m_upperLeftLeg->Reposition(
-		ORIGINAL_TORSO_POSITION + btVector3(0.0f, -(torso_height / 2 + upper_leg_height / 2), -0.1) + btVector3(-cos(ullAngle) * (upper_leg_height/2), (upper_leg_height/2) - sin(ullAngle)*upper_leg_height/2, 0), 
-		btQuaternion(btVector3(0,0,1), ullAngle));
+		hipPosition + btVector3(0, -upper_leg_height / 2, -0.1)
+		+ btVector3((upper_leg_height / 2) * sin(ullAngle), (upper_leg_height / 2)*(1 - cos(ullAngle)), 0),
+		btQuaternion(btVector3(0, 0, 1), ullAngle));
 	Debug("ULL COM (" << m_upperLeftLeg->GetCOMPosition().x() << ", " << m_upperLeftLeg->GetCOMPosition().y() << ", " << m_upperLeftLeg->GetCOMPosition().z() << ")");
+
+	btVector3 upperRightLegBottomPoint = m_upperRightLeg->GetCOMPosition() + btVector3(sin(urlAngle) * upper_leg_height / 2, -cos(urlAngle) * upper_leg_height / 2, 0);
+
+	// ORANGE
+	m_lowerRightLeg->Reposition(
+		upperRightLegBottomPoint + btVector3((lower_leg_height / 2) * sin(lrlAngle), -(lower_leg_height/2)*(cos(lrlAngle)), 0.1),
+		btQuaternion(btVector3(0, 0, 1), lrlAngle));
+	Debug("LRL COM (" << m_lowerRightLeg->GetCOMPosition().x() << ", " << m_lowerRightLeg->GetCOMPosition().y() << ", " << m_lowerRightLeg->GetCOMPosition().z(), ")");
+
+	printf("lower right leg angle = %f, orientation = %f\n", Constants::GetInstance().RadiansToDegrees(lrlAngle), m_lowerRightLeg->GetOrientation());
+
+	btVector3 upperLeftLegBottomPoint = m_upperLeftLeg->GetCOMPosition() + btVector3(sin(ullAngle) * upper_leg_height / 2, -cos(ullAngle) * upper_leg_height / 2, 0);
 	
-	btVector3 upperLeftLegBottomPoint = m_upperLeftLeg->GetCOMPosition() + btVector3(cos(PI - ullAngle) * upper_leg_height/2, -sin(PI - ullAngle) * upper_leg_height/2, 0);
+	m_lowerLeftLeg->Reposition(
+		upperLeftLegBottomPoint + btVector3((lower_leg_height / 2) * sin(lllAngle), -(lower_leg_height / 2) * cos(lllAngle), -0.1),
+		btQuaternion(btVector3(0, 0, 1), lllAngle));
 	
+	Debug("LLL COM (" << m_lowerLeftLeg->GetCOMPosition().x() << ", " << m_lowerLeftLeg->GetCOMPosition().y() << ", " << m_lowerLeftLeg->GetCOMPosition().z() << ")");
+
+	btVector3 lowerRightLegBottomPoint = m_lowerRightLeg->GetCOMPosition() + btVector3(sin(lrlAngle) * lower_leg_height / 2, -cos(lrlAngle) * lower_leg_height / 2, 0);
+	// PURPLE
+	m_rightFoot->Reposition(
+		lowerRightLegBottomPoint + btVector3(cos(rfAngle) * foot_width / 4, sin(rfAngle) * foot_width / 4, 0.1),
+		btQuaternion(btVector3(0, 0, 1), rfAngle));
+	Debug("RF COM (" << m_rightFoot->GetCOMPosition().x() << ", " << m_rightFoot->GetCOMPosition().y() << ", " << m_rightFoot->GetCOMPosition().z() << ")");
+	
+	//printf("right foot angle = %f, orientation = %f\n", Constants::GetInstance().RadiansToDegrees(rfAngle), m_rightFoot->GetOrientation());
+
 	//printf("ULL BP position: %f, %f\n", upperLeftLegBottomPoint.x(), upperLeftLegBottomPoint.y());
 	// Yellow
 	//m_lowerLeftLeg->Reposition(upperLeftLegBottomPoint + btVector3(0.0f, -lower_leg_height / 2, 0.1), btQuaternion(btVector3(0, 0, 1), lllAngle));
-	m_lowerLeftLeg->Reposition(
-		upperLeftLegBottomPoint + btVector3(-(cos(lllAngle)*lower_leg_height / 2), -(sin(lllAngle)*lower_leg_height / 2), -0.1), 
-		btQuaternion(btVector3(0, 0, 1), lllAngle));
-	Debug("LLL COM (" << m_lowerLeftLeg->GetCOMPosition().x() << ", " << m_lowerLeftLeg->GetCOMPosition().y() << ", " << m_lowerLeftLeg->GetCOMPosition().z() << ")");
 	
-	btVector3 lowerLeftLegBottomPoint = m_lowerLeftLeg->GetCOMPosition() + btVector3(cos(PI - lllAngle) * lower_leg_height / 2, -sin(PI - lllAngle) * lower_leg_height / 2, 0);
+	
+	btVector3 lowerLeftLegBottomPoint = m_lowerLeftLeg->GetCOMPosition() + btVector3(sin(lllAngle) * lower_leg_height / 2, -cos(lllAngle) * lower_leg_height / 2, 0);
 
-	printf("Before: lf orientation = %f, lfAngle = %f\n", m_leftFoot->GetOrientation(), Constants::GetInstance().RadiansToDegrees(lfAngle));
+	//printf("Before: lf orientation = %f, lfAngle = %f\n", m_leftFoot->GetOrientation(), Constants::GetInstance().RadiansToDegrees(lfAngle));
 
-	/*m_leftFoot->Reposition(
-		lowerLeftLegBottomPoint + btVector3(-cos(lfAngle) * foot_width / 4, -sin(lfAngle) * foot_width / 4, -0.1),
-		btQuaternion(btVector3(0, 0, 1),
-		lfAngle));
-		*/
 	m_leftFoot->Reposition(
-		lowerLeftLegBottomPoint + btVector3(sin(lfAngle) * foot_width / 4, -cos(lfAngle) * foot_width / 4, -0.1),
+		lowerLeftLegBottomPoint + btVector3(cos(lfAngle) * foot_width / 4, sin(lfAngle) * foot_width / 4, -0.1),
 		btQuaternion(btVector3(0, 0, 1), lfAngle));
 	
-	printf("After: lf orientation = %f, lfAngle = %f\n", m_leftFoot->GetOrientation(), Constants::GetInstance().RadiansToDegrees(lfAngle));
+	//printf("After: lf orientation = %f, lfAngle = %f\n", m_leftFoot->GetOrientation(), Constants::GetInstance().RadiansToDegrees(lfAngle));
 	Debug("LF COM (" << m_leftFoot->GetCOMPosition().x() << ", " << m_leftFoot->GetCOMPosition().y() << ", " << m_leftFoot->GetCOMPosition().z() << ")");
 
 	//GameObject::PrintOrientations(m_bodies);
@@ -1054,8 +1080,8 @@ void RagDollApplication::DrawShape(btScalar *transform, const btCollisionShape *
 
 void RagDollApplication::DrawTorso(const btVector3 &halfSize) {
 
-	float halfHeight = halfSize.x();
-	float halfWidth = halfSize.y();
+	float halfHeight = halfSize.y();
+	float halfWidth = halfSize.x();
 	float halfDepth = halfSize.z(); // No depth
 
 	float shoulderRadius = 1.5 * halfWidth;
@@ -1063,10 +1089,10 @@ void RagDollApplication::DrawTorso(const btVector3 &halfSize) {
 
 	// Create Vector
 	btVector3 vertices[4] = {
-		btVector3(halfHeight, -shoulderRadius, 0.0f),	// 0
-		btVector3(halfHeight, shoulderRadius, 0.0f),	// 1
-		btVector3(-halfHeight, -hipRadius, 0.0f),		// 2 
-		btVector3(-halfHeight, hipRadius, 0.0f),		// 3
+		btVector3(-shoulderRadius, halfHeight, 0.0f),	// 0
+		btVector3(shoulderRadius, halfHeight, 0.0f),	// 1
+		btVector3(-hipRadius, -halfHeight, 0.0f),		// 2 
+		btVector3(hipRadius, -halfHeight, 0.0f),		// 3
 
 	};
 
@@ -1078,16 +1104,15 @@ void RagDollApplication::DrawTorso(const btVector3 &halfSize) {
 	DrawWithTriangles(vertices, indices, 6);
 
 	// Create semisircle for shoulders
-	//DrawPartialFilledCircle(-halfHeight/2, 0, hipRadius, 90, 270);
-	DrawPartialFilledCircle(halfHeight, 0, shoulderRadius, -90, 90);
-	DrawPartialFilledCircle(-2*halfHeight, 0, hipRadius, 90, 270);
+	DrawPartialFilledCircle(0, halfHeight,  shoulderRadius, 0, 180);
+	DrawPartialFilledCircle(0, -2*halfHeight, hipRadius, 180, 360);
 
 }
 
 void RagDollApplication::DrawUpperLeg(const btVector3 &halfSize) {
 
-	float halfHeight = halfSize.x();
-	float halfWidth = halfSize.y();
+	float halfHeight = halfSize.y();
+	float halfWidth = halfSize.x();
 	float halfDepth = halfSize.z(); // No depth
 
 	float thighRadius = 1.25f * halfWidth;
@@ -1095,10 +1120,10 @@ void RagDollApplication::DrawUpperLeg(const btVector3 &halfSize) {
 
 	// Create Vector
 	btVector3 vertices[4] = {
-		btVector3(halfHeight, - thighRadius, 0.0f),		// 0
-		btVector3(halfHeight, thighRadius, 0.0f),		// 1
-		btVector3(-halfHeight, - kneeRadius, 0.0f),		// 2 
-		btVector3(-halfHeight, kneeRadius, 0.0f),		// 3
+		btVector3(- thighRadius, halfHeight, 0.0f),		// 0
+		btVector3(thighRadius, halfHeight, 0.0f),		// 1
+		btVector3(-kneeRadius, -halfHeight, 0.0f),		// 2 
+		btVector3(kneeRadius, -halfHeight, 0.0f),		// 3
 
 	};
 
@@ -1110,15 +1135,15 @@ void RagDollApplication::DrawUpperLeg(const btVector3 &halfSize) {
 	DrawWithTriangles(vertices, indices, 6);
 
 	// Create semisircle for thigh and knees
-	DrawPartialFilledCircle(halfHeight, 0, thighRadius, -90, 90);
-	DrawPartialFilledCircle(- 2*halfHeight, 0, kneeRadius, 90, 270);
+	DrawPartialFilledCircle(0, halfHeight, thighRadius, 0, 180);
+	DrawPartialFilledCircle(0, -2 * halfHeight, kneeRadius, 180, 360);
 
 }
 
 void RagDollApplication::DrawLowerLeg(const btVector3 &halfSize){
 
-	float halfHeight = halfSize.x();
-	float halfWidth = halfSize.y();
+	float halfHeight = halfSize.y();
+	float halfWidth = halfSize.x();
 	float halfDepth = halfSize.z(); // No depth
 
 	float kneeRadius = 1.25f * halfWidth;
@@ -1126,10 +1151,10 @@ void RagDollApplication::DrawLowerLeg(const btVector3 &halfSize){
 
 	// Create Vector
 	btVector3 vertices[4] = {
-		btVector3(halfHeight, -kneeRadius, 0.0f),		// 0
-		btVector3(halfHeight, kneeRadius, 0.0f),		// 1
-		btVector3(-halfHeight, - ankleRadius, 0.0f),	// 2 
-		btVector3(-halfHeight, ankleRadius, 0.0f),		// 3
+		btVector3(-kneeRadius, halfHeight, 0.0f),		// 0
+		btVector3(kneeRadius, halfHeight, 0.0f),		// 1
+		btVector3(-ankleRadius, -halfHeight, 0.0f),	// 2 
+		btVector3(ankleRadius, -halfHeight, 0.0f),		// 3
 
 	};
 
@@ -1141,25 +1166,25 @@ void RagDollApplication::DrawLowerLeg(const btVector3 &halfSize){
 	DrawWithTriangles(vertices, indices, 6);
 
 	// Create semisircle for thigh and knees
-	DrawPartialFilledCircle(halfHeight, 0, kneeRadius, -90, 90);
+	DrawPartialFilledCircle(0, halfHeight, kneeRadius, 0, 180);
 	//DrawPartialFilledCircle(-2*halfHeight, 0, ankleRadius, 90, 270);
 
 }
 
 void RagDollApplication::DrawFoot(const btVector3 &halfSize) {
 
-	float halfWidth = halfSize.y();
-	float halfHeight = halfSize.x();
+	float halfWidth = halfSize.x();
+	float halfHeight = halfSize.y();
 	float halfDepth = halfSize.z(); // No depth
 
 	float toeRadius = halfHeight * 2;
 
 	// Create Vector
 	btVector3 vertices[4] = {
-		btVector3(halfHeight, halfWidth, 0.0f),		// 0
-		btVector3(-halfHeight, halfWidth, 0.0f),	// 1
-		btVector3(-halfHeight, - (halfWidth - 2*halfHeight), 0.0f),	// 2 
-		btVector3(halfHeight, - (halfWidth - 2 * halfHeight), 0.0f),	// 3
+		btVector3(-halfWidth, halfHeight, 0.0f),		// 0
+		btVector3(-halfWidth, -halfHeight, 0.0f),	// 1
+		btVector3((halfWidth - 2 * halfHeight), -halfHeight, 0.0f),	// 2 
+		btVector3((halfWidth - 2 * halfHeight), halfHeight, 0.0f),	// 3
 
 	};
 
@@ -1172,7 +1197,7 @@ void RagDollApplication::DrawFoot(const btVector3 &halfSize) {
 
 	// Create quarter circle for toes
 	//DrawPartialFilledCircle(, , toeRadius, 0, 180);
-	DrawPartialFilledCircle(-halfHeight, -(halfWidth - 2 * halfHeight), toeRadius, 270, 450);
+	DrawPartialFilledCircle((halfWidth - 2 * halfHeight), -halfHeight, toeRadius, 0, 90);
 
 }
 
@@ -1184,8 +1209,9 @@ static void DrawPartialFilledCircle(GLfloat x, GLfloat y, GLfloat radius, GLfloa
 
 	begin = Constants::GetInstance().DegreesToRadians(begin);
 	end = Constants::GetInstance().DegreesToRadians(end);
-
+	
 	glBegin(GL_TRIANGLE_FAN);
+	glVertex2f(0, 0);
 	for (int i = 0; i <= triangleAmount; i++) {
 		glVertex2f(
 			(radius * cos(i *  (end - begin) / triangleAmount + begin)),
