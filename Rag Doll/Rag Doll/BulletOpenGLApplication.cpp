@@ -10,7 +10,7 @@ BulletOpenGLApplication::BulletOpenGLApplication()
 	// Create Camera manager
 	m_cameraManager = new CameraManager(
 		btVector3(0.0f, 0.0f, 0.0f),	// Target
-		0.25f,							// Distance
+		SCALING_FACTOR / 4.0f,							// Distance
 		20.0f,							// Pitch
 		0.0f,							// Yaw
 		btVector3(0.0f, 1.0f, 0.0f),	// Up Vector
@@ -627,7 +627,11 @@ btFixedConstraint *BulletOpenGLApplication::AddFixedConstraint(GameObject *obj1,
 
 void BulletOpenGLApplication::ApplyTorque(GameObject *object, const btVector3 &torque) {
 
-	object->ApplyTorque(torque);
+	float torqueScaleFactor = SCALING_FACTOR * SCALING_FACTOR;
+
+	btVector3 scaledTorque = torque * btVector3(torqueScaleFactor, torqueScaleFactor, torqueScaleFactor);
+
+	object->ApplyTorque(scaledTorque);
 
 }
 

@@ -73,9 +73,10 @@ void RagDollApplication::InitializePhysics() {
 	// create the world
 	m_pWorld = new btDiscreteDynamicsWorld(m_pDispatcher, m_pBroadphase, m_pSolver, m_pCollisionConfiguration);
 
+	m_pWorld->setGravity(btVector3(0.0f, SCALING_FACTOR * -9.81f,0.0f));
+
 	// Create ground
-	btVector3 position(0.0f, -0.5f, 0.0f);
-	CreateGround(position);
+	CreateGround(GROUND_POSITION);
 
 	CreateRagDoll(ORIGINAL_TORSO_POSITION);
 
@@ -159,16 +160,16 @@ void RagDollApplication::KeyboardUp(unsigned char key, int x, int y) {
 void RagDollApplication::CreateGround(const btVector3 &position) {
 
 	// Create ground.
-	btVector3 ground(0.2f, GROUND_WIDTH/2, 10.0f);
+	btVector3 ground(GROUND_WIDTH/2, GROUND_HEIGHT/2, 10.0f);
 	float mass = 0.0f;
 	m_ground = Create3DBox(ground, mass, GetRandomColor(), position);
-	m_ground->GetRigidBody()->setCollisionFlags(m_ground->GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
+	m_ground->GetRigidBody()->setCollisionFlags(m_ground->GetRigidBody()->getCollisionFlags());
 
 	// Create markers.
 	for (int marker = 0; marker < GROUND_WIDTH; marker += MARKER_DISTANCE) {
 		// Position for marker
-		btVector3 pos(marker - GROUND_WIDTH / 2 + MARKER_WIDTH/2, position.getY() + 0.2f, 0);
-		GameObject *box = Create2DBox(btVector3(MARKER_HEIGHT / 2, MARKER_WIDTH / 2, 0), 0, MARKER_COLOR, pos);
+		btVector3 pos(marker - (GROUND_WIDTH / 2 - MARKER_WIDTH/2), position.getY() + (GROUND_HEIGHT/2 + MARKER_HEIGHT/2), 0);
+		GameObject *box = Create2DBox(btVector3(MARKER_WIDTH / 2, MARKER_HEIGHT / 2, 0), 0, MARKER_COLOR, pos);
 		// Create fixed constraint
 		AddFixedConstraint(box, m_ground);
 	}
@@ -185,12 +186,12 @@ void RagDollApplication::RagDollStep() {
 		btVector3 force;
 		btVector3 relPos;
 		if (m_drawForwardForce && !m_drawBackForce) {
-			force = btVector3(0.5f, 0.0f, 0.0f);
+			force = btVector3(SCALING_FACTOR * 0.5f, 0.0f, 0.0f);
 			relPos = btVector3(0.0f, 0.0f, 0.0f);
 			m_torso->GetRigidBody()->applyImpulse(force, relPos);
 		}
 		if (m_drawBackForce && !m_drawForwardForce) {
-			force = btVector3(-0.5f, 0.0f, 0.0f);
+			force = btVector3(SCALING_FACTOR * -0.5f, 0.0f, 0.0f);
 			relPos = btVector3(0.0f, 0.0f, 0.0f);
 			m_torso->GetRigidBody()->applyImpulse(force, relPos);
 		}
@@ -238,7 +239,6 @@ void RagDollApplication::RagDollCollision() {
 void RagDollApplication::ShutdownPhysics() {
 
 }
-
 
 
 #pragma region GUI
@@ -914,7 +914,9 @@ void RagDollApplication::ApplyTorqueOnRightFoot(float torqueForce) {
 
 GameObject *RagDollApplication::Create2DBox(const btVector3 &halfSize, float mass, const btVector3 &color, const btVector3 &position) {
 
+	// Multiply size by scaling factor
 	GameObject *aBox = CreateGameObject(new btBox2dShape(halfSize), mass, color, position);
+
 	return aBox;
 }
 
@@ -931,7 +933,10 @@ GameObject *RagDollApplication::Create2DLine(const btVector3 &start, const btVec
 }
 
 GameObject *RagDollApplication::Create3DBox(const btVector3 &halfSize, float mass, const btVector3 &color, const btVector3 &position) {
+
+	// Multiply size by scaling factor
 	GameObject *aBox = CreateGameObject(new btBoxShape(halfSize), mass, color, position);
+
 	return aBox;
 }
 
@@ -940,6 +945,8 @@ btVector3 RagDollApplication::GetRandomColor() {
 }
 
 void RagDollApplication::DrawDebugFeedback() {
+
+	//DrawFilledCircle(0, -1 + GROUND_HEIGHT/2, 0.05, btVector3(255, 0, 0));
 
 	if (m_drawBackForce && !m_drawForwardForce) {
 		DrawArrow(m_torso->GetCOMPosition(), LEFT);
@@ -1016,8 +1023,9 @@ void RagDollApplication::DrawArrow(const btVector3 &pointOfContact, TranslateDir
 
 void RagDollApplication::DrawShape(btScalar *transform, const btCollisionShape *pShape, const btVector3 &color) {
 	
+	//BulletOpenGLApplication::DrawShape(transform, pShape, color);
+	
 	// Special rendering
-
 	if (pShape->getUserPointer() == m_torso) {
 		const btBoxShape *box = static_cast<const btBoxShape*>(pShape);
 		btVector3 halfSize = box->getHalfExtentsWithMargin();
@@ -1076,6 +1084,7 @@ void RagDollApplication::DrawShape(btScalar *transform, const btCollisionShape *
 	else {
 		BulletOpenGLApplication::DrawShape(transform, pShape, color);
 	}
+	
 }
 
 void RagDollApplication::DrawTorso(const btVector3 &halfSize) {

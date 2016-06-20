@@ -11,6 +11,8 @@ enum Dimension{ HEIGHT, WIDTH };
 #define PI 3.1415927
 #define TWO_PI 2 * PI
 
+#define SCALING_FACTOR 1.0f
+
 class Constants
 {
 	

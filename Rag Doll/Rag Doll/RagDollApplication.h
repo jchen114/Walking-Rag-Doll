@@ -7,13 +7,6 @@ class WalkingController;
 class State;
 class Gains;
 
-#define MARKER_DISTANCE 2.0f
-#define GROUND_WIDTH 200.0f
-#define MARKER_WIDTH 0.03f
-#define MARKER_HEIGHT 0.09f
-#define MARKER_COLOR btVector3(255,255,0)
-#define DRAW_SPEEDUP 10
-
 class RagDollApplication :
 	public BulletOpenGLApplication
 {

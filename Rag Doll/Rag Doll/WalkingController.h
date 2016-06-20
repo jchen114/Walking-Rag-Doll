@@ -24,17 +24,26 @@ class Gains;
 #define feet_mass 1
 
 // DIMENSIONS. 
-#define torso_height 0.48f
+#define torso_height SCALING_FACTOR * 0.48f
 #define torso_width torso_height / 5
 
-#define upper_leg_height 0.45f
+#define upper_leg_height SCALING_FACTOR * 0.45f
 #define upper_leg_width upper_leg_height / 5
 
-#define lower_leg_height 0.45f
+#define lower_leg_height SCALING_FACTOR * 0.45f
 #define lower_leg_width lower_leg_height / 7
 
-#define foot_height 0.05f
+#define foot_height SCALING_FACTOR * 0.05f
 #define foot_width foot_height * 4
+
+#define GROUND_WIDTH SCALING_FACTOR * 200.0f
+#define GROUND_HEIGHT SCALING_FACTOR * 0.2f
+#define MARKER_WIDTH SCALING_FACTOR * 0.03f
+#define MARKER_HEIGHT SCALING_FACTOR * 0.05f
+#define MARKER_DISTANCE SCALING_FACTOR * 2.0f
+
+#define MARKER_COLOR btVector3(255,255,0)
+#define DRAW_SPEEDUP 10
 
 // Gains
 #define KP_LOWER 0.0f
@@ -65,13 +74,14 @@ class Gains;
 #define HINGE_URL_LRL_LOW		0.0f
 #define HINGE_URL_LRL_HIGH		150.0f
 
-#define HINGE_LLL_LF_LOW		-105.0f
-#define HINGE_LLL_LF_HIGH		0.0f
+#define HINGE_LLL_LF_LOW		-15.0f
+#define HINGE_LLL_LF_HIGH		90.0f
 
-#define HINGE_LRL_RF_LOW		-105.0f
-#define HINGE_LRL_RF_HIGH		0.0f
+#define HINGE_LRL_RF_LOW		-15.0f
+#define HINGE_LRL_RF_HIGH		90.0f
 
-#define ORIGINAL_TORSO_POSITION btVector3(0, -0.3 + foot_height/2 + lower_leg_height + upper_leg_height + torso_height/2, 0)
+#define GROUND_POSITION btVector3(0, SCALING_FACTOR * -0.5, 0.0f)
+#define ORIGINAL_TORSO_POSITION btVector3(0, (SCALING_FACTOR *-0.5 + GROUND_HEIGHT/2 + foot_height/2 + lower_leg_height + upper_leg_height + torso_height/2), 0)
 
 #pragma endregion DEFINITIONS
 
