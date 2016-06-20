@@ -29,14 +29,45 @@ WalkingController::WalkingController(RagDollApplication *app) {
 
 }
 
-std::vector<State *> WalkingController::ReadStateFile() {
-
+std::vector<std::string> WalkingController::GetGaits() {
 	DIR *dir;
 	struct dirent *ent;
-	std::string state_dir = "..\\..\\State Configurations";
+	std::vector<std::string> gaits;
+	std::string gaits_dir = "..\\..\\State Configurations\\Gaits";
+	if ((dir = opendir(gaits_dir.c_str())) != NULL) {
+		while ((ent = readdir(dir)) != NULL) {
+			if (ent->d_type == DT_DIR) {
+				std::string dirName = ent->d_name;
+				if (strcmp(dirName.c_str(), ".") == 0 || strcmp(dirName.c_str(), "..") == 0) {
+					continue;
+				}
+				gaits.push_back(dirName);
+				std::string gait_dir = gaits_dir + "\\" + dirName;
+				// Gait state
+				std::vector <State *> states = ReadStates(gait_dir);
+				m_GaitMap.insert(std::pair<std::string, std::vector<State *>>(dirName, states));
+				// Gains
+				std::vector<Gains*> gains = ReadGains(gait_dir);
+				m_GainMap.insert(std::pair<std::string, std::vector<Gains *>>(dirName, gains));
+				// Feedback
+				std::vector<float> fdbk = ReadFeedback(gait_dir);
+				m_FdbkMap.insert(std::pair<std::string, std::vector<float>>(dirName, fdbk));
+				// Time
+				float time = ReadTime(gait_dir);
+				m_TmMap.insert(std::pair<std::string, float>(dirName, time));
+			}
+		}
+		closedir(dir);
+	}
+	return gaits;
+}
+
+std::vector<State *> WalkingController::ReadStates(std::string state_dir) {
+	DIR *dir;
+	struct dirent *ent;
 	if ((dir = opendir(state_dir.c_str())) != NULL) {
 		std::string state_ext = "cfg";
-		
+
 		while ((ent = readdir(dir)) != NULL) {
 			if (ent->d_type == DT_REG) {
 				//printf("%s\n", ent->d_name);
@@ -90,17 +121,17 @@ std::vector<State *> WalkingController::ReadStateFile() {
 		m_state4 = new State(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 	}
 
-	std::vector<State *> states = {m_state0, m_state1, m_state2, m_state3, m_state4};
-	return states;
-
+	return std::vector < State * > {m_state0, m_state1, m_state2, m_state3, m_state4};
 }
 
-std::vector<Gains *> WalkingController::ReadGainsFile() {
+std::vector<State *> WalkingController::ReadStateFile() {
+	return ReadStates("..\\..\\State Configurations");
+}
 
+std::vector<Gains *>WalkingController::ReadGains(std::string gains_dir) {
 	DIR *dir;
 	struct dirent *ent;
-	std::string state_dir = "..\\..\\State Configurations";
-	if ((dir = opendir(state_dir.c_str())) != NULL) {
+	if ((dir = opendir(gains_dir.c_str())) != NULL) {
 		std::string gains_ext = "gns";
 		while ((ent = readdir(dir)) != NULL) {
 			if (ent->d_type == DT_REG) {
@@ -108,7 +139,7 @@ std::vector<Gains *> WalkingController::ReadGainsFile() {
 				std::string fname = ent->d_name;
 				if (fname.find(gains_ext, (fname.length() - gains_ext.length())) != std::string::npos) {
 					std::stringstream ss;
-					ss << state_dir << "\\" << ent->d_name;
+					ss << gains_dir << "\\" << ent->d_name;
 					std::ifstream infile(ss.str());
 					float kp, kd;
 					char c;
@@ -169,14 +200,17 @@ std::vector<Gains *> WalkingController::ReadGainsFile() {
 
 	std::vector<Gains *> gains = { m_torso_gains, m_ull_gains, m_url_gains, m_lll_gains, m_lrl_gains, m_lf_gains, m_rf_gains };
 	return gains;
-
 }
 
-std::vector<float>WalkingController::ReadFeedbackFile() {
+std::vector<Gains *> WalkingController::ReadGainsFile() {
+
+	return ReadGains("..\\..\\State Configurations");
+}
+
+std::vector<float> WalkingController::ReadFeedback(std::string fdbk_dir) {
 	DIR *dir;
 	struct dirent *ent;
-	std::string state_dir = "..\\..\\State Configurations";
-	if ((dir = opendir(state_dir.c_str())) != NULL) {
+	if ((dir = opendir(fdbk_dir.c_str())) != NULL) {
 		std::string feedback_ext = "fdbk";
 
 		while ((ent = readdir(dir)) != NULL) {
@@ -185,7 +219,7 @@ std::vector<float>WalkingController::ReadFeedbackFile() {
 				std::string fname = ent->d_name;
 				if (fname.find(feedback_ext, (fname.length() - feedback_ext.length())) != std::string::npos) {
 					std::stringstream ss;
-					ss << state_dir << "\\" << ent->d_name;
+					ss << fdbk_dir << "\\" << ent->d_name;
 					std::ifstream infile(ss.str());
 					float cd_1, cv_1, cd_2, cv_2;
 					char c;
@@ -209,15 +243,18 @@ std::vector<float>WalkingController::ReadFeedbackFile() {
 		m_cv_2 = 0.0f;
 	}
 
-	std::vector<float> fdbk = {m_cd_1, m_cv_1, m_cd_2, m_cv_2 };
+	std::vector<float> fdbk = { m_cd_1, m_cv_1, m_cd_2, m_cv_2 };
 	return fdbk;
 }
 
-float WalkingController::ReadTimeFile() {
+std::vector<float>WalkingController::ReadFeedbackFile() {
+	return ReadFeedback("..\\..\\State Configurations");
+}
+
+float WalkingController::ReadTime(std::string time_dir) {
 	DIR *dir;
 	struct dirent *ent;
-	std::string state_dir = "..\\..\\State Configurations";
-	if ((dir = opendir(state_dir.c_str())) != NULL) {
+	if ((dir = opendir(time_dir.c_str())) != NULL) {
 		std::string feedback_ext = "tm";
 
 		while ((ent = readdir(dir)) != NULL) {
@@ -226,7 +263,7 @@ float WalkingController::ReadTimeFile() {
 				std::string fname = ent->d_name;
 				if (fname.find(feedback_ext, (fname.length() - feedback_ext.length())) != std::string::npos) {
 					std::stringstream ss;
-					ss << state_dir << "\\" << ent->d_name;
+					ss << time_dir << "\\" << ent->d_name;
 					std::ifstream infile(ss.str());
 					float time;
 					char c;
@@ -245,6 +282,10 @@ float WalkingController::ReadTimeFile() {
 	}
 
 	return m_state_time;
+}
+
+float WalkingController::ReadTimeFile() {
+	return ReadTime("..\\..\\State Configurations");
 }
 
 void WalkingController::SaveStates() {
@@ -455,6 +496,12 @@ void WalkingController::NotifyRightFootGroundContact() {
 		m_rightFootGroundHasContacted = false;
 	}
 	
+}
+
+void WalkingController::ChangeGait(std::string gait) {
+	// load the current gait
+	std::vector<State *>states = m_GaitMap.find(gait)->second;
+	// interpolate (?)
 }
 
 #pragma endregion WALKER_INTERACTION

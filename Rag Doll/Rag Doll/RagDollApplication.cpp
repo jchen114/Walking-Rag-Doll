@@ -256,8 +256,8 @@ void RagDollApplication::CreateRagDollGUI() {
 	/*===================================== GAINS =========================================*/
 	GLUI_Panel *gains_panel = m_glui_window->add_panel("Gains");
 	m_glui_window->add_statictext_to_panel(gains_panel, "Torso");
-	m_torso_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_gains.at(0)->m_kp, TORSO_KP);
-	m_torso_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_gains.at(0)->m_kd, TORSO_KD);
+	m_torso_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_WalkingController->m_torso_gains->m_kp, TORSO_KP);
+	m_torso_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_WalkingController->m_torso_gains->m_kd, TORSO_KD);
 
 	m_torso_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
 	m_torso_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
@@ -379,8 +379,25 @@ void RagDollApplication::CreateRagDollGUI() {
 	m_glui_window->add_column(true);
 
 	GLUI_Panel *gait_panel = m_glui_window->add_panel("Gaits");
-	m_GaitsRadioGroup = m_glui_window->add_radiogroup_to_panel(gait_panel);
 
+	// Determine how many gaits we have.
+
+	m_GaitsRadioGroup = m_glui_window->add_radiogroup_to_panel(gait_panel, &m_currentGait, -1, (GLUI_Update_CB)GaitsChanged);
+	std::vector<std::string> gaits = m_WalkingController->GetGaits();
+	int walk_index = 0;
+	int ind = 0;
+	for (std::vector<std::string>::iterator it = gaits.begin(); it != gaits.end(); ++it) {
+		std::string gait_name = *it;
+		m_glui_window->add_radiobutton_to_group(m_GaitsRadioGroup, gait_name.c_str());
+		if (strcmp(gait_name.c_str(), "Walk") == 0) {
+			walk_index = ind;
+		}
+		m_gaits.push_back(gait_name);
+		ind++;
+	}
+	m_currentGait = walk_index;
+	m_previousGait = walk_index;
+	m_GaitsRadioGroup->set_int_val(walk_index);
 
 }
 
@@ -685,6 +702,13 @@ void RagDollApplication::ChangeState(int id) {
 
 	UpdateRagDoll();
 
+}
+
+void RagDollApplication::ChangeGait() {
+
+	printf("Previous gate: %s, Current Gait: %s \n", m_gaits.at(m_previousGait).c_str(), m_gaits.at(m_currentGait).c_str());
+
+	m_previousGait = m_currentGait;
 }
 
 #pragma endregion GUI
@@ -1304,6 +1328,10 @@ static void PauseButtonPressed(int id) {
 
 static void StateChanged(int id)	 {
 	m_app->ChangeState(id);
+}
+
+static void GaitsChanged(int id) {
+	m_app->ChangeGait();
 }
 
 // State Callbacks

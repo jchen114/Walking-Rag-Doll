@@ -2,6 +2,7 @@
 #include <vector>
 #include <cstdio>
 #include <ctime>
+#include <unordered_map>
 
 #include "LinearMath\btQuickprof.h"
 #include "LinearMath\btVector3.h"
@@ -98,9 +99,14 @@ public:
 	
 	~WalkingController();
 
+	std::vector<std::string> GetGaits();
+	std::vector<State *> ReadStates(std::string state_dir);
 	std::vector<State *> ReadStateFile();
+	std::vector<Gains *> ReadGains(std::string gains_dir);
 	std::vector<Gains *> ReadGainsFile();
+	std::vector<float> ReadFeedback(std::string fdbk_dir);
 	std::vector<float> ReadFeedbackFile();
+	float ReadTime(std::string time_dir);
 	float ReadTimeFile();
 
 	void SaveStates();
@@ -114,6 +120,7 @@ public:
 	void Reset();
 	void NotifyLeftFootGroundContact();
 	void NotifyRightFootGroundContact();
+	void ChangeGait(std::string gait);
 
 	void SetState1(float torso, float upperLeftLeg, float upperRightLeg, float lowerLeftLeg, float lowerRightLeg, float leftFoot, float rightFoot);
 	void SetState2(float torso, float upperLeftLeg, float upperRightLeg, float lowerLeftLeg, float lowerRightLeg, float leftFoot, float rightFoot);
@@ -131,26 +138,13 @@ public:
 	CurrentControllerState m_currentState = RESET;
 	CurrentRagDollState m_ragDollState = STATE_0;
 
-	float m_cd_1 = 0.0f;
-	float m_cv_1 = 0.0f;
-	float m_cd_2 = 0.0f;
-	float m_cv_2 = 0.0f;
-
-	float m_state_time = 0.0f;
-
 	btVector3 m_stanceAnklePosition = btVector3(0, 0, 0);
 	btVector3 m_COMPosition = btVector3(0,0,0);
 
-private:
-
-	bool m_leftFootGroundHasContacted = false;
-	bool m_rightFootGroundHasContacted = false;
-
-	RagDollApplication *m_app;
-
-	btClock m_clock;
-	double m_duration = 0.0f;
-	bool m_reset = true;
+	std::unordered_map<std::string, std::vector<State*>> m_GaitMap;
+	std::unordered_map<std::string, std::vector<Gains *>> m_GainMap;
+	std::unordered_map<std::string, std::vector<float>> m_FdbkMap;
+	std::unordered_map<std::string, float> m_TmMap;
 
 	// Set these in the GUI
 	Gains *m_torso_gains;
@@ -166,6 +160,24 @@ private:
 	State *m_state2;
 	State *m_state3;
 	State *m_state4;
+
+	float m_cd_1 = 0.0f;
+	float m_cv_1 = 0.0f;
+	float m_cd_2 = 0.0f;
+	float m_cv_2 = 0.0f;
+
+	float m_state_time = 0.0f;
+
+private:
+
+	bool m_leftFootGroundHasContacted = false;
+	bool m_rightFootGroundHasContacted = false;
+
+	RagDollApplication *m_app;
+
+	btClock m_clock;
+	double m_duration = 0.0f;
+	bool m_reset = true;
 
 	std::vector<float> CalculateState1Torques();
 	std::vector<float> CalculateState2Torques();

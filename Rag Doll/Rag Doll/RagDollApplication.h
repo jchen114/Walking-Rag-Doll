@@ -63,6 +63,7 @@ public:
 	void Pause();
 	void CloseGLUIWindow(int id);
 	void ChangeState(int id);
+	void ChangeGait();
 	void ChangeTorsoAngle();
 	void ChangeUpperLeftLegAngle();
 	void ChangeUpperRightLegAngle();
@@ -103,6 +104,9 @@ private:
 	int m_currentState = 0;
 	int m_previousState = 0;
 
+	int m_currentGait;
+	int m_previousGait;
+
 	std::vector<GameObject *> m_bodies;
 
 	btHingeConstraint *m_torso_urLeg;
@@ -114,7 +118,10 @@ private:
 
 	// States
 	std::vector<State *> m_states;
+	// Gains
 	std::vector<Gains *> m_gains;
+	// Gaits
+	std::vector<std::string> m_gaits;
 
 	void CreateRagDollGUI();
 	void SetupGUIConfiguration(std::vector<State *>states, std::vector<Gains *> gains);
@@ -185,6 +192,7 @@ static void ResetButtonPressed(int id);
 static void PauseButtonPressed(int id);
 static void StartButtonPressed(int id);
 static void StateChanged(int id);
+static void GaitsChanged(int id);
 
 static void TorsoAngleChanged(int id);
 static void UpperLeftLegAngleChanged(int id);
