@@ -158,6 +158,8 @@ private:
 
 	GLUI_Spinner *m_timer_spinner;
 
+	GLUI_RadioGroup *m_GaitsRadioGroup;
+
 	int m_draw = 0;
 	char buf[1000];
 	btVector3 m_color;

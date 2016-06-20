@@ -318,7 +318,7 @@ void RagDollApplication::CreateRagDollGUI() {
 
 	m_glui_window->add_button_to_panel(gains_panel, "Save Gains", SAVEGAINS_BUTTON, (GLUI_Update_CB)SaveGainsButtonPressed);
 
-	// Horizontal separation
+	// Vertical separation
 	m_glui_window->add_column(true);
 
 	/*===================================== STATES =========================================*/
@@ -374,6 +374,13 @@ void RagDollApplication::CreateRagDollGUI() {
 	m_glui_window->add_button_to_panel(control_panel, "Pause", PAUSE_BUTTON, (GLUI_Update_CB)PauseButtonPressed);
 	m_glui_window->add_separator_to_panel(control_panel);
 	m_glui_window->add_button_to_panel(control_panel, "Start", START_BUTTON, (GLUI_Update_CB)StartButtonPressed);
+
+	// Vertical separation
+	m_glui_window->add_column(true);
+
+	GLUI_Panel *gait_panel = m_glui_window->add_panel("Gaits");
+	m_GaitsRadioGroup = m_glui_window->add_radiogroup_to_panel(gait_panel);
+
 
 }
 
@@ -593,16 +600,14 @@ void RagDollApplication::Reset() {
 	//GameObject::ClearForces(bodies);
 	GameObject::ClearVelocities(m_bodies);
 
-	DisableStateSpinner();
-	EnableGainSpinners();
 	m_StatesRadioGroup->enable();
 
 	GameObject::DisableObjects(m_bodies);
 
 	m_StatesRadioGroup->set_int_val(0); // State 0
 	m_currentState = 0;
-	UpdateRagDoll();
-
+	ChangeState(0);
+	EnableGainSpinners();
 	//m_cameraManager->Reset();
 }
 
