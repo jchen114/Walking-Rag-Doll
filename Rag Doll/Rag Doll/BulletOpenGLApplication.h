@@ -26,7 +26,6 @@
 #include "GameObject.h"
 #include <vector>
 
-#define BULLET_TIME_STEP 0.002f // 1 ms
 #define RENDER_TIME_STEP 0.02f // 20 ms = 50fps
 
 //Debug
@@ -36,6 +35,15 @@
 //#define Debug( x ) std::cout << x << std::endl
 #else
 #define Debug( x ) 
+#endif
+
+// Realtime
+#define REALTIME
+
+#ifdef REALTIME
+#define BULLET_TIME_STEP 0.002f // 1 ms
+#else
+#define BULLET_TIME_STEP 0.0005f // 1 ms
 #endif
 
 class DebugDrawer;

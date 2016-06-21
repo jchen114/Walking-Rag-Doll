@@ -79,7 +79,6 @@ void CameraManager::SetupOrthographicModelView() {
 	// Translate in meters.
 	glTranslatef(m_cameraPosX, m_cameraPosY, 0);
 
-	
 }
 
 
@@ -246,7 +245,7 @@ void CameraManager::PrintCameraLocation() {
 }
 
 btVector3 CameraManager::GetCameraLocation() {
-	return m_cameraPosition;
+	return btVector3(m_cameraPosX, m_cameraPosY, 0);
 }
 
 CameraManager::~CameraManager()

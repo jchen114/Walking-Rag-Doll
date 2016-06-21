@@ -188,6 +188,7 @@ void BulletOpenGLApplication::Idle() {
 		// clear the backbuffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		#ifdef REALTIME
 		// get the time since the last iteration
 		static bool firstTime = true;
 		float dt = firstTime ? 0.0 : 0.001 * 0.001 * m_clock.getTimeMicroseconds();
@@ -218,24 +219,35 @@ void BulletOpenGLApplication::Idle() {
 			// every update and the amount of elasped time was 
 			// determined back in ::Idle() by our clock object.
 
-			//m_SimClock.reset();
+			m_SimClock.reset();
 			for (int i = 0; i < numSteps; i++) {
 				m_pWorld->stepSimulation(BULLET_TIME_STEP, 0);
 			}
-			//m_DeltaSimTime = m_SimClock.getTimeMilliseconds();
+			m_DeltaSimTime = m_SimClock.getTimeMilliseconds();
 		}
 		int m = m_clock.getTimeMicroseconds();
 
 		char buf[200];
 		sprintf_s(buf, "physics computation time = %d, numsteps = %d, elapsed time = %f, remaining time = %f, complete time = %f", m, numSteps, dt, m_RemainingTime, completeTime);
-		DisplayText(-2, 2, btVector3(0,0,0), buf);
+		//printf("camera location x = %f \n", m_cameraManager->GetCameraLocation().x());
+		DisplayText(-m_cameraManager->GetCameraLocation().x(), 2, btVector3(0,0,0), buf);
+		m_DeltaGlutTime = dt;
+		#else 
+		if (m_pWorld) {
+
+			// step the simulation through time. This is called
+			// every update and the amount of elasped time was 
+			// determined back in ::Idle() by our clock object.
+			for (int i = 0; i < 9; i++) {
+				m_pWorld->stepSimulation(BULLET_TIME_STEP, 0);
+			}
+	}
+		#endif
 
 		m_cameraManager->UpdateCamera();
 
 		// render the scene
 		RenderScene();
-
-		m_DeltaGlutTime = dt;
 
 		try {
 			m_DrawCallback();

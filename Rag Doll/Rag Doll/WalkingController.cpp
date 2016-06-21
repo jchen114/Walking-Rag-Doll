@@ -599,7 +599,7 @@ std::vector<float> WalkingController::CalculateState1Torques() {
 		m_app->m_rightFoot->GetAngularVelocity());
 
 	Debug("Torques (ULL-stance: " << upperLeftLegTorque << ", URL-swing: " << upperRightLegTorque << ", LLL: " << lowerLeftLegTorque << ", LRL: " << lowerRightLegTorque << ", LF: " << leftFootTorque << ", RF: " << rightFootTorque);
-	torques = {upperLeftLegTorque, upperRightLegTorque, lowerLeftLegTorque, lowerRightLegTorque, leftFootTorque, rightFootTorque };
+	torques = {upperLeftLegTorque - lowerLeftLegTorque, upperRightLegTorque - lowerRightLegTorque, lowerLeftLegTorque - leftFootTorque, lowerRightLegTorque - rightFootTorque, leftFootTorque, rightFootTorque };
 	return torques;
 }
 
@@ -632,7 +632,7 @@ std::vector<float> WalkingController::CalculateState2Torques() {
 		m_app->m_rightFoot->GetAngularVelocity());
 
 	Debug("Torques (ULL-stance: " << upperLeftLegTorque << ", URL-swing: " << upperRightLegTorque << ", LLL: " << lowerLeftLegTorque << ", LRL: " << lowerRightLegTorque << ", LF: " << leftFootTorque << ", RF: " << rightFootTorque);
-	torques = {upperLeftLegTorque, upperRightLegTorque, lowerLeftLegTorque, lowerRightLegTorque, leftFootTorque, rightFootTorque };
+	torques = { upperLeftLegTorque - lowerLeftLegTorque, upperRightLegTorque - lowerRightLegTorque, lowerLeftLegTorque - leftFootTorque, lowerRightLegTorque - rightFootTorque, leftFootTorque, rightFootTorque };
 	return torques;
 }
 
@@ -667,7 +667,7 @@ std::vector<float> WalkingController::CalculateState3Torques() {
 		m_app->m_rightFoot->GetAngularVelocity());
 
 	Debug("Torques (ULL-swing: " << upperLeftLegTorque << ", URL-stance: " << upperRightLegTorque << ", LLL: " << lowerLeftLegTorque << ", LRL: " << lowerRightLegTorque << ", LF: " << leftFootTorque << ", RF: " << rightFootTorque);
-	torques = { upperLeftLegTorque, upperRightLegTorque, lowerLeftLegTorque, lowerRightLegTorque, leftFootTorque, rightFootTorque };
+	torques = { upperLeftLegTorque - lowerLeftLegTorque, upperRightLegTorque - lowerRightLegTorque, lowerLeftLegTorque - leftFootTorque, lowerRightLegTorque - rightFootTorque, leftFootTorque, rightFootTorque };
 	return torques;
 }
 
@@ -700,8 +700,9 @@ std::vector<float> WalkingController::CalculateState4Torques() {
 		m_app->m_rightFoot->GetOrientation(),
 		m_app->m_rightFoot->GetAngularVelocity());
 
-	Debug("Torques (ULL-swing: " << upperLeftLegTorque << ", URL-stance: " << upperRightLegTorque << ", LLL: " << lowerLeftLegTorque << ", LRL: " << lowerRightLegTorque << ", LF: " << leftFootTorque << ", RF: " << rightFootTorque);
-	torques = {upperLeftLegTorque, upperRightLegTorque, lowerLeftLegTorque, lowerRightLegTorque, leftFootTorque, rightFootTorque };
+	//std::cout << "Torques Before (ULL-swing: " << upperLeftLegTorque << ", URL-stance: " << upperRightLegTorque << ", LLL: " << lowerLeftLegTorque << ", LRL: " << lowerRightLegTorque << ", LF: " << leftFootTorque << ", RF: " << rightFootTorque << std::endl;
+	//std::cout << "Torques After (ULL-swing: " << upperLeftLegTorque - lowerLeftLegTorque << ", URL-stance: " << upperRightLegTorque - lowerRightLegTorque << ", LLL: " << lowerLeftLegTorque - leftFootTorque << ", LRL: " << lowerRightLegTorque  - rightFootTorque << ", LF: " << leftFootTorque << ", RF: " << rightFootTorque << std::endl;
+	torques = { upperLeftLegTorque - lowerLeftLegTorque, upperRightLegTorque - lowerRightLegTorque, lowerLeftLegTorque - leftFootTorque, lowerRightLegTorque - rightFootTorque, leftFootTorque, rightFootTorque };
 	return torques;
 }
 
