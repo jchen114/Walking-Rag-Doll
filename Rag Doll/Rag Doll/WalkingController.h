@@ -110,9 +110,13 @@ public:
 	float ReadTimeFile();
 
 	void SaveStates();
+	void SaveStates(std::string gait);
 	void SaveGains();
+	void SaveGains(std::string gait);
 	void SaveFeedback();
+	void SaveFeedback(std::string gait);
 	void SaveTime();
+	void SaveTime(std::string gait);
 
 	void StateLoop();
 	void InitiateWalking();

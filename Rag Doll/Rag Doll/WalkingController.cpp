@@ -288,6 +288,21 @@ float WalkingController::ReadTimeFile() {
 	return ReadTime("..\\..\\State Configurations");
 }
 
+void WalkingController::SaveStates(std::string gait) {
+	std::ofstream states_file;
+	std::string file_name = "..\\..\\State Configurations\\Gaits\\" + gait + "\\states.cfg";
+	printf("save states tp %s\n", file_name.c_str());
+	states_file.open(file_name);
+	std::vector<State *> states = { m_state0, m_state1, m_state2, m_state3, m_state4 };
+	for (std::vector<State *>::iterator it = states.begin(); it != states.end(); it++) {
+		char buffer[100];
+		sprintf_s(buffer, "%f, %f, %f, %f, %f, %f, %f\n", (*it)->m_torsoAngle, (*it)->m_upperLeftLegAngle, (*it)->m_upperRightLegAngle, (*it)->m_lowerLeftLegAngle, (*it)->m_lowerRightLegAngle, (*it)->m_leftFootAngle, (*it)->m_rightFootAngle);
+		std::cout << buffer;
+		states_file << buffer;
+	}
+	states_file.close();
+}
+
 void WalkingController::SaveStates() {
 	std::ofstream states_file;
 	states_file.open("..\\..\\State Configurations\\states.cfg");
@@ -300,6 +315,20 @@ void WalkingController::SaveStates() {
 	}
 	states_file.close();
 }
+
+void WalkingController::SaveGains(std::string gait) {
+	std::ofstream gains_file;
+	gains_file.open("..\\..\\State Configurations\\Gaits\\" + gait + "\\gains.gns");
+	std::vector<Gains *> gains = { m_torso_gains, m_ull_gains, m_url_gains, m_lll_gains, m_lrl_gains, m_lf_gains, m_rf_gains };
+	for (std::vector<Gains *>::iterator it = gains.begin(); it != gains.end(); it++) {
+		char buffer[100];
+		sprintf_s(buffer, "%f, %f \n", (*it)->m_kp, (*it)->m_kd);
+		std::cout << buffer;
+		gains_file << buffer;
+	}
+	gains_file.close();
+}
+
 
 void WalkingController::SaveGains() {
 
@@ -315,6 +344,16 @@ void WalkingController::SaveGains() {
 	gains_file.close();
 }
 
+void WalkingController::SaveFeedback(std::string gait) {
+	std::ofstream feedback_file;
+	feedback_file.open("..\\..\\State Configurations\\Gaits\\" + gait + "\\feedbacks.fdbk");
+	char buffer[100];
+	sprintf_s(buffer, "%f, %f, %f, %f\n", m_cd_1, m_cv_1, m_cd_2, m_cv_2);
+	std::cout << buffer;
+	feedback_file << buffer;
+	feedback_file.close();
+}
+
 void WalkingController::SaveFeedback() {
 	std::ofstream feedback_file;
 	feedback_file.open("..\\..\\State Configurations\\feedbacks.fdbk");
@@ -323,6 +362,16 @@ void WalkingController::SaveFeedback() {
 	std::cout << buffer;
 	feedback_file << buffer;
 	feedback_file.close();
+}
+
+void WalkingController::SaveTime(std::string gait) {
+	std::ofstream time_file;
+	time_file.open("..\\..\\State Configurations\\Gaits\\" + gait + "\\stateTimes.tm");
+	char buffer[100];
+	sprintf_s(buffer, "%f\n", m_state_time);
+	std::cout << buffer;
+	time_file << buffer;
+	time_file.close();
 }
 
 void WalkingController::SaveTime() {
@@ -499,9 +548,36 @@ void WalkingController::NotifyRightFootGroundContact() {
 }
 
 void WalkingController::ChangeGait(std::string gait) {
+
+	printf("Gait is now %s\n", gait.c_str());
+
 	// load the current gait
 	std::vector<State *>states = m_GaitMap.find(gait)->second;
+	std::vector<Gains *>gains = m_GainMap.find(gait)->second;
+	std::vector<float>feedback = m_FdbkMap.find(gait)->second;
+	float time = m_TmMap.find(gait)->second;
 	// interpolate (?)
+	// Setting everything...
+	m_state0 = states.at(0);
+	m_state1 = states.at(1);
+	m_state2 = states.at(2);
+	m_state3 = states.at(3);
+	m_state4 = states.at(4);
+
+	m_torso_gains = gains.at(0);
+	m_ull_gains = gains.at(1);
+	m_url_gains = gains.at(2);
+	m_lll_gains = gains.at(3);
+	m_lrl_gains = gains.at(4);
+	m_lf_gains = gains.at(5);
+	m_rf_gains = gains.at(6);
+
+	m_cd_1 = feedback.at(0);
+	m_cv_1 = feedback.at(1);
+	m_cd_2 = feedback.at(2);
+	m_cv_2 = feedback.at(3);
+
+	m_state_time = time;
 }
 
 #pragma endregion WALKER_INTERACTION
@@ -585,17 +661,17 @@ std::vector<float> WalkingController::CalculateState1Torques() {
 	float upperLeftLegTorque = - torsoTorque - upperRightLegTorque;
 
 	/* ==================== Calculating torque for Lower Legs ======================= */
-	float lowerLeftLegTorque = CalculateTorqueForLowerLeftLeg(m_state1->m_upperLeftLegAngle - m_state1->m_lowerLeftLegAngle, m_app->m_lowerLeftLeg->GetOrientation(), m_app->m_lowerLeftLeg->GetAngularVelocity());
-	float lowerRightLegTorque = CalculateTorqueForLowerRightLeg(m_state1->m_upperRightLegAngle - m_state1->m_lowerRightLegAngle, m_app->m_lowerRightLeg->GetOrientation(), m_app->m_lowerRightLeg->GetAngularVelocity());
+	float lowerLeftLegTorque = CalculateTorqueForLowerLeftLeg(m_state1->m_lowerLeftLegAngle, m_app->m_upperLeftLeg->GetOrientation() - m_app->m_lowerLeftLeg->GetOrientation(), m_app->m_lowerLeftLeg->GetAngularVelocity());
+	float lowerRightLegTorque = CalculateTorqueForLowerRightLeg(m_state1->m_lowerRightLegAngle, m_app->m_upperRightLeg->GetOrientation() - m_app->m_lowerRightLeg->GetOrientation(), m_app->m_lowerRightLeg->GetAngularVelocity());
 	
 	/* ==================== Calculating torque for Feet ======================= */
 	float leftFootTorque = CalculateTorqueForLeftFoot(
-		m_state1->m_upperLeftLegAngle - m_state1->m_lowerLeftLegAngle - (m_state1->m_leftFootAngle), 
-		m_app->m_leftFoot->GetOrientation(), 
+		m_state1->m_leftFootAngle, // Relative angle
+		m_app->m_upperLeftLeg->GetOrientation() - m_app->m_lowerLeftLeg->GetOrientation() - m_app->m_leftFoot->GetOrientation(),  // Convert global to relative
 		m_app->m_leftFoot->GetAngularVelocity());
 	float rightFootTorque = CalculateTorqueForRightFoot(
-		m_state1->m_upperRightLegAngle - m_state1->m_lowerRightLegAngle - (m_state1->m_rightFootAngle ), 
-		m_app->m_rightFoot->GetOrientation(), 
+		m_state1->m_rightFootAngle, 
+		m_app->m_upperRightLeg->GetOrientation() - m_app->m_lowerRightLeg->GetOrientation() - m_app->m_rightFoot->GetOrientation(), 
 		m_app->m_rightFoot->GetAngularVelocity());
 
 	Debug("Torques (ULL-stance: " << upperLeftLegTorque << ", URL-swing: " << upperRightLegTorque << ", LLL: " << lowerLeftLegTorque << ", LRL: " << lowerRightLegTorque << ", LF: " << leftFootTorque << ", RF: " << rightFootTorque);

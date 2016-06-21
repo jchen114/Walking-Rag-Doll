@@ -83,14 +83,16 @@ public:
 	void RagDollStep();
 	void RagDollCollision();
 
+	State *GetState(int state);
+
 private:
 
 	void DrawDebugFeedback();
 
 	void DisplayState(int state);
 	void DisplayGains();
-	void DisplayFeedback(std::vector<float> feedbacks);
-	void DisplayTime(float time);
+	void DisplayFeedback();
+	void DisplayTime();
 	void DisableStateSpinner();
 	void DisableAllSpinners();
 	void EnableGainSpinners();
@@ -116,15 +118,11 @@ private:
 	btHingeConstraint *m_lrLeg_rFoot;
 	btHingeConstraint *m_llLeg_lFoot;
 
-	// States
-	std::vector<State *> m_states;
-	// Gains
-	std::vector<Gains *> m_gains;
 	// Gaits
 	std::vector<std::string> m_gaits;
 
 	void CreateRagDollGUI();
-	void SetupGUIConfiguration(std::vector<State *>states, std::vector<Gains *> gains);
+	void SetupGUIConfiguration();
 
 	// GLUI Members
 
