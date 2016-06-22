@@ -757,7 +757,7 @@ void RagDollApplication::UpdateRagDoll() {
 		btQuaternion(btVector3(0, 0, 1), torsoAngle));
 	Debug("Torso COM (" << m_torso->GetCOMPosition().x() << ", " << m_torso->GetCOMPosition().y() << ", " << m_torso->GetCOMPosition().z() << ")");
 
-	printf("torso angle = %f, orientation = %f \n", Constants::GetInstance().RadiansToDegrees(torsoAngle), m_torso->GetOrientation());
+	//("torso angle = %f, orientation = %f \n", Constants::GetInstance().RadiansToDegrees(torsoAngle), m_torso->GetOrientation());
 
 	btVector3 hipPosition = ORIGINAL_TORSO_POSITION + btVector3(0, -torso_height/2, 0);  // Hip stays constant
 
@@ -768,7 +768,7 @@ void RagDollApplication::UpdateRagDoll() {
 		btQuaternion(btVector3(0, 0, 1), urlAngle));
 	Debug("URL COM (" << m_upperRightLeg->GetCOMPosition().x() << ", " << m_upperRightLeg->GetCOMPosition().y() << ", " << m_upperRightLeg->GetCOMPosition().z(), ")");
 
-	printf("URL angle = %f, orientation = %f \n", Constants::GetInstance().RadiansToDegrees(urlAngle), m_upperRightLeg->GetOrientation());
+	//printf("URL angle = %f, orientation = %f \n", Constants::GetInstance().RadiansToDegrees(urlAngle), m_upperRightLeg->GetOrientation());
 
 	// PINK
 	m_upperLeftLeg->Reposition(
@@ -785,7 +785,7 @@ void RagDollApplication::UpdateRagDoll() {
 		btQuaternion(btVector3(0, 0, 1), lrlAngle));
 	Debug("LRL COM (" << m_lowerRightLeg->GetCOMPosition().x() << ", " << m_lowerRightLeg->GetCOMPosition().y() << ", " << m_lowerRightLeg->GetCOMPosition().z(), ")");
 
-	printf("lower right leg angle = %f, orientation = %f\n", Constants::GetInstance().RadiansToDegrees(lrlAngle), m_lowerRightLeg->GetOrientation());
+	//printf("lower right leg angle = %f, orientation = %f\n", Constants::GetInstance().RadiansToDegrees(lrlAngle), m_lowerRightLeg->GetOrientation());
 
 	btVector3 upperLeftLegBottomPoint = m_upperLeftLeg->GetCOMPosition() + btVector3(sin(ullAngle) * upper_leg_height / 2, -cos(ullAngle) * upper_leg_height / 2, 0);
 	
@@ -802,7 +802,7 @@ void RagDollApplication::UpdateRagDoll() {
 		btQuaternion(btVector3(0, 0, 1), rfAngle));
 	Debug("RF COM (" << m_rightFoot->GetCOMPosition().x() << ", " << m_rightFoot->GetCOMPosition().y() << ", " << m_rightFoot->GetCOMPosition().z() << ")");
 	
-	printf("right foot angle = %f, orientation = %f\n", Constants::GetInstance().RadiansToDegrees(rfAngle), m_rightFoot->GetOrientation());
+	//printf("right foot angle = %f, orientation = %f\n", Constants::GetInstance().RadiansToDegrees(rfAngle), m_rightFoot->GetOrientation());
 
 	//printf("ULL BP position: %f, %f\n", upperLeftLegBottomPoint.x(), upperLeftLegBottomPoint.y());
 	// Yellow

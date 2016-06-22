@@ -520,6 +520,16 @@ void WalkingController::PauseWalking(){
 void WalkingController::InitiateWalking() {
 	m_currentState = WALKING;
 	m_ragDollState = STATE_0;
+
+	printf("Gains, T: (%f %f) ULL: (%f %f) URL: (%f %f) LLL: (%f %f) LRL: (%f %f) LF: (%f %f) RF: (%f %f)\n",
+		m_torso_gains->m_kp, m_torso_gains->m_kd,
+		m_ull_gains->m_kp, m_ull_gains->m_kd,
+		m_url_gains->m_kp, m_url_gains->m_kd,
+		m_lll_gains->m_kp, m_lll_gains->m_kd,
+		m_lrl_gains->m_kp, m_lrl_gains->m_kd,
+		m_lf_gains->m_kp, m_lf_gains->m_kd,
+		m_rf_gains->m_kp, m_rf_gains->m_kd);
+
 }
 
 void WalkingController::Reset(){
@@ -661,18 +671,24 @@ std::vector<float> WalkingController::CalculateState1Torques() {
 	float upperLeftLegTorque = - torsoTorque - upperRightLegTorque;
 
 	/* ==================== Calculating torque for Lower Legs ======================= */
-	float lowerLeftLegTorque = CalculateTorqueForLowerLeftLeg(m_state1->m_lowerLeftLegAngle, m_app->m_upperLeftLeg->GetOrientation() - m_app->m_lowerLeftLeg->GetOrientation(), m_app->m_lowerLeftLeg->GetAngularVelocity());
-	float lowerRightLegTorque = CalculateTorqueForLowerRightLeg(m_state1->m_lowerRightLegAngle, m_app->m_upperRightLeg->GetOrientation() - m_app->m_lowerRightLeg->GetOrientation(), m_app->m_lowerRightLeg->GetAngularVelocity());
+	float lowerLeftLegTorque = CalculateTorqueForLowerLeftLeg(m_app->m_upperLeftLeg->GetOrientation() - m_state1->m_lowerLeftLegAngle, m_app->m_lowerLeftLeg->GetOrientation(), m_app->m_lowerLeftLeg->GetAngularVelocity());
+	float lowerRightLegTorque = CalculateTorqueForLowerRightLeg(m_app->m_upperRightLeg->GetOrientation() - m_state1->m_lowerRightLegAngle, m_app->m_lowerRightLeg->GetOrientation(), m_app->m_lowerRightLeg->GetAngularVelocity());
 	
+	//printf("****************************** \n url: orientation = %f\n lrl: orientation: %f \n", m_app->m_upperRightLeg->GetOrientation(), m_app->m_lowerRightLeg->GetOrientation());
+
+	//printf("lrl: angle = %f, orientation = %f\n", m_state1->m_lowerRightLegAngle, m_app->m_upperRightLeg->GetOrientation() - m_app->m_lowerRightLeg->GetOrientation());
+
 	/* ==================== Calculating torque for Feet ======================= */
 	float leftFootTorque = CalculateTorqueForLeftFoot(
-		m_state1->m_leftFootAngle, // Relative angle
-		m_app->m_upperLeftLeg->GetOrientation() - m_app->m_lowerLeftLeg->GetOrientation() - m_app->m_leftFoot->GetOrientation(),  // Convert global to relative
+		m_app->m_lowerLeftLeg->GetOrientation() - m_state1->m_leftFootAngle,
+		m_app->m_leftFoot->GetOrientation(),  
 		m_app->m_leftFoot->GetAngularVelocity());
 	float rightFootTorque = CalculateTorqueForRightFoot(
-		m_state1->m_rightFootAngle, 
-		m_app->m_upperRightLeg->GetOrientation() - m_app->m_lowerRightLeg->GetOrientation() - m_app->m_rightFoot->GetOrientation(), 
+		m_app->m_lowerRightLeg->GetOrientation() - m_state1->m_rightFootAngle, 
+		m_app->m_rightFoot->GetOrientation(), 
 		m_app->m_rightFoot->GetAngularVelocity());
+
+	//printf("rf: target angle = %f, orientation = %f\n", m_app->m_lowerRightLeg->GetOrientation() - m_state1->m_rightFootAngle, m_app->m_rightFoot->GetOrientation());
 
 	Debug("Torques (ULL-stance: " << upperLeftLegTorque << ", URL-swing: " << upperRightLegTorque << ", LLL: " << lowerLeftLegTorque << ", LRL: " << lowerRightLegTorque << ", LF: " << leftFootTorque << ", RF: " << rightFootTorque);
 	torques = {upperLeftLegTorque - lowerLeftLegTorque, upperRightLegTorque - lowerRightLegTorque, lowerLeftLegTorque - leftFootTorque, lowerRightLegTorque - rightFootTorque, leftFootTorque, rightFootTorque };
@@ -694,16 +710,20 @@ std::vector<float> WalkingController::CalculateState2Torques() {
 	float upperLeftLegTorque = -torsoTorque - upperRightLegTorque;
 
 	/* ==================== Calculating torque for Lower Legs ======================= */
-	float lowerLeftLegTorque = CalculateTorqueForLowerLeftLeg(m_state2->m_upperLeftLegAngle - m_state2->m_lowerLeftLegAngle, m_app->m_lowerLeftLeg->GetOrientation(), m_app->m_lowerLeftLeg->GetAngularVelocity());
-	float lowerRightLegTorque = CalculateTorqueForLowerRightLeg(m_state2->m_upperRightLegAngle - m_state2->m_lowerRightLegAngle, m_app->m_lowerRightLeg->GetOrientation(), m_app->m_lowerRightLeg->GetAngularVelocity());
-	
+	float lowerLeftLegTorque = CalculateTorqueForLowerLeftLeg(m_app->m_upperLeftLeg->GetOrientation() - m_state2->m_lowerLeftLegAngle, m_app->m_lowerLeftLeg->GetOrientation(), m_app->m_lowerLeftLeg->GetAngularVelocity());
+	float lowerRightLegTorque = CalculateTorqueForLowerRightLeg(m_app->m_upperRightLeg->GetOrientation() - m_state2->m_lowerRightLegAngle, m_app->m_lowerRightLeg->GetOrientation(), m_app->m_lowerRightLeg->GetAngularVelocity());
+
+	//printf("****************************** \n url: orientation = %f\n lrl: orientation: %f \n", m_app->m_upperRightLeg->GetOrientation(), m_app->m_lowerRightLeg->GetOrientation());
+
+	//printf("lrl: angle = %f, orientation = %f\n", m_state1->m_lowerRightLegAngle, m_app->m_upperRightLeg->GetOrientation() - m_app->m_lowerRightLeg->GetOrientation());
+
 	/* ==================== Calculating torque for Feet ======================= */
 	float leftFootTorque = CalculateTorqueForLeftFoot(
-		m_state2->m_upperLeftLegAngle - m_state2->m_lowerLeftLegAngle - (m_state2->m_leftFootAngle),
+		m_app->m_lowerLeftLeg->GetOrientation() - m_state2->m_leftFootAngle,
 		m_app->m_leftFoot->GetOrientation(),
 		m_app->m_leftFoot->GetAngularVelocity());
 	float rightFootTorque = CalculateTorqueForRightFoot(
-		m_state2->m_upperRightLegAngle - m_state2->m_lowerRightLegAngle - (m_state2->m_rightFootAngle),
+		m_app->m_lowerRightLeg->GetOrientation() - m_state2->m_rightFootAngle,
 		m_app->m_rightFoot->GetOrientation(),
 		m_app->m_rightFoot->GetAngularVelocity());
 
@@ -728,17 +748,21 @@ std::vector<float> WalkingController::CalculateState3Torques() {
 	float upperRightLegTorque = -torsoTorque - upperLeftLegTorque;
 	//printf("URL torque = %f\n", upperRightLegTorque);
 
-	//printf("==================== Calculating torque for Lower Legs ======================= \n");
-	float lowerLeftLegTorque = CalculateTorqueForLowerLeftLeg(m_state3->m_upperLeftLegAngle - m_state3->m_lowerLeftLegAngle, m_app->m_lowerLeftLeg->GetOrientation(), m_app->m_lowerLeftLeg->GetAngularVelocity());
-	float lowerRightLegTorque = CalculateTorqueForLowerRightLeg(m_state3->m_upperRightLegAngle - m_state3->m_lowerRightLegAngle, m_app->m_lowerRightLeg->GetOrientation(), m_app->m_lowerRightLeg->GetAngularVelocity());
-	
-	//printf("==================== Calculating torque for Feet ======================= \n");
+	/* ==================== Calculating torque for Lower Legs ======================= */
+	float lowerLeftLegTorque = CalculateTorqueForLowerLeftLeg(m_app->m_upperLeftLeg->GetOrientation() - m_state3->m_lowerLeftLegAngle, m_app->m_lowerLeftLeg->GetOrientation(), m_app->m_lowerLeftLeg->GetAngularVelocity());
+	float lowerRightLegTorque = CalculateTorqueForLowerRightLeg(m_app->m_upperRightLeg->GetOrientation() - m_state3->m_lowerRightLegAngle, m_app->m_lowerRightLeg->GetOrientation(), m_app->m_lowerRightLeg->GetAngularVelocity());
+
+	//printf("****************************** \n url: orientation = %f\n lrl: orientation: %f \n", m_app->m_upperRightLeg->GetOrientation(), m_app->m_lowerRightLeg->GetOrientation());
+
+	//printf("lrl: angle = %f, orientation = %f\n", m_state1->m_lowerRightLegAngle, m_app->m_upperRightLeg->GetOrientation() - m_app->m_lowerRightLeg->GetOrientation());
+
+	/* ==================== Calculating torque for Feet ======================= */
 	float leftFootTorque = CalculateTorqueForLeftFoot(
-		m_state3->m_upperLeftLegAngle - m_state3->m_lowerLeftLegAngle - (m_state3->m_leftFootAngle),
+		m_app->m_lowerLeftLeg->GetOrientation() - m_state3->m_leftFootAngle,
 		m_app->m_leftFoot->GetOrientation(),
 		m_app->m_leftFoot->GetAngularVelocity());
 	float rightFootTorque = CalculateTorqueForRightFoot(
-		m_state3->m_upperRightLegAngle - m_state3->m_lowerRightLegAngle - (m_state3->m_rightFootAngle),
+		m_app->m_lowerRightLeg->GetOrientation() - m_state3->m_rightFootAngle,
 		m_app->m_rightFoot->GetOrientation(),
 		m_app->m_rightFoot->GetAngularVelocity());
 
@@ -763,16 +787,20 @@ std::vector<float> WalkingController::CalculateState4Torques() {
 	float upperRightLegTorque = -torsoTorque - upperLeftLegTorque;
 
 	/* ==================== Calculating torque for Lower Legs ======================= */
-	float lowerLeftLegTorque = CalculateTorqueForLowerLeftLeg(m_state4->m_upperLeftLegAngle - m_state4->m_lowerLeftLegAngle, m_app->m_lowerLeftLeg->GetOrientation(), m_app->m_lowerLeftLeg->GetAngularVelocity());
-	float lowerRightLegTorque = CalculateTorqueForLowerRightLeg(m_state4->m_upperRightLegAngle - m_state4->m_lowerRightLegAngle, m_app->m_lowerRightLeg->GetOrientation(), m_app->m_lowerRightLeg->GetAngularVelocity());
-	
+	float lowerLeftLegTorque = CalculateTorqueForLowerLeftLeg(m_app->m_upperLeftLeg->GetOrientation() - m_state4->m_lowerLeftLegAngle, m_app->m_lowerLeftLeg->GetOrientation(), m_app->m_lowerLeftLeg->GetAngularVelocity());
+	float lowerRightLegTorque = CalculateTorqueForLowerRightLeg(m_app->m_upperRightLeg->GetOrientation() - m_state4->m_lowerRightLegAngle, m_app->m_lowerRightLeg->GetOrientation(), m_app->m_lowerRightLeg->GetAngularVelocity());
+
+	//printf("****************************** \n url: orientation = %f\n lrl: orientation: %f \n", m_app->m_upperRightLeg->GetOrientation(), m_app->m_lowerRightLeg->GetOrientation());
+
+	//printf("lrl: angle = %f, orientation = %f\n", m_state1->m_lowerRightLegAngle, m_app->m_upperRightLeg->GetOrientation() - m_app->m_lowerRightLeg->GetOrientation());
+
 	/* ==================== Calculating torque for Feet ======================= */
 	float leftFootTorque = CalculateTorqueForLeftFoot(
-		m_state4->m_upperLeftLegAngle - m_state4->m_lowerLeftLegAngle - (m_state4->m_leftFootAngle),
+		m_app->m_lowerLeftLeg->GetOrientation() - m_state4->m_leftFootAngle,
 		m_app->m_leftFoot->GetOrientation(),
 		m_app->m_leftFoot->GetAngularVelocity());
 	float rightFootTorque = CalculateTorqueForRightFoot(
-		m_state4->m_upperRightLegAngle - m_state4->m_lowerRightLegAngle - (m_state4->m_rightFootAngle),
+		m_app->m_lowerRightLeg->GetOrientation() - m_state4->m_rightFootAngle,
 		m_app->m_rightFoot->GetOrientation(),
 		m_app->m_rightFoot->GetAngularVelocity());
 
