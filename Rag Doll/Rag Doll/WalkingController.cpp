@@ -211,9 +211,10 @@ std::vector<Gains *> WalkingController::ReadGainsFile() {
 std::vector<float> WalkingController::ReadFeedback(std::string fdbk_dir) {
 	DIR *dir;
 	struct dirent *ent;
+	float cd_1, cv_1, cd_2, cv_2;
 	if ((dir = opendir(fdbk_dir.c_str())) != NULL) {
 		std::string feedback_ext = "fdbk";
-
+		
 		while ((ent = readdir(dir)) != NULL) {
 			if (ent->d_type == DT_REG) {
 				//printf("%s\n", ent->d_name);
@@ -222,13 +223,14 @@ std::vector<float> WalkingController::ReadFeedback(std::string fdbk_dir) {
 					std::stringstream ss;
 					ss << fdbk_dir << "\\" << ent->d_name;
 					std::ifstream infile(ss.str());
-					float cd_1, cv_1, cd_2, cv_2;
 					char c;
-					while ((infile >> cd_1 >> c >> cv_1 >> c >> cd_2 >> c >> cv_2) && (c == ',')) {
-						m_cd_1 = cd_1;
-						m_cv_1 = cv_1;
-						m_cd_2 = cd_2;
-						m_cv_2 = cv_2;
+					float w, x, y, z;
+					while ((infile >> w >> c >> x >> c >> y >> c >> z) && (c == ',')) {
+						cd_1 = w;
+						cv_1 = x;
+						cd_2 = y;
+						cv_2 = z;
+						printf("fdbk = %f, %f, %f, %f \n", cd_1, cv_1, cd_2, cv_2);
 					}
 				}
 			}
@@ -238,13 +240,13 @@ std::vector<float> WalkingController::ReadFeedback(std::string fdbk_dir) {
 	else {
 		/* could not open directory */
 		// Initialize to be zeros
-		m_cd_1 = 0.0f;
-		m_cv_1 = 0.0f;
-		m_cd_2 = 0.0f;
-		m_cv_2 = 0.0f;
+		cd_1 = 0.0f;
+		cv_1 = 0.0f;
+		cd_2 = 0.0f;
+		cv_2 = 0.0f;
 	}
 
-	std::vector<float> fdbk = { m_cd_1, m_cv_1, m_cd_2, m_cv_2 };
+	std::vector<float> fdbk = { cd_1, cv_1, cd_2, cv_2 };
 	return fdbk;
 }
 
@@ -565,7 +567,7 @@ void WalkingController::ChangeGait(std::string gait) {
 	// load the current gait
 	std::vector<State *>states = m_GaitMap.find(gait)->second;
 	std::vector<Gains *>gains = m_GainMap.find(gait)->second;
-	std::vector<float>feedback = m_FdbkMap.find(gait)->second;
+	std::vector<float>* feedback = &m_FdbkMap.find(gait)->second;
 	float time = m_TmMap.find(gait)->second;
 	// interpolate (?)
 	// Setting everything...
@@ -583,10 +585,10 @@ void WalkingController::ChangeGait(std::string gait) {
 	m_lf_gains = gains.at(5);
 	m_rf_gains = gains.at(6);
 
-	m_cd_1 = feedback.at(0);
-	m_cv_1 = feedback.at(1);
-	m_cd_2 = feedback.at(2);
-	m_cv_2 = feedback.at(3);
+	m_cd_1 = &feedback->at(0);
+	m_cv_1 = &feedback->at(1);
+	m_cd_2 = &feedback->at(2);
+	m_cv_2 = &feedback->at(3);
 
 	m_state_time = time;
 }
@@ -653,6 +655,20 @@ void WalkingController::SetState4(float torso, float upperLeftLeg, float upperRi
 }
 
 #pragma endregion STATES
+
+#pragma region FEEDBACK
+
+void WalkingController::SetFeedback1(float cd, float cv) {
+	*m_cd_1 = cd;
+	*m_cv_1 = cv;
+}
+
+void WalkingController::SetFeedback2(float cd, float cv) {
+	*m_cd_2 = cd;
+	*m_cv_2 = cv;
+}
+
+#pragma endregion FEEDBACK
 
 #pragma region CALCULATE_TORQUES
 
@@ -847,8 +863,8 @@ float WalkingController::CalculateFeedbackSwingHip() {
 		float lllAngle = Constants::GetInstance().DegreesToRadians(m_app->m_lowerLeftLeg->GetOrientation());
 		stanceAnkle = m_app->m_lowerLeftLeg->GetCOMPosition() + btVector3(sin(lllAngle) * lower_leg_height / 2, -cos(lllAngle) * lower_leg_height / 2, 0);
 
-		cd = m_cd_1;
-		cv = m_cv_1;
+		cd = *m_cd_1;
+		cv = *m_cv_1;
 	}
 		break;
 	case STATE_2: {
@@ -860,8 +876,8 @@ float WalkingController::CalculateFeedbackSwingHip() {
 		stanceAnkle = m_app->m_lowerLeftLeg->GetCOMPosition() + btVector3(sin(lllAngle) * lower_leg_height / 2, -cos(lllAngle) * lower_leg_height / 2, 0);
 		// Approximate center of mass x position to be the same as torso x position
 		
-		cd = m_cd_2;
-		cv = m_cv_2;
+		cd = *m_cd_2;
+		cv = *m_cv_2;
 	}
 		break;
 	case STATE_3: {
@@ -872,8 +888,8 @@ float WalkingController::CalculateFeedbackSwingHip() {
 		float lrlAngle = Constants::GetInstance().DegreesToRadians(m_app->m_lowerRightLeg->GetOrientation());
 		stanceAnkle = m_app->m_lowerRightLeg->GetCOMPosition() + btVector3(sin(lrlAngle) * lower_leg_height / 2, -cos(lrlAngle) * lower_leg_height / 2, 0);
 
-		cd = m_cd_1;
-		cv = m_cv_1;
+		cd = *m_cd_1;
+		cv = *m_cv_1;
 	}
 		break;
 	case STATE_4: {
@@ -885,8 +901,8 @@ float WalkingController::CalculateFeedbackSwingHip() {
 		float lrlAngle = Constants::GetInstance().DegreesToRadians(m_app->m_lowerRightLeg->GetOrientation());
 		stanceAnkle = m_app->m_lowerRightLeg->GetCOMPosition() + btVector3(sin(lrlAngle) * lower_leg_height / 2, -cos(lrlAngle) * lower_leg_height / 2, 0);
 
-		cd = m_cd_2;
-		cv = m_cv_2;
+		cd = *m_cd_2;
+		cv = *m_cv_2;
 	}
 		break;
 	default:

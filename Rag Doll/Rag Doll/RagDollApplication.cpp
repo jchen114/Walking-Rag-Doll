@@ -260,8 +260,8 @@ void RagDollApplication::CreateRagDollGUI() {
 	/*===================================== GAINS =========================================*/
 	GLUI_Panel *gains_panel = m_glui_window->add_panel("Gains");
 	m_glui_window->add_statictext_to_panel(gains_panel, "Torso");
-	m_torso_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_WalkingController->m_torso_gains->m_kp, TORSO_KP);
-	m_torso_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_WalkingController->m_torso_gains->m_kd, TORSO_KD);
+	m_torso_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, TORSO_KP, (GLUI_Update_CB) GainsChanged);
+	m_torso_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, TORSO_KD, (GLUI_Update_CB)GainsChanged);
 
 	m_torso_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
 	m_torso_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
@@ -269,8 +269,8 @@ void RagDollApplication::CreateRagDollGUI() {
 	m_glui_window->add_separator_to_panel(gains_panel);
 
 	m_glui_window->add_statictext_to_panel(gains_panel, "Upper Left Leg");
-	m_ull_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_WalkingController->m_ull_gains->m_kp, UPPER_L_LEG_KP);
-	m_ull_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_WalkingController->m_ull_gains->m_kd, UPPER_L_LEG_KD);
+	m_ull_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, UPPER_L_LEG_KP, (GLUI_Update_CB)GainsChanged);
+	m_ull_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, UPPER_L_LEG_KD, (GLUI_Update_CB)GainsChanged);
 
 	m_ull_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
 	m_ull_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
@@ -278,8 +278,8 @@ void RagDollApplication::CreateRagDollGUI() {
 	m_glui_window->add_separator_to_panel(gains_panel);
 
 	m_glui_window->add_statictext_to_panel(gains_panel, "Upper Right Leg");
-	m_url_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_WalkingController->m_url_gains->m_kp, UPPER_R_LEG_KP);
-	m_url_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_WalkingController->m_url_gains->m_kd, UPPER_R_LEG_KD);
+	m_url_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, UPPER_R_LEG_KP, (GLUI_Update_CB)GainsChanged);
+	m_url_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, UPPER_R_LEG_KD, (GLUI_Update_CB)GainsChanged);
 
 	m_url_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
 	m_url_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
@@ -287,8 +287,8 @@ void RagDollApplication::CreateRagDollGUI() {
 	m_glui_window->add_separator_to_panel(gains_panel);
 
 	m_glui_window->add_statictext_to_panel(gains_panel, "Lower Left Leg");
-	m_lll_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_WalkingController->m_lll_gains->m_kp, LOWER_L_LEG_KP);
-	m_lll_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_WalkingController->m_lll_gains->m_kd, LOWER_L_LEG_KD);
+	m_lll_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, LOWER_L_LEG_KP, (GLUI_Update_CB)GainsChanged);
+	m_lll_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, LOWER_L_LEG_KD, (GLUI_Update_CB)GainsChanged);
 
 	m_lll_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
 	m_lll_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
@@ -296,8 +296,8 @@ void RagDollApplication::CreateRagDollGUI() {
 	m_glui_window->add_separator_to_panel(gains_panel);
 
 	m_glui_window->add_statictext_to_panel(gains_panel, "Lower Right Leg");
-	m_lrl_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_WalkingController->m_lrl_gains->m_kp, LOWER_R_LEG_KP);
-	m_lrl_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_WalkingController->m_lrl_gains->m_kd, LOWER_R_LEG_KD);
+	m_lrl_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, LOWER_R_LEG_KP, (GLUI_Update_CB) GainsChanged);
+	m_lrl_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, LOWER_R_LEG_KD, (GLUI_Update_CB) GainsChanged);
 
 	m_lrl_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
 	m_lrl_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
@@ -305,8 +305,8 @@ void RagDollApplication::CreateRagDollGUI() {
 	m_glui_window->add_separator_to_panel(gains_panel);
 
 	m_glui_window->add_statictext_to_panel(gains_panel, "Left Foot");
-	m_lf_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_WalkingController->m_lf_gains->m_kp, L_FOOT_KP);
-	m_lf_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_WalkingController->m_lf_gains->m_kd, L_FOOT_KD);
+	m_lf_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, L_FOOT_KP, (GLUI_Update_CB) GainsChanged);
+	m_lf_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, L_FOOT_KD, (GLUI_Update_CB) GainsChanged);
 
 	m_lf_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
 	m_lf_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
@@ -314,8 +314,8 @@ void RagDollApplication::CreateRagDollGUI() {
 	m_glui_window->add_separator_to_panel(gains_panel);
 
 	m_glui_window->add_statictext_to_panel(gains_panel, "Right foot");
-	m_rf_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, &m_WalkingController->m_rf_gains->m_kp, R_FOOT_KP);
-	m_rf_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, &m_WalkingController->m_rf_gains->m_kd, R_FOOT_KD);
+	m_rf_kp_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kp", GLUI_SPINNER_FLOAT, NULL, R_FOOT_KP, (GLUI_Update_CB) GainsChanged);
+	m_rf_kd_spinner = m_glui_window->add_spinner_to_panel(gains_panel, "kd", GLUI_SPINNER_FLOAT, NULL, R_FOOT_KD, (GLUI_Update_CB) GainsChanged);
 
 	m_rf_kp_spinner->set_float_limits(KP_LOWER, KP_HIGHER);
 	m_rf_kd_spinner->set_float_limits(KD_LOWER, KD_HIGHER);
@@ -359,10 +359,10 @@ void RagDollApplication::CreateRagDollGUI() {
 
 	/*===================================== FEEDBACK =========================================*/
 	GLUI_Panel *feedback_panel = m_glui_window->add_panel("Feedback");
-	m_cd_1_spinner = m_glui_window->add_spinner_to_panel(feedback_panel, "cd 1", GLUI_SPINNER_FLOAT, &m_WalkingController->m_cd_1);
-	m_cv_1_spinner = m_glui_window->add_spinner_to_panel(feedback_panel, "cv 1", GLUI_SPINNER_FLOAT, &m_WalkingController->m_cv_1);
-	m_cd_2_spinner = m_glui_window->add_spinner_to_panel(feedback_panel, "cd 2", GLUI_SPINNER_FLOAT, &m_WalkingController->m_cd_2);
-	m_cv_2_spinner = m_glui_window->add_spinner_to_panel(feedback_panel, "cv 2", GLUI_SPINNER_FLOAT, &m_WalkingController->m_cv_2);
+	m_cd_1_spinner = m_glui_window->add_spinner_to_panel(feedback_panel, "cd 1", GLUI_SPINNER_FLOAT, NULL, -1, (GLUI_Update_CB) FeedbackChanged);
+	m_cv_1_spinner = m_glui_window->add_spinner_to_panel(feedback_panel, "cv 1", GLUI_SPINNER_FLOAT, NULL, -1, (GLUI_Update_CB) FeedbackChanged);
+	m_cd_2_spinner = m_glui_window->add_spinner_to_panel(feedback_panel, "cd 2", GLUI_SPINNER_FLOAT, NULL, -1, (GLUI_Update_CB) FeedbackChanged);
+	m_cv_2_spinner = m_glui_window->add_spinner_to_panel(feedback_panel, "cv 2", GLUI_SPINNER_FLOAT, NULL, -1, (GLUI_Update_CB) FeedbackChanged);
 	m_glui_window->add_button_to_panel(feedback_panel, "Save Feedback", SAVEFEEDBACK_BUTTON, (GLUI_Update_CB)SaveFeedbackButtonPressed);
 
 	/*===================================== STATE TIME ============================================*/
@@ -459,10 +459,10 @@ void RagDollApplication::DisplayGains() {
 
 void RagDollApplication::DisplayFeedback() {
 
-	m_cd_1_spinner->set_float_val(m_WalkingController->m_cd_1);
-	m_cv_1_spinner->set_float_val(m_WalkingController->m_cv_1);
-	m_cd_2_spinner->set_float_val(m_WalkingController->m_cd_2);
-	m_cv_2_spinner->set_float_val(m_WalkingController->m_cv_2);
+	m_cd_1_spinner->set_float_val(*m_WalkingController->m_cd_1);
+	m_cv_1_spinner->set_float_val(*m_WalkingController->m_cv_1);
+	m_cd_2_spinner->set_float_val(*m_WalkingController->m_cd_2);
+	m_cv_2_spinner->set_float_val(*m_WalkingController->m_cv_2);
 
 }
 
@@ -480,6 +480,12 @@ void RagDollApplication::UpdateGains() {
 	m_WalkingController->SetLowerRightLegGains(m_lrl_kp_spinner->get_float_val(), m_lrl_kd_spinner->get_float_val());
 	m_WalkingController->SetLeftFootGains(m_lf_kp_spinner->get_float_val(), m_lf_kd_spinner->get_float_val());
 	m_WalkingController->SetRightFootGains(m_rf_kp_spinner->get_float_val(), m_rf_kd_spinner->get_float_val());
+}
+
+void RagDollApplication::UpdateFeedbacks() {
+	
+	m_WalkingController->SetFeedback1(m_cd_1_spinner->get_float_val(), m_cv_1_spinner->get_float_val());
+	m_WalkingController->SetFeedback2(m_cd_2_spinner->get_float_val(), m_cv_2_spinner->get_float_val());
 }
 
 void RagDollApplication::DisableStateSpinner() {
@@ -891,6 +897,7 @@ State *RagDollApplication::GetState(int state) {
 		break;
 	}
 }
+
 
 #pragma region TORQUES
 
@@ -1354,6 +1361,14 @@ static void LeftFootAngleChanged(int id) {
 
 static void RightFootAngleChanged(int id) {
 	m_app->ChangeRightFootAngle();
+}
+
+static void GainsChanged(int id) {
+	m_app->UpdateGains();
+}
+
+static void FeedbackChanged(int id) {
+	m_app->UpdateFeedbacks();
 }
 
 #pragma endregion GLUI_CALLBACKS

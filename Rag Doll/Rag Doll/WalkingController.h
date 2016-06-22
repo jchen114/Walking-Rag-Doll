@@ -139,6 +139,9 @@ public:
 	void SetLeftFootGains(float kp, float kd);
 	void SetRightFootGains(float kp, float kd);
 
+	void SetFeedback1(float cd, float cv);
+	void SetFeedback2(float cd, float cv);
+
 	CurrentControllerState m_currentState = RESET;
 	CurrentRagDollState m_ragDollState = STATE_0;
 
@@ -165,10 +168,10 @@ public:
 	State *m_state3;
 	State *m_state4;
 
-	float m_cd_1 = 0.0f;
-	float m_cv_1 = 0.0f;
-	float m_cd_2 = 0.0f;
-	float m_cv_2 = 0.0f;
+	float *m_cd_1;
+	float *m_cv_1;
+	float *m_cd_2;
+	float *m_cv_2;
 
 	float m_state_time = 0.0f;
 

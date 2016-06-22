@@ -71,6 +71,8 @@ public:
 	void ChangeLowerRightLegAngle();
 	void ChangeLeftFootAngle();
 	void ChangeRightFootAngle();
+	void UpdateGains();
+	void UpdateFeedbacks();
 
 	void DrawArrow(const btVector3 &pointOfContact, TranslateDirection direction);
 
@@ -97,7 +99,7 @@ private:
 	void DisableAllSpinners();
 	void EnableGainSpinners();
 	void UpdateRagDoll();
-	void UpdateGains();
+	
 
 	WalkingController *m_WalkingController;
 
@@ -200,6 +202,7 @@ static void LowerRightLegAngleChanged(int id);
 static void LeftFootAngleChanged(int id);
 static void RightFootAngleChanged(int id);
 static void GainsChanged(int id);
+static void FeedbackChanged(int id);
 
 /* Bullet Physics Tick callback */
 void InternalPreTickCallback(btDynamicsWorld *world, btScalar timestep);
