@@ -41,6 +41,7 @@ std::vector<std::string> WalkingController::GetGaits() {
 				if (strcmp(dirName.c_str(), ".") == 0 || strcmp(dirName.c_str(), "..") == 0) {
 					continue;
 				}
+				printf("Directory name: %s\n", dirName.c_str());
 				gaits.push_back(dirName);
 				std::string gait_dir = gaits_dir + "\\" + dirName;
 				// Gait state
@@ -521,14 +522,14 @@ void WalkingController::InitiateWalking() {
 	m_currentState = WALKING;
 	m_ragDollState = STATE_0;
 
-	printf("Gains, T: (%f %f) ULL: (%f %f) URL: (%f %f) LLL: (%f %f) LRL: (%f %f) LF: (%f %f) RF: (%f %f)\n",
-		m_torso_gains->m_kp, m_torso_gains->m_kd,
-		m_ull_gains->m_kp, m_ull_gains->m_kd,
-		m_url_gains->m_kp, m_url_gains->m_kd,
-		m_lll_gains->m_kp, m_lll_gains->m_kd,
-		m_lrl_gains->m_kp, m_lrl_gains->m_kd,
-		m_lf_gains->m_kp, m_lf_gains->m_kd,
-		m_rf_gains->m_kp, m_rf_gains->m_kd);
+	//printf("Gains, T: (%f %f) ULL: (%f %f) URL: (%f %f) LLL: (%f %f) LRL: (%f %f) LF: (%f %f) RF: (%f %f)\n",
+	//	m_torso_gains->m_kp, m_torso_gains->m_kd,
+	//	m_ull_gains->m_kp, m_ull_gains->m_kd,
+	//	m_url_gains->m_kp, m_url_gains->m_kd,
+	//	m_lll_gains->m_kp, m_lll_gains->m_kd,
+	//	m_lrl_gains->m_kp, m_lrl_gains->m_kd,
+	//	m_lf_gains->m_kp, m_lf_gains->m_kd,
+	//	m_rf_gains->m_kp, m_rf_gains->m_kd);
 
 }
 

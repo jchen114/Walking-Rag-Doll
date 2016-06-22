@@ -91,12 +91,14 @@ void RagDollApplication::InitializePhysics() {
 	}
 	m_WalkingController->ChangeGait("Walk"); // Assume Walk gait exists
 
+	m_previousState = 0;
+
 	// Create GUI
 	CreateRagDollGUI();
 
 	// Setup GUI with configurations
 	SetupGUIConfiguration();
-
+	
 	Reset();
 
 	GameObject::DisableDeactivation(m_bodies);
@@ -402,7 +404,6 @@ void RagDollApplication::CreateRagDollGUI() {
 void RagDollApplication::SetupGUIConfiguration() {
 
 	// Assume Currently Selected State is 0
-	DisplayState(0);
 	DisplayGains();
 
 	DisplayFeedback();
@@ -628,6 +629,8 @@ void RagDollApplication::Pause() {
 
 void RagDollApplication::ChangeState(int id) {
 
+	//printf("Gait is %s \n", m_gaits.at(m_currentGait).c_str());
+
 	Debug("Previous state" << m_previousState);
 
 	State *previousState = GetState(m_previousState);
@@ -636,12 +639,10 @@ void RagDollApplication::ChangeState(int id) {
 	previousState->m_torsoAngle = m_torso_state_spinner->get_float_val();
 	previousState->m_upperLeftLegAngle = m_ull_state_spinner->get_float_val();
 	previousState->m_upperRightLegAngle = m_url_state_spinner->get_float_val();
-
 	previousState->m_lowerLeftLegAngle = m_lll_state_spinner->get_float_val();
 	previousState->m_lowerRightLegAngle = m_lrl_state_spinner->get_float_val();
 	previousState->m_leftFootAngle = m_lf_state_spinner->get_float_val();
 	previousState->m_rightFootAngle = m_rf_state_spinner->get_float_val();
-
 
 	// Change previous to current state
 	DisplayState(m_currentState);
@@ -681,6 +682,8 @@ void RagDollApplication::ChangeGait() {
 
 	m_previousGait = m_currentGait;
 	m_WalkingController->ChangeGait(m_gaits.at(m_currentGait));
+	SetupGUIConfiguration();
+	DisplayState(m_currentState);
 	UpdateRagDoll();
 }
 
