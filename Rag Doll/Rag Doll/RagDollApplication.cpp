@@ -690,7 +690,11 @@ void RagDollApplication::ChangeGait() {
 	m_WalkingController->ChangeGait(m_gaits.at(m_currentGait));
 	SetupGUIConfiguration();
 	DisplayState(m_currentState);
-	UpdateRagDoll();
+
+	if (m_WalkingController->m_currentState == RESET) {
+		UpdateRagDoll();
+	}
+
 }
 
 #pragma endregion GUI

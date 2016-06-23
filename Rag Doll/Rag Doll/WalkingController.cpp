@@ -351,7 +351,7 @@ void WalkingController::SaveFeedback(std::string gait) {
 	std::ofstream feedback_file;
 	feedback_file.open("..\\..\\State Configurations\\Gaits\\" + gait + "\\feedbacks.fdbk");
 	char buffer[100];
-	sprintf_s(buffer, "%f, %f, %f, %f\n", m_cd_1, m_cv_1, m_cd_2, m_cv_2);
+	sprintf_s(buffer, "%f, %f, %f, %f\n", *m_cd_1, *m_cv_1, *m_cd_2, *m_cv_2);
 	std::cout << buffer;
 	feedback_file << buffer;
 	feedback_file.close();
@@ -609,7 +609,7 @@ void WalkingController::SetUpperLeftLegGains(float kp, float kd){
 
 void WalkingController::SetUpperRightLegGains(float kp, float kd){
 	m_url_gains->m_kp = kp;
-	m_ull_gains->m_kd = kd;
+	m_url_gains->m_kd = kd;
 }
 
 void WalkingController::SetLowerLeftLegGains(float kp, float kd){
