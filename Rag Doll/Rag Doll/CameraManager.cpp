@@ -245,7 +245,7 @@ void CameraManager::PrintCameraLocation() {
 }
 
 btVector3 CameraManager::GetCameraLocation() {
-	return btVector3(m_cameraPosX, m_cameraPosY, 0);
+	return btVector3(m_cameraPosX, m_cameraPosY, m_cameraDistance);
 }
 
 CameraManager::~CameraManager()
