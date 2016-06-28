@@ -332,7 +332,6 @@ void WalkingController::SaveGains(std::string gait) {
 	gains_file.close();
 }
 
-
 void WalkingController::SaveGains() {
 
 	std::ofstream gains_file;
@@ -399,6 +398,14 @@ void WalkingController::StateLoop() {
 	{
 	case WALKING: {
 		std::vector<float>torques = { 0, 0, 0, 0, 0, 0, 0 };
+
+		if (m_torsoHasContacted)
+		{
+			
+			m_torsoHasContacted = false;
+			m_ragDollState = STATE_5;
+		}
+
 		switch (m_ragDollState)
 		{
 
@@ -475,7 +482,10 @@ void WalkingController::StateLoop() {
 				torques = CalculateState4Torques();
 			}
 		}
-
+			break;
+		case STATE_5: {
+			
+		}
 			break;
 		default:
 			break;
@@ -536,6 +546,7 @@ void WalkingController::InitiateWalking() {
 }
 
 void WalkingController::Reset(){
+	m_torsoHasContacted = false;
 	m_ragDollState = STATE_0;
 	m_currentState = RESET;
 }
@@ -558,6 +569,10 @@ void WalkingController::NotifyRightFootGroundContact() {
 		m_rightFootGroundHasContacted = false;
 	}
 	
+}
+
+void WalkingController::NotifyTorsoGroundContact() {
+	m_torsoHasContacted = true;
 }
 
 void WalkingController::ChangeGait(std::string gait) {

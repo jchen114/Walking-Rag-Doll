@@ -16,7 +16,7 @@ class Gains;
 
 #define PI 3.14159265
 
-#define TORQUE_LIMIT 2000
+#define TORQUE_LIMIT 300
 
 // MASS
 #define torso_mass 70
@@ -87,7 +87,7 @@ class Gains;
 #pragma endregion DEFINITIONS
 
 
-enum CurrentRagDollState { STATE_0 = 100, STATE_1, STATE_2, STATE_3, STATE_4 };
+enum CurrentRagDollState { STATE_0 = 100, STATE_1, STATE_2, STATE_3, STATE_4, STATE_5 };
 enum CurrentControllerState {WALKING = 105, PAUSE, RESET};
 
 class WalkingController
@@ -124,6 +124,7 @@ public:
 	void Reset();
 	void NotifyLeftFootGroundContact();
 	void NotifyRightFootGroundContact();
+	void NotifyTorsoGroundContact();
 	void ChangeGait(std::string gait);
 
 	void SetState1(float torso, float upperLeftLeg, float upperRightLeg, float lowerLeftLeg, float lowerRightLeg, float leftFoot, float rightFoot);
@@ -179,6 +180,7 @@ private:
 
 	bool m_leftFootGroundHasContacted = false;
 	bool m_rightFootGroundHasContacted = false;
+	bool m_torsoHasContacted = false;
 
 	RagDollApplication *m_app;
 

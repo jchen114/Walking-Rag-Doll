@@ -228,11 +228,18 @@ void RagDollApplication::RagDollCollision() {
 				if ((obA->getUserPointer() == m_leftFoot && obB->getUserPointer() == m_ground) || (obA->getUserPointer() == m_ground && obB->getUserPointer() == m_leftFoot)) {
 					//printf(">>>>>>>>>>>>>>>>>>>>>> Collision with left foot to ground detected. <<<<<<<<<<<<<<<<<<<<<< \n");
 					m_WalkingController->NotifyLeftFootGroundContact();
+					break;
 				}
 
 				if ((obA->getUserPointer() == m_rightFoot && obB->getUserPointer() == m_ground) || (obA->getUserPointer() == m_ground && obB->getUserPointer() == m_rightFoot)) {
 					//printf(">>>>>>>>>>>>>>>>>>>>>> Collision with right foot to ground detected. <<<<<<<<<<<<<<<<<<<<<< \n");
 					m_WalkingController->NotifyRightFootGroundContact();
+					break;
+				}
+				if ((obA->getUserPointer() == m_torso && obB->getUserPointer() == m_ground) || (obA->getUserPointer() == m_ground && obB->getUserPointer() == m_torso)) {
+					//printf(">>>>>>>>>>>>>>>>>>>>>> Collision with right foot to ground detected. <<<<<<<<<<<<<<<<<<<<<< \n");
+					m_WalkingController->NotifyTorsoGroundContact();
+					break;
 				}
 			}
 		}
