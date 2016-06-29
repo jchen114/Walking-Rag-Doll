@@ -14,8 +14,6 @@ class Gains;
 
 #pragma region DEFINITIONS 
 
-#define PI 3.14159265
-
 #define TORQUE_LIMIT 300
 
 // MASS
