@@ -28,6 +28,8 @@
 
 #define RENDER_TIME_STEP 0.02f // 20 ms = 50fps
 
+static float desiredTimeBetweenFrames = 1.0f / 60.0f;
+
 //Debug
 //#define USEDEBUG
 
@@ -41,7 +43,7 @@
 #define REALTIME
 
 #ifdef REALTIME
-#define BULLET_TIME_STEP 0.002f // 1 ms
+#define BULLET_TIME_STEP 0.002f
 #else
 #define BULLET_TIME_STEP 0.0005f // 1 ms
 #endif
@@ -159,6 +161,8 @@ protected:
 
 	bool m_IsFrameRateFixed;
 	float m_RemainingTime = 0.0f;
+
+	int m_previous_number_of_steps = 0;
 
 };
 

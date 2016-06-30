@@ -100,8 +100,10 @@ private:
 	void EnableGainSpinners();
 	void UpdateRagDoll();
 	
-
 	WalkingController *m_WalkingController;
+
+	btClock m_collisionClock;
+
 
 	// GLUI
 	GLUI *m_glui_window;

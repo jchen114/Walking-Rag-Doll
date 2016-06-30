@@ -191,18 +191,20 @@ void BulletOpenGLApplication::Idle() {
 		#ifdef REALTIME
 		// get the time since the last iteration
 		static bool firstTime = true;
-		float dt = firstTime ? 0.0 : 0.001 * 0.001 * m_clock.getTimeMicroseconds();
+		float dt = firstTime ? 0.0 : 0.001 * 0.001 * m_clock.getTimeMicroseconds(); // elapsed time so far in s
 		firstTime = false;
 		m_clock.reset();
 		
-		float completeTime = dt + m_RemainingTime;
+		float completeTime = dt + m_RemainingTime; // remaining time from previous iteration
 
-		float desiredTimeBetweenFrames = 1.0 / 60.0; // 60 frames per seconds
-		int numSteps = ceil(desiredTimeBetweenFrames / BULLET_TIME_STEP); // if ???
-		//int numSteps = ceil(completeTime / BULLET_TIME_STEP); // or this if desiredTimeBetweenFrames < monitor refresh rate ???
+		int numSteps = ceil(desiredTimeBetweenFrames / BULLET_TIME_STEP); // Ideal number of steps.
+		//float timePerPStep = m_DeltaSimTime / m_previous_number_of_steps; // Time for each physics step.
+
+		//float unused_time = 
+
 		m_RemainingTime = completeTime - numSteps * BULLET_TIME_STEP;
 
-		if (m_RemainingTime > 3 * dt)
+		if (m_RemainingTime > 15 * dt)
 		{
 			m_RemainingTime = 0;
 		}
@@ -219,18 +221,16 @@ void BulletOpenGLApplication::Idle() {
 			// every update and the amount of elasped time was 
 			// determined back in ::Idle() by our clock object.
 
-			m_SimClock.reset();
 			for (int i = 0; i < numSteps; i++) {
 				m_pWorld->stepSimulation(BULLET_TIME_STEP, 0);
 			}
-			m_DeltaSimTime = m_SimClock.getTimeMilliseconds();
 		}
-		int m = m_clock.getTimeMicroseconds();
-
+		m_DeltaSimTime = m_clock.getTimeSeconds(); // in s
+		m_previous_number_of_steps = numSteps;
 		char buf[200];
-		sprintf_s(buf, "physics computation time = %d, numsteps = %d, elapsed time = %f, remaining time = %f, complete time = %f", m, numSteps, dt, m_RemainingTime, completeTime);
+		sprintf_s(buf, "pct = %f, numsteps = %d, et = %f, rt = %f, ct = %f", m_DeltaSimTime, numSteps, dt, m_RemainingTime, completeTime);
 		//printf("camera location x = %f \n", m_cameraManager->GetCameraLocation().x());
-		DisplayText(-m_cameraManager->GetCameraLocation().x(), 2, btVector3(0,0,0), buf);
+		DisplayText(-m_cameraManager->GetCameraLocation().x() - 2, 2, btVector3(m_RemainingTime/.1f, m_RemainingTime/.1f, m_RemainingTime/.1f), buf);
 		m_DeltaGlutTime = dt;
 		#else 
 		if (m_pWorld) {

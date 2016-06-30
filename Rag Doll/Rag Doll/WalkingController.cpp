@@ -411,10 +411,10 @@ void WalkingController::StateLoop() {
 
 		case STATE_0:
 		{
-			printf("~*~*~*~*~*~*~*~*~*~ STATE 0 ~*~*~*~*~*~*~*~*~*~\n");
+			//printf("~*~*~*~*~*~*~*~*~*~ STATE 0 ~*~*~*~*~*~*~*~*~*~\n");
 			m_clock.reset();
 			m_ragDollState = STATE_1;
-			printf("~*~*~*~*~*~*~*~*~*~ STATE 1 ~*~*~*~*~*~*~*~*~*~\n");
+			//printf("~*~*~*~*~*~*~*~*~*~ STATE 1 ~*~*~*~*~*~*~*~*~*~\n");
 		}
 			break;
 		case STATE_1:
@@ -426,7 +426,7 @@ void WalkingController::StateLoop() {
 			if (m_duration >= m_state_time * 1000) {
 				m_ragDollState = STATE_2;
 				m_clock.reset();
-				printf("~*~*~*~*~*~*~*~*~*~ STATE 2 ~*~*~*~*~*~*~*~*~*~\n");
+				//printf("~*~*~*~*~*~*~*~*~*~ STATE 2 ~*~*~*~*~*~*~*~*~*~\n");
 			}
 			else {
 				// Compute torques for bodies
@@ -444,7 +444,7 @@ void WalkingController::StateLoop() {
 				m_rightFootGroundHasContacted = false;
 				m_duration = 0;
 				m_reset = true;
-				printf("~*~*~*~*~*~*~*~*~*~ STATE 3 ~*~*~*~*~*~*~*~*~*~\n");
+				//printf("~*~*~*~*~*~*~*~*~*~ STATE 3 ~*~*~*~*~*~*~*~*~*~\n");
 			}
 			else {
 				torques = CalculateState2Torques();
@@ -460,7 +460,7 @@ void WalkingController::StateLoop() {
 			if (m_duration >= m_state_time * 1000) {
 				m_ragDollState = STATE_4;
 				m_clock.reset();
-				printf("~*~*~*~*~*~*~*~*~*~ STATE 4 ~*~*~*~*~*~*~*~*~*~\n");
+				//printf("~*~*~*~*~*~*~*~*~*~ STATE 4 ~*~*~*~*~*~*~*~*~*~\n");
 			}
 			else {
 				torques = CalculateState3Torques();
@@ -476,7 +476,7 @@ void WalkingController::StateLoop() {
 				m_clock.reset();
 				m_duration = 0;
 				m_reset = true;
-				printf("==============================\n~*~*~*~*~*~*~*~*~*~ STATE 1 ~*~*~*~*~*~*~*~*~*~\n");
+				//printf("==============================\n~*~*~*~*~*~*~*~*~*~ STATE 1 ~*~*~*~*~*~*~*~*~*~\n");
 			}
 			else {
 				torques = CalculateState4Torques();
