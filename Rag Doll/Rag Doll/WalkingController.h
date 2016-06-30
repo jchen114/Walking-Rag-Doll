@@ -186,6 +186,9 @@ private:
 	double m_duration = 0.0f;
 	bool m_reset = true;
 
+	btClock m_state_clock;
+	std::vector<float>m_torques;
+
 	std::vector<float> CalculateState1Torques();
 	std::vector<float> CalculateState2Torques();
 	std::vector<float> CalculateState3Torques();

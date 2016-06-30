@@ -134,7 +134,7 @@ public:
 	float m_DeltaGlutTime;
 	float m_DeltaSimTime;
 
-protected:
+protected:	
 
 	// core Bullet Components
 	btBroadphaseInterface *m_pBroadphase;

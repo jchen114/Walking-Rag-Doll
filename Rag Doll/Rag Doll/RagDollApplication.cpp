@@ -213,7 +213,7 @@ void RagDollApplication::RagDollStep() {
 
 void RagDollApplication::RagDollCollision() {
 
-	if (m_collisionClock.getTimeMilliseconds() >= 125) {
+	if (m_collisionClock.getTimeMilliseconds() >= 90) {
 
 		int numManifolds = m_pWorld->getDispatcher()->getNumManifolds();
 		for (int i = 0; i < numManifolds; i++)

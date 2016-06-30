@@ -26,6 +26,7 @@ WalkingController::WalkingController(RagDollApplication *app) {
 	m_currentState = RESET;	
 	m_COMPosition = btVector3(0, 0, 0);
 	m_stanceAnklePosition = btVector3(0, 0, 0);
+	m_torques = { 0, 0, 0, 0, 0, 0 };
 
 }
 
@@ -394,107 +395,109 @@ WalkingController::~WalkingController()
 
 void WalkingController::StateLoop() {
 
+	CalculateFeedbackSwingHip();
+
 	switch (m_currentState)
 	{
 	case WALKING: {
-		std::vector<float>torques = { 0, 0, 0, 0, 0, 0, 0 };
-
-		if (m_torsoHasContacted)
-		{
-			
-			m_torsoHasContacted = false;
-			m_ragDollState = STATE_5;
-		}
-
-		switch (m_ragDollState)
-		{
-
-		case STATE_0:
-		{
-			//printf("~*~*~*~*~*~*~*~*~*~ STATE 0 ~*~*~*~*~*~*~*~*~*~\n");
-			m_clock.reset();
-			m_ragDollState = STATE_1;
-			//printf("~*~*~*~*~*~*~*~*~*~ STATE 1 ~*~*~*~*~*~*~*~*~*~\n");
-		}
-			break;
-		case STATE_1:
-			if (m_reset) {
-				m_clock.reset();
-				m_reset = false;
-			}
-			m_duration = m_clock.getTimeMilliseconds();
-			if (m_duration >= m_state_time * 1000) {
-				m_ragDollState = STATE_2;
-				m_clock.reset();
-				//printf("~*~*~*~*~*~*~*~*~*~ STATE 2 ~*~*~*~*~*~*~*~*~*~\n");
-			}
-			else {
-				// Compute torques for bodies
-				torques = CalculateState1Torques();
-			}
-			break;
-		case STATE_2: {
-
-			//torques = CalculateState2Torques();
-			if (m_rightFootGroundHasContacted)
+		
+		if (m_state_clock.getTimeMilliseconds() >= 100) {
+			if (m_torsoHasContacted)
 			{
-				//printf("Right foot has contacted the floor. \n");
-				// Contacted the floor
-				m_ragDollState = STATE_3;
-				m_rightFootGroundHasContacted = false;
-				m_duration = 0;
-				m_reset = true;
-				//printf("~*~*~*~*~*~*~*~*~*~ STATE 3 ~*~*~*~*~*~*~*~*~*~\n");
+
+				m_torsoHasContacted = false;
+				m_ragDollState = STATE_5;
 			}
-			else {
-				torques = CalculateState2Torques();
-			}
-		}
-			break;
-		case STATE_3: {
-			if (m_reset) {
-				m_clock.reset();
-				m_reset = false;
-			}
-			m_duration = m_clock.getTimeMilliseconds();
-			if (m_duration >= m_state_time * 1000) {
-				m_ragDollState = STATE_4;
-				m_clock.reset();
-				//printf("~*~*~*~*~*~*~*~*~*~ STATE 4 ~*~*~*~*~*~*~*~*~*~\n");
-			}
-			else {
-				torques = CalculateState3Torques();
-			}
-		}
-			break;
-		case STATE_4: {
-			if (m_leftFootGroundHasContacted)
+
+			switch (m_ragDollState)
 			{
-				// Contacted the floor
+
+			case STATE_0:
+			{
+				//printf("~*~*~*~*~*~*~*~*~*~ STATE 0 ~*~*~*~*~*~*~*~*~*~\n");
+				m_clock.reset();
 				m_ragDollState = STATE_1;
-				m_leftFootGroundHasContacted = false;
-				m_clock.reset();
-				m_duration = 0;
-				m_reset = true;
-				//printf("==============================\n~*~*~*~*~*~*~*~*~*~ STATE 1 ~*~*~*~*~*~*~*~*~*~\n");
+				//printf("~*~*~*~*~*~*~*~*~*~ STATE 1 ~*~*~*~*~*~*~*~*~*~\n");
 			}
-			else {
-				torques = CalculateState4Torques();
-			}
-		}
-			break;
-		case STATE_5: {
-			
-		}
-			break;
-		default:
-			break;
-		}
+				break;
+			case STATE_1:
+				if (m_reset) {
+					m_clock.reset();
+					m_reset = false;
+				}
+				m_duration = m_clock.getTimeMilliseconds();
+				if (m_duration >= m_state_time * 1000) {
+					m_ragDollState = STATE_2;
+					m_clock.reset();
+					//printf("~*~*~*~*~*~*~*~*~*~ STATE 2 ~*~*~*~*~*~*~*~*~*~\n");
+				}
+				else {
+					// Compute torques for bodies
+					m_torques = CalculateState1Torques();
+				}
+				break;
+			case STATE_2: {
 
-		// Apply torques to bodies
+				//torques = CalculateState2Torques();
+				if (m_rightFootGroundHasContacted)
+				{
+					//printf("Right foot has contacted the floor. \n");
+					// Contacted the floor
+					m_ragDollState = STATE_3;
+					m_rightFootGroundHasContacted = false;
+					m_duration = 0;
+					m_reset = true;
+					//printf("~*~*~*~*~*~*~*~*~*~ STATE 3 ~*~*~*~*~*~*~*~*~*~\n");
+				}
+				else {
+					m_torques = CalculateState2Torques();
+				}
+			}
+				break;
+			case STATE_3: {
+				if (m_reset) {
+					m_clock.reset();
+					m_reset = false;
+				}
+				m_duration = m_clock.getTimeMilliseconds();
+				if (m_duration >= m_state_time * 1000) {
+					m_ragDollState = STATE_4;
+					m_clock.reset();
+					//printf("~*~*~*~*~*~*~*~*~*~ STATE 4 ~*~*~*~*~*~*~*~*~*~\n");
+				}
+				else {
+					m_torques = CalculateState3Torques();
+				}
+			}
+				break;
+			case STATE_4: {
+				if (m_leftFootGroundHasContacted)
+				{
+					// Contacted the floor
+					m_ragDollState = STATE_1;
+					m_leftFootGroundHasContacted = false;
+					m_clock.reset();
+					m_duration = 0;
+					m_reset = true;
+					//printf("==============================\n~*~*~*~*~*~*~*~*~*~ STATE 1 ~*~*~*~*~*~*~*~*~*~\n");
+				}
+				else {
+					m_torques = CalculateState4Torques();
+				}
+			}
+				break;
+			case STATE_5: {
+				m_torques = { 0, 0, 0, 0, 0, 0 };
+			}
+				break;
+			default:
+				break;
+			}
+			m_state_clock.reset();
+		}
 
 		// Apply torque limits:
-		for (std::vector<float>::iterator it = torques.begin(); it != torques.end(); ++it) {
+		for (std::vector<float>::iterator it = m_torques.begin(); it != m_torques.end(); ++it) {
 			float *torqueValue = &(*it);
 			if (*torqueValue > TORQUE_LIMIT)
 			{
@@ -505,20 +508,20 @@ void WalkingController::StateLoop() {
 			}
 		}
 
-		m_app->ApplyTorqueOnUpperLeftLeg(torques.at(0));
-		m_app->ApplyTorqueOnUpperRightLeg(torques.at(1));
+		// Apply torques to bodies
+		m_app->ApplyTorqueOnUpperLeftLeg(m_torques.at(0));
+		m_app->ApplyTorqueOnUpperRightLeg(m_torques.at(1));
 
-		m_app->ApplyTorqueOnLowerLeftLeg(torques.at(2));
-		m_app->ApplyTorqueOnLowerRightLeg(torques.at(3));
+		m_app->ApplyTorqueOnLowerLeftLeg(m_torques.at(2));
+		m_app->ApplyTorqueOnLowerRightLeg(m_torques.at(3));
 
-		m_app->ApplyTorqueOnLeftFoot(torques.at(4));
-		m_app->ApplyTorqueOnRightFoot(torques.at(5));
+		m_app->ApplyTorqueOnLeftFoot(m_torques.at(4));
+		m_app->ApplyTorqueOnRightFoot(m_torques.at(5));
 	}
 		break;
 	case PAUSE:
 		break;
 	case RESET:
-		CalculateFeedbackSwingHip();
 		break;
 	default:
 		break;
@@ -534,14 +537,7 @@ void WalkingController::InitiateWalking() {
 	m_currentState = WALKING;
 	m_ragDollState = STATE_0;
 
-	//printf("Gains, T: (%f %f) ULL: (%f %f) URL: (%f %f) LLL: (%f %f) LRL: (%f %f) LF: (%f %f) RF: (%f %f)\n",
-	//	m_torso_gains->m_kp, m_torso_gains->m_kd,
-	//	m_ull_gains->m_kp, m_ull_gains->m_kd,
-	//	m_url_gains->m_kp, m_url_gains->m_kd,
-	//	m_lll_gains->m_kp, m_lll_gains->m_kd,
-	//	m_lrl_gains->m_kp, m_lrl_gains->m_kd,
-	//	m_lf_gains->m_kp, m_lf_gains->m_kd,
-	//	m_rf_gains->m_kp, m_rf_gains->m_kd);
+	m_state_clock.reset();
 
 }
 
