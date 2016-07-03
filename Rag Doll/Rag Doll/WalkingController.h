@@ -141,6 +141,8 @@ public:
 	void SetFeedback1(float cd, float cv);
 	void SetFeedback2(float cd, float cv);
 
+	void SetStateTime(float time);
+
 	CurrentControllerState m_currentState = RESET;
 	CurrentRagDollState m_ragDollState = STATE_0;
 
@@ -172,10 +174,34 @@ public:
 	float *m_cd_2;
 	float *m_cv_2;
 
-	// Temporary
-
-
 	float m_state_time = 0.0f;
+
+	// Temporary
+	Gains *m_torso_gains_tmp;
+	Gains *m_ull_gains_tmp;
+	Gains *m_url_gains_tmp;
+	Gains *m_lll_gains_tmp;
+	Gains *m_lrl_gains_tmp;
+	Gains *m_lf_gains_tmp;
+	Gains *m_rf_gains_tmp;
+
+	State *m_state0_tmp;
+	State *m_state1_tmp;
+	State *m_state2_tmp;
+	State *m_state3_tmp;
+	State *m_state4_tmp;
+
+	float *m_cd_1_tmp;
+	float *m_cv_1_tmp;
+	float *m_cd_2_tmp;
+	float *m_cv_2_tmp;
+
+	float m_state_time_tmp = 0.0f;
+
+	bool m_changeGait = false;
+	bool m_wait = true;
+
+	std::string m_currentGait;
 
 private:
 

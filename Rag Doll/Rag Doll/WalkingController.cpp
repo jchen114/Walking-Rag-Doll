@@ -269,7 +269,6 @@ float WalkingController::ReadTime(std::string time_dir) {
 					ss << time_dir << "\\" << ent->d_name;
 					std::ifstream infile(ss.str());
 					float time;
-					char c;
 					while (infile >> time) {
 						m_state_time = time;
 					}
@@ -411,13 +410,39 @@ void WalkingController::StateLoop() {
 
 		case STATE_0:
 		{
-			//printf("~*~*~*~*~*~*~*~*~*~ STATE 0 ~*~*~*~*~*~*~*~*~*~\n");
+			printf("~*~*~*~*~*~*~*~*~*~ STATE 0 ~*~*~*~*~*~*~*~*~*~\n");
 			m_clock.reset();
 			m_ragDollState = STATE_1;
-			//printf("~*~*~*~*~*~*~*~*~*~ STATE 1 ~*~*~*~*~*~*~*~*~*~\n");
+			printf("~*~*~*~*~*~*~*~*~*~ STATE 1 ~*~*~*~*~*~*~*~*~*~\n");
 		}
 			break;
-		case STATE_1:
+		case STATE_1: {
+			if (!m_wait) {
+				// Change the gait
+				printf("Change Gait \n");
+				m_torso_gains = m_torso_gains_tmp;
+				m_ull_gains = m_ull_gains_tmp;
+				m_url_gains = m_url_gains_tmp;
+				m_lll_gains = m_lll_gains_tmp;
+				m_lrl_gains = m_lrl_gains_tmp;
+				m_lf_gains = m_rf_gains_tmp;
+
+				m_state0 = m_state0_tmp;
+				m_state1 = m_state1_tmp;
+				m_state2 = m_state2_tmp;
+				m_state3 = m_state3_tmp;
+				m_state4 = m_state4_tmp;
+
+				m_cd_1 = m_cd_1_tmp;
+				m_cv_1 = m_cv_1_tmp;
+				m_cd_2 = m_cd_2_tmp;
+				m_cv_2 = m_cv_2_tmp;
+
+				m_state_time = m_state_time_tmp;
+
+				m_changeGait = false;
+				m_wait = true;
+			}		
 			if (m_reset) {
 				m_clock.reset();
 				m_reset = false;
@@ -426,15 +451,18 @@ void WalkingController::StateLoop() {
 			if (m_duration >= m_state_time * 1000) {
 				m_ragDollState = STATE_2;
 				m_clock.reset();
-				//printf("~*~*~*~*~*~*~*~*~*~ STATE 2 ~*~*~*~*~*~*~*~*~*~\n");
+				printf("~*~*~*~*~*~*~*~*~*~ STATE 2 ~*~*~*~*~*~*~*~*~*~\n");
 			}
 			else {
 				// Compute torques for bodies
 				torques = CalculateState1Torques();
 			}
+		}
 			break;
 		case STATE_2: {
-
+			if (m_changeGait) {
+				m_wait = false;
+			}
 			//torques = CalculateState2Torques();
 			if (m_rightFootGroundHasContacted)
 			{
@@ -444,7 +472,7 @@ void WalkingController::StateLoop() {
 				m_rightFootGroundHasContacted = false;
 				m_duration = 0;
 				m_reset = true;
-				//printf("~*~*~*~*~*~*~*~*~*~ STATE 3 ~*~*~*~*~*~*~*~*~*~\n");
+				printf("~*~*~*~*~*~*~*~*~*~ STATE 3 ~*~*~*~*~*~*~*~*~*~\n");
 			}
 			else {
 				torques = CalculateState2Torques();
@@ -452,6 +480,9 @@ void WalkingController::StateLoop() {
 		}
 			break;
 		case STATE_3: {
+			if (m_changeGait) {
+				m_wait = false;
+			}
 			if (m_reset) {
 				m_clock.reset();
 				m_reset = false;
@@ -460,7 +491,7 @@ void WalkingController::StateLoop() {
 			if (m_duration >= m_state_time * 1000) {
 				m_ragDollState = STATE_4;
 				m_clock.reset();
-				//printf("~*~*~*~*~*~*~*~*~*~ STATE 4 ~*~*~*~*~*~*~*~*~*~\n");
+				printf("~*~*~*~*~*~*~*~*~*~ STATE 4 ~*~*~*~*~*~*~*~*~*~\n");
 			}
 			else {
 				torques = CalculateState3Torques();
@@ -468,6 +499,9 @@ void WalkingController::StateLoop() {
 		}
 			break;
 		case STATE_4: {
+			if (m_changeGait) {
+				m_wait = false;
+			}
 			if (m_leftFootGroundHasContacted)
 			{
 				// Contacted the floor
@@ -476,7 +510,7 @@ void WalkingController::StateLoop() {
 				m_clock.reset();
 				m_duration = 0;
 				m_reset = true;
-				//printf("==============================\n~*~*~*~*~*~*~*~*~*~ STATE 1 ~*~*~*~*~*~*~*~*~*~\n");
+				printf("==============================\n~*~*~*~*~*~*~*~*~*~ STATE 1 ~*~*~*~*~*~*~*~*~*~\n");
 			}
 			else {
 				torques = CalculateState4Torques();
@@ -491,8 +525,6 @@ void WalkingController::StateLoop() {
 			break;
 		}
 
-		// Apply torques to bodies
-
 		// Apply torque limits:
 		for (std::vector<float>::iterator it = torques.begin(); it != torques.end(); ++it) {
 			float *torqueValue = &(*it);
@@ -504,7 +536,7 @@ void WalkingController::StateLoop() {
 				*torqueValue = -TORQUE_LIMIT;
 			}
 		}
-
+		// Apply torques to bodies
 		m_app->ApplyTorqueOnUpperLeftLeg(torques.at(0));
 		m_app->ApplyTorqueOnUpperRightLeg(torques.at(1));
 
@@ -517,8 +549,10 @@ void WalkingController::StateLoop() {
 		break;
 	case PAUSE:
 		break;
-	case RESET:
+	case RESET: {
 		CalculateFeedbackSwingHip();
+
+	}
 		break;
 	default:
 		break;
@@ -533,16 +567,6 @@ void WalkingController::PauseWalking(){
 void WalkingController::InitiateWalking() {
 	m_currentState = WALKING;
 	m_ragDollState = STATE_0;
-
-	//printf("Gains, T: (%f %f) ULL: (%f %f) URL: (%f %f) LLL: (%f %f) LRL: (%f %f) LF: (%f %f) RF: (%f %f)\n",
-	//	m_torso_gains->m_kp, m_torso_gains->m_kd,
-	//	m_ull_gains->m_kp, m_ull_gains->m_kd,
-	//	m_url_gains->m_kp, m_url_gains->m_kd,
-	//	m_lll_gains->m_kp, m_lll_gains->m_kd,
-	//	m_lrl_gains->m_kp, m_lrl_gains->m_kd,
-	//	m_lf_gains->m_kp, m_lf_gains->m_kd,
-	//	m_rf_gains->m_kp, m_rf_gains->m_kd);
-
 }
 
 void WalkingController::Reset(){
@@ -578,34 +602,63 @@ void WalkingController::NotifyTorsoGroundContact() {
 void WalkingController::ChangeGait(std::string gait) {
 
 	printf("Gait is now %s\n", gait.c_str());
-
+	m_currentGait = gait;
 	// load the current gait
 	std::vector<State *>states = m_GaitMap.find(gait)->second;
 	std::vector<Gains *>gains = m_GainMap.find(gait)->second;
 	std::vector<float>* feedback = &m_FdbkMap.find(gait)->second;
 	float time = m_TmMap.find(gait)->second;
+	printf("state time is %f\n", time);
 	// interpolate (?)
-	// Setting everything...
-	m_state0 = states.at(0);
-	m_state1 = states.at(1);
-	m_state2 = states.at(2);
-	m_state3 = states.at(3);
-	m_state4 = states.at(4);
+	if (m_currentState == WALKING) {
+		// Setting everything...
+		m_state0_tmp = states.at(0);
+		m_state1_tmp = states.at(1);
+		m_state2_tmp = states.at(2);
+		m_state3_tmp = states.at(3);
+		m_state4_tmp = states.at(4);
 
-	m_torso_gains = gains.at(0);
-	m_ull_gains = gains.at(1);
-	m_url_gains = gains.at(2);
-	m_lll_gains = gains.at(3);
-	m_lrl_gains = gains.at(4);
-	m_lf_gains = gains.at(5);
-	m_rf_gains = gains.at(6);
+		m_torso_gains_tmp = gains.at(0);
+		m_ull_gains_tmp = gains.at(1);
+		m_url_gains_tmp = gains.at(2);
+		m_lll_gains_tmp = gains.at(3);
+		m_lrl_gains_tmp = gains.at(4);
+		m_lf_gains_tmp = gains.at(5);
+		m_rf_gains_tmp = gains.at(6);
 
-	m_cd_1 = &feedback->at(0);
-	m_cv_1 = &feedback->at(1);
-	m_cd_2 = &feedback->at(2);
-	m_cv_2 = &feedback->at(3);
+		m_cd_1_tmp = &feedback->at(0);
+		m_cv_1_tmp = &feedback->at(1);
+		m_cd_2_tmp = &feedback->at(2);
+		m_cv_2_tmp = &feedback->at(3);
 
-	m_state_time = time;
+		
+		m_state_time_tmp = time;
+
+		m_changeGait = true;
+	}
+	else if (m_currentState == RESET) {
+		// Setting everything...
+		m_state0 = states.at(0);
+		m_state1 = states.at(1);
+		m_state2 = states.at(2);
+		m_state3 = states.at(3);
+		m_state4 = states.at(4);
+
+		m_torso_gains = gains.at(0);
+		m_ull_gains = gains.at(1);
+		m_url_gains = gains.at(2);
+		m_lll_gains = gains.at(3);
+		m_lrl_gains = gains.at(4);
+		m_lf_gains = gains.at(5);
+		m_rf_gains = gains.at(6);
+
+		m_cd_1 = &feedback->at(0);
+		m_cv_1 = &feedback->at(1);
+		m_cd_2 = &feedback->at(2);
+		m_cv_2 = &feedback->at(3);
+
+		m_state_time = time;
+	}
 }
 
 #pragma endregion WALKER_INTERACTION
@@ -684,6 +737,18 @@ void WalkingController::SetFeedback2(float cd, float cv) {
 }
 
 #pragma endregion FEEDBACK
+
+#pragma region TIME
+
+void WalkingController::SetStateTime(float time) {
+	m_state_time = time;
+	std::unordered_map<std::string, float>::iterator it = m_TmMap.find(m_currentGait);
+	if (it != m_TmMap.end()) {
+		it->second = m_state_time;
+	}
+}
+
+#pragma endregion TIME
 
 #pragma region CALCULATE_TORQUES
 

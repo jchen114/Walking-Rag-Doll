@@ -73,6 +73,7 @@ public:
 	void ChangeRightFootAngle();
 	void UpdateGains();
 	void UpdateFeedbacks();
+	void UpdateTime();
 
 	void DrawArrow(const btVector3 &pointOfContact, TranslateDirection direction);
 
@@ -205,6 +206,7 @@ static void LeftFootAngleChanged(int id);
 static void RightFootAngleChanged(int id);
 static void GainsChanged(int id);
 static void FeedbackChanged(int id);
+static void TimeChanged(int id);
 
 /* Bullet Physics Tick callback */
 void InternalPreTickCallback(btDynamicsWorld *world, btScalar timestep);

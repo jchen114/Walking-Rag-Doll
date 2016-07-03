@@ -374,7 +374,7 @@ void RagDollApplication::CreateRagDollGUI() {
 
 	/*===================================== STATE TIME ============================================*/
 	GLUI_Panel *time_panel = m_glui_window->add_panel("State time");
-	m_timer_spinner = m_glui_window->add_spinner_to_panel(time_panel, "time", GLUI_SPINNER_FLOAT, &m_WalkingController->m_state_time);
+	m_timer_spinner = m_glui_window->add_spinner_to_panel(time_panel, "time", GLUI_SPINNER_FLOAT, NULL, -1, (GLUI_Update_CB)TimeChanged);
 	m_glui_window->add_button_to_panel(time_panel, "Save Time", SAVETIME_BUTTON, (GLUI_Update_CB)SaveTimeButtonPressed);
 
 	/*===================================== CONTROLS =========================================*/
@@ -702,6 +702,10 @@ void RagDollApplication::ChangeGait() {
 		UpdateRagDoll();
 	}
 
+}
+
+void RagDollApplication::UpdateTime() {
+	m_WalkingController->SetStateTime(m_timer_spinner->get_float_val());
 }
 
 #pragma endregion GUI
@@ -1380,6 +1384,10 @@ static void GainsChanged(int id) {
 
 static void FeedbackChanged(int id) {
 	m_app->UpdateFeedbacks();
+}
+
+static void TimeChanged(int id) {
+	m_app->UpdateTime();
 }
 
 #pragma endregion GLUI_CALLBACKS
