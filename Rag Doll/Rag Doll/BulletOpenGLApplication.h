@@ -43,9 +43,10 @@ static float desiredTimeBetweenFrames = 1.0f / 60.0f;
 #define REALTIME
 
 #ifdef REALTIME
-#define BULLET_TIME_STEP 0.002f
+#define BULLET_TIME_STEP 0.0005f // 2khz
 #else
-#define BULLET_TIME_STEP 0.0005f // 1 ms
+//#define BULLET_TIME_STEP 0.001f // 1 ms
+#define NUM_STEPS 11
 #endif
 
 class DebugDrawer;

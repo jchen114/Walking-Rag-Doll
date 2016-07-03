@@ -238,10 +238,15 @@ void BulletOpenGLApplication::Idle() {
 			// step the simulation through time. This is called
 			// every update and the amount of elasped time was 
 			// determined back in ::Idle() by our clock object.
-			for (int i = 0; i < 9; i++) {
+			m_clock.reset();
+			for (int i = 0; i < NUM_STEPS; i++) {
 				m_pWorld->stepSimulation(BULLET_TIME_STEP, 0);
 			}
-	}
+			m_DeltaSimTime = m_clock.getTimeSeconds();
+		}
+		char buf[200];
+		sprintf_s(buf, "pct = %f, numsteps = %d", m_DeltaSimTime, NUM_STEPS);
+		DisplayText(-m_cameraManager->GetCameraLocation().x() - 2, 2, btVector3(m_RemainingTime / .1f, m_RemainingTime / .1f, m_RemainingTime / .1f), buf);
 		#endif
 
 		m_cameraManager->UpdateCamera();

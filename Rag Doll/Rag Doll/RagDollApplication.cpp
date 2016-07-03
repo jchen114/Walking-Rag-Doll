@@ -213,41 +213,37 @@ void RagDollApplication::RagDollStep() {
 
 void RagDollApplication::RagDollCollision() {
 
-	if (m_collisionClock.getTimeMilliseconds() >= 125) {
+	int numManifolds = m_pWorld->getDispatcher()->getNumManifolds();
+	for (int i = 0; i < numManifolds; i++)
+	{
+		btPersistentManifold* contactManifold = m_pWorld->getDispatcher()->getManifoldByIndexInternal(i);
 
-		int numManifolds = m_pWorld->getDispatcher()->getNumManifolds();
-		for (int i = 0; i < numManifolds; i++)
-		{
-			btPersistentManifold* contactManifold = m_pWorld->getDispatcher()->getManifoldByIndexInternal(i);
+		btCollisionObject* obA = const_cast<btCollisionObject*>(contactManifold->getBody0());
+		btCollisionObject* obB = const_cast<btCollisionObject*>(contactManifold->getBody1());
 
-			btCollisionObject* obA = const_cast<btCollisionObject*>(contactManifold->getBody0());
-			btCollisionObject* obB = const_cast<btCollisionObject*>(contactManifold->getBody1());
+		for (int j = 0; j < contactManifold->getNumContacts(); j++)   {
+			btManifoldPoint& pt = contactManifold->getContactPoint(j);
+			if (pt.m_distance1 < 0) {
+				// Valid contact point
+				if ((obA->getUserPointer() == m_leftFoot && obB->getUserPointer() == m_ground) || (obA->getUserPointer() == m_ground && obB->getUserPointer() == m_leftFoot)) {
+					//printf(">>>>>>>>>>>>>>>>>>>>>> Collision with left foot to ground detected. <<<<<<<<<<<<<<<<<<<<<< \n");
+					m_WalkingController->NotifyLeftFootGroundContact();
+					break;
+				}
 
-			for (int j = 0; j < contactManifold->getNumContacts(); j++)   {
-				btManifoldPoint& pt = contactManifold->getContactPoint(j);
-				if (pt.m_distance1 < 0) {
-					// Valid contact point
-					if ((obA->getUserPointer() == m_leftFoot && obB->getUserPointer() == m_ground) || (obA->getUserPointer() == m_ground && obB->getUserPointer() == m_leftFoot)) {
-						//printf(">>>>>>>>>>>>>>>>>>>>>> Collision with left foot to ground detected. <<<<<<<<<<<<<<<<<<<<<< \n");
-						m_WalkingController->NotifyLeftFootGroundContact();
-						break;
-					}
-
-					if ((obA->getUserPointer() == m_rightFoot && obB->getUserPointer() == m_ground) || (obA->getUserPointer() == m_ground && obB->getUserPointer() == m_rightFoot)) {
-						//printf(">>>>>>>>>>>>>>>>>>>>>> Collision with right foot to ground detected. <<<<<<<<<<<<<<<<<<<<<< \n");
-						m_WalkingController->NotifyRightFootGroundContact();
-						break;
-					}
-					if ((obA->getUserPointer() == m_torso && obB->getUserPointer() == m_ground) || (obA->getUserPointer() == m_ground && obB->getUserPointer() == m_torso)) {
-						//printf(">>>>>>>>>>>>>>>>>>>>>> Collision with right foot to ground detected. <<<<<<<<<<<<<<<<<<<<<< \n");
-						m_WalkingController->NotifyTorsoGroundContact();
-						break;
-					}
+				if ((obA->getUserPointer() == m_rightFoot && obB->getUserPointer() == m_ground) || (obA->getUserPointer() == m_ground && obB->getUserPointer() == m_rightFoot)) {
+					//printf(">>>>>>>>>>>>>>>>>>>>>> Collision with right foot to ground detected. <<<<<<<<<<<<<<<<<<<<<< \n");
+					m_WalkingController->NotifyRightFootGroundContact();
+					break;
+				}
+				if ((obA->getUserPointer() == m_torso && obB->getUserPointer() == m_ground) || (obA->getUserPointer() == m_ground && obB->getUserPointer() == m_torso)) {
+					//printf(">>>>>>>>>>>>>>>>>>>>>> Collision with right foot to ground detected. <<<<<<<<<<<<<<<<<<<<<< \n");
+					m_WalkingController->NotifyTorsoGroundContact();
+					break;
 				}
 			}
-
 		}
-		m_collisionClock.reset();
+
 	}
 }
 

@@ -172,6 +172,9 @@ public:
 	float *m_cd_2;
 	float *m_cv_2;
 
+	// Temporary
+
+
 	float m_state_time = 0.0f;
 
 private:

@@ -74,8 +74,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\jchen114\Documents\Bullet\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>C:\Users\jchen114\Documents\Bullet\bullet3-2.83.7\src;$(ProjectDir)..\..\Dependencies\dirent;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -90,7 +90,6 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BasicTest.h" />
     <ClInclude Include="BulletOpenGLApplication.h" />
     <ClInclude Include="CameraManager.h" />
     <ClInclude Include="Constants.h" />
@@ -106,7 +105,6 @@
     <ClInclude Include="WalkingController.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BasicTest.cpp" />
     <ClCompile Include="BulletOpenGLApplication.cpp" />
     <ClCompile Include="CameraManager.cpp" />
     <ClCompile Include="Constants.cpp" />
