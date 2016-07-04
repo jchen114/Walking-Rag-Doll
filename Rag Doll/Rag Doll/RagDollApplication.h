@@ -75,6 +75,8 @@ public:
 	void UpdateFeedbacks();
 	void UpdateTime();
 
+	void SetupGUIConfiguration();
+
 	void DrawArrow(const btVector3 &pointOfContact, TranslateDirection direction);
 
 	void ApplyTorqueOnUpperRightLeg(float torqueForce);
@@ -127,7 +129,6 @@ private:
 	std::vector<std::string> m_gaits;
 
 	void CreateRagDollGUI();
-	void SetupGUIConfiguration();
 
 	// GLUI Members
 

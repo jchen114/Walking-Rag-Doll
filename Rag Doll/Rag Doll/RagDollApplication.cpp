@@ -706,6 +706,7 @@ void RagDollApplication::ChangeGait() {
 
 void RagDollApplication::UpdateTime() {
 	m_WalkingController->SetStateTime(m_timer_spinner->get_float_val());
+	SetupGUIConfiguration();
 }
 
 #pragma endregion GUI

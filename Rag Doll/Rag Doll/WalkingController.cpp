@@ -439,6 +439,7 @@ void WalkingController::StateLoop() {
 				m_cv_2 = m_cv_2_tmp;
 
 				m_state_time = m_state_time_tmp;
+				m_app->SetupGUIConfiguration();
 
 				m_changeGait = false;
 				m_wait = true;
@@ -631,10 +632,10 @@ void WalkingController::ChangeGait(std::string gait) {
 		m_cd_2_tmp = &feedback->at(2);
 		m_cv_2_tmp = &feedback->at(3);
 
-		
 		m_state_time_tmp = time;
 
 		m_changeGait = true;
+
 	}
 	else if (m_currentState == RESET) {
 		// Setting everything...
