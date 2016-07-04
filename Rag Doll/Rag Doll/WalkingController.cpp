@@ -425,7 +425,8 @@ void WalkingController::StateLoop() {
 				m_url_gains = m_url_gains_tmp;
 				m_lll_gains = m_lll_gains_tmp;
 				m_lrl_gains = m_lrl_gains_tmp;
-				m_lf_gains = m_rf_gains_tmp;
+				m_lf_gains = m_lf_gains_tmp;
+				m_rf_gains = m_rf_gains_tmp;
 
 				m_state0 = m_state0_tmp;
 				m_state1 = m_state1_tmp;
