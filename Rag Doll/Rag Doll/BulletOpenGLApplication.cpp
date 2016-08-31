@@ -385,23 +385,6 @@ void BulletOpenGLApplication::DrawPlane(const btVector3 &halfSize) {
 	DrawWithTriangles(vertices, indices, 6);
 }
 
-void BulletOpenGLApplication::DrawCircle(const float &radius) {
-	
-	int triangleAmount = 20; //# of triangles used to draw circle
-	//GLfloat radius = 0.8f; //radius
-	GLfloat twicePi = 2.0f * 3.14159;
-
-	glBegin(GL_TRIANGLE_FAN);
-
-	for (int i = 0; i <= triangleAmount; i++) {
-		glVertex2f(
-			(radius * cos(i *  twicePi / triangleAmount)),
-			(radius * sin(i * twicePi / triangleAmount))
-			);
-	}
-	glEnd();
-}
-
 void BulletOpenGLApplication::DrawWithTriangles(const btVector3 *vertices, const int *indices, int numberOfIndices) {
 
 	// start processing vertices as triangles
@@ -485,16 +468,6 @@ void BulletOpenGLApplication::DrawShape(btScalar *transform, const btCollisionSh
 
 	glPopMatrix();
 
-}
-
-void BulletOpenGLApplication::DisplayText(float x, float y, const btVector3 &color, const char *string) {
-	int j = strlen(string);
-
-	glColor3f(color.x(), color.y(), color.z());
-	glRasterPos2f(x, y);
-	for (int i = 0; i < j; i++) {
-		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
-	}
 }
 
 #pragma endregion DRAWING

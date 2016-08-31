@@ -92,7 +92,6 @@ public:
 	// Drawing Functions
 	void DrawBox(const btVector3 &halfSize);
 	void DrawPlane(const btVector3 &halfSize);
-	void DrawCircle(const float &radius);
 	
 	void DrawWithTriangles(const btVector3 * vertices, const int *indices, int numberOfIndices);
 
@@ -157,8 +156,6 @@ protected:
 	// Debugging
 	// debug renderer
 	DebugDrawer* m_pDebugDrawer;
-
-	void DisplayText(float x, float y, const btVector3 &color, const char *string);
 
 	bool m_IsFrameRateFixed;
 	float m_RemainingTime = 0.0f;

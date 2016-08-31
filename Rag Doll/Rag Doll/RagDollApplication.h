@@ -2,6 +2,7 @@
 #include "BulletOpenGLApplication.h"
 #include <glui\glui.h>
 #include <vector>
+#include "ContactManager.h"
 
 class WalkingController;
 class State;
@@ -30,6 +31,7 @@ public:
 
 	void CreateGround(const btVector3 &position);
 	void CreateRagDoll(const btVector3 &position);
+	void ConfigureContactModel();
 	void AddHinges();
 
 	GameObject *Create2DBox(const btVector3 &halfSize, float mass, const btVector3 &color, const btVector3 &position);
@@ -85,8 +87,8 @@ public:
 	void ApplyTorqueOnLowerLeftLeg(float torqueForce);
 	void ApplyTorqueOnRightFoot(float torqueForce);
 	void ApplyTorqueOnLeftFoot(float torqueForce);
-	void RagDollStep();
-	void RagDollCollision();
+	void RagDollStep(btScalar timestep);
+	void RagDollCollision(btScalar timestep);
 
 	State *GetState(int state);
 
@@ -210,5 +212,5 @@ static void FeedbackChanged(int id);
 static void TimeChanged(int id);
 
 /* Bullet Physics Tick callback */
-void InternalPreTickCallback(btDynamicsWorld *world, btScalar timestep);
-void InternalPostTickCallback(btDynamicsWorld *world, btScalar timestep);
+void InternalPreTickCallback(btDynamicsWorld *world, btScalar timeStep);
+void InternalPostTickCallback(btDynamicsWorld *world, btScalar timeStep);

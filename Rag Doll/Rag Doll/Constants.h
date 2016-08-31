@@ -1,5 +1,7 @@
 #pragma once
 
+#include <freeglut\freeglut.h>
+#include "LinearMath\btVector3.h"
 
 enum ProjectionMode{ ORTHOGRAPHIC, PERSPECTIVE };
 enum Dimension{ HEIGHT, WIDTH };
@@ -54,3 +56,5 @@ protected:
 	~Constants();
 };
 
+void DrawCircle(const float &radius);
+void DisplayText(float x, float y, const btVector3 &color, const char *string);

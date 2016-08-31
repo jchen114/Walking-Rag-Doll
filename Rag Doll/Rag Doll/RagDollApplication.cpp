@@ -80,6 +80,8 @@ void RagDollApplication::InitializePhysics() {
 
 	CreateRagDoll(ORIGINAL_TORSO_POSITION);
 
+	ConfigureContactModel();
+
 	// Create Controller
 	m_WalkingController = new WalkingController(this);
 
@@ -180,9 +182,11 @@ void RagDollApplication::CreateGround(const btVector3 &position) {
 
 }
 
-void RagDollApplication::RagDollStep() {
+void RagDollApplication::RagDollStep(btScalar timestep) {
 	//printf("Callback before every physics tick.\n");
 	
+	ContactManager::GetInstance().Update(timestep);
+
 	switch (m_WalkingController->m_currentState)
 	{
 	case RESET:
@@ -211,8 +215,24 @@ void RagDollApplication::RagDollStep() {
 
 }
 
-void RagDollApplication::RagDollCollision() {
+void RagDollApplication::RagDollCollision(btScalar timestep) {
 
+	if (ContactManager::GetInstance().m_beingUsed) {
+
+		// Check contact manager for collisions for left and right feet
+		auto el_lf = ContactManager::GetInstance().m_collisionPairs.find(m_leftFoot);
+		auto el_rf = ContactManager::GetInstance().m_collisionPairs.find(m_rightFoot);
+
+		if (el_lf != ContactManager::GetInstance().m_collisionPairs.end() && el_lf->second == m_ground) {
+			m_WalkingController->NotifyLeftFootGroundContact();
+		}
+
+		if (el_rf != ContactManager::GetInstance().m_collisionPairs.end() && el_rf->second == m_ground) {
+			m_WalkingController->NotifyRightFootGroundContact();
+		}
+
+	}
+	// Use Default collision detection
 	int numManifolds = m_pWorld->getDispatcher()->getNumManifolds();
 	for (int i = 0; i < numManifolds; i++)
 	{
@@ -245,6 +265,18 @@ void RagDollApplication::RagDollCollision() {
 		}
 
 	}
+
+	
+}
+
+void RagDollApplication::ConfigureContactModel() {
+	
+	m_pWorld->getPairCache()->setOverlapFilterCallback(ContactManager::GetInstance().GetFilterCallback());
+	ContactManager::GetInstance().AddObjectForCollision(m_rightFoot);
+	ContactManager::GetInstance().AddObjectForCollision(m_leftFoot);
+
+	ContactManager::GetInstance().AddObjectToCollideWith(m_ground);
+
 }
 
 void RagDollApplication::ShutdownPhysics() {
@@ -1069,6 +1101,8 @@ void RagDollApplication::DrawShape(btScalar *transform, const btCollisionShape *
 	
 	//BulletOpenGLApplication::DrawShape(transform, pShape, color);
 	
+	ContactManager::GetInstance().DrawContactPoints();
+
 	// Special rendering
 	if (pShape->getUserPointer() == m_torso) {
 		const btBoxShape *box = static_cast<const btBoxShape*>(pShape);
@@ -1394,9 +1428,9 @@ static void TimeChanged(int id) {
 #pragma endregion GLUI_CALLBACKS
 
 void InternalPreTickCallback(btDynamicsWorld *world, btScalar timeStep)  {
-	m_app->RagDollStep();
+	m_app->RagDollStep(timeStep);
 }
 
-void InternalPostTickCallback(btDynamicsWorld *world, btScalar timestep) {
-	m_app->RagDollCollision();
+void InternalPostTickCallback(btDynamicsWorld *world, btScalar timeStep) {
+	m_app->RagDollCollision(timeStep);
 }
